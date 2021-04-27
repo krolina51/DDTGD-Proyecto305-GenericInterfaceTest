@@ -1,0 +1,45 @@
+[OPTIONS]
+Compiled File=ug_GenericInterface.chm
+Title=Postilion GenericInterface User Guide
+Contents File=ug_GenericInterface.hhc
+Index File=ug_GenericInterface.hhk
+Default topic=Title.htm
+Default Window=NewWindow
+Error log file=
+Display compile progress=No
+Display compile notes=Yes
+Full-text search=Yes
+Binary Index=No
+Auto Index=No
+Enhanced decompilation=No
+Binary TOC=No
+Flat=No
+
+[WINDOWS]
+NewWindow="GenericInterface Interface","ug_GenericInterface.hhc",,"","",,,,,0x420,0,0x200e,[0,0,500,400],0x0,0x0,,0,0,0
+
+[FILES]
+Nombre_Interchange.htm
+Instruciones_Control_Monitor.htm
+Configuracion_Criptografica.htm
+Descripcion_Configuracion.htm
+Descripcion_Componentes.htm
+Instruciones_Instalacion.htm
+Soporte.htm
+Limitaciones.htm
+Descripcion.htm
+Configuracion_Interface.htm
+Title.htm
+Solucion_de_problemas.htm
+BSSCDHTM.js
+eHelp.xml
+
+ug_GenericInterface.brs
+[ALIAS]
+#include ug_GenericInterface.ali
+
+[MAP]
+
+[TEXT POPUPS]
+
+

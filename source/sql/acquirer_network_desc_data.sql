@@ -1,0 +1,6 @@
+INSERT [dbo].[acquirer_network_desc] ([key], [netWorkDescription]) VALUES (N'0003 0003', N'Red Servibanca')
+INSERT [dbo].[acquirer_network_desc] ([key], [netWorkDescription]) VALUES (N'0013 0013', N'Red Redeban')
+INSERT [dbo].[acquirer_network_desc] ([key], [netWorkDescription]) VALUES (N'005410001', N'Red aval (Bco Bta)')
+INSERT [dbo].[acquirer_network_desc] ([key], [netWorkDescription]) VALUES (N'005410002', N'Red aval (Bco Ppl)')
+INSERT [dbo].[acquirer_network_desc] ([key], [netWorkDescription]) VALUES (N'005410023', N'Red aval (Bco Occ)')
+INSERT [dbo].[acquirer_network_desc] ([key], [netWorkDescription]) VALUES (N'005410052', N'Red aval (Bco AvV)')

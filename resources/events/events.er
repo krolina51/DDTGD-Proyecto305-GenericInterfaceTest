@@ -1,0 +1,243 @@
+[Global]
+CompilerVersion		=	1.0
+Language			=	English
+SupportInterfaces	=	GenericInterface1
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------
+
+[Events]
+
+EventId			=	10000
+EventName		=	IncorrectRuntimeParameters
+Categories		=	Error, OperationalState, Initialization
+Description		=	The %1 interface cannot initiate because doesn't have enough parameters.
+Action			=	Please configure the parameters required. You can see the user guide.
+Message			=	The %1 interface cannot initiate because doesn't have enough parameters. It requires %2 parameters but has %3 configured. The parameters configured are %4.
+Parameter1		=	InterchangeContext: The name of the interchange.
+Parameter2		=	Detail[1]: Number of expected parameters. 
+Parameter3		=	Detail[2]: Number of parameters configured.
+Parameter4		=	Detail[3]: Parameters configured.
+
+EventId			=	+1
+EventName		=	TryCatchException
+Categories		=	Warning, OperationalState, MessageProcessing
+Description		=	Try Catch Exception in method.
+Action			=	Check the catch message generated for method.
+Message			=	Cannot process a Message from interchange %1 with system trace audit number: %5. The error occurred in class %2, method %3. This is the description or the error %4. 
+Parameter1		=	Detail[0]: The name of the interchange.
+Parameter2		=	Detail[1]: Class' Name. 
+Parameter3		=	Detail[2]: Method's Name. 
+Parameter4		=	Detail[3]: Catch Message generated.
+Parameter5		=	Detail[4]: System Trace Audit Number.
+
+EventId			=	+1
+EventName		=	InvalidMacRdbnNtwrk
+Categories		=	Warning, OperationalState, MessageProcessing
+Description		=	Cannot process a Message from interchange.
+Action			=	Please that the message recieved is correct compared with the message sent by the remote.
+Message			=	Cannot process a Message from interchange with system trace audit number: %1.
+Parameter1		=	Detail[0]: Value of field 11.
+
+EventId			=	+1
+EventName		=	InvalidMessage
+Categories		=	Warning, OperationalState, MessageProcessing
+Description		=	Messsage has some error in its fields.
+Action			=	Please check the transaction in the traces.
+Message			=	Message has been validated and interchange found format errors in some fields. Here a desription: %1
+Parameter1		=	Detail[0]: Description of error.
+
+EventId			=	+1
+EventName		=	SQLExceptionEvent
+Categories		=	Warning, OperationalIssue, DatabaseError
+Description		=	There is a problem connecting with the database o executing a query.
+Action			=	Please contact with the Database Administrator.
+Message			=	There is a problem connecting with %1 database or executing this sentences %2 on that database. This is message exception: %3.
+Parameter1		=	Detail[0]: Database.
+Parameter2		= 	Detail[1]: Sentence to execute on database.
+Parameter3		= 	Detail[2]: Exception.
+
+EventId			=	+1
+EventName		=	UnsupportedNmi
+Categories		=	Warning, OperationalState, MessageProcessing
+Description		=	The %1 interface cannot process a Network Management Request from interchange.
+Action			=	Please contact with the remote administrator to recieve the correct code.
+Message			=	The %1 interface cannot process a Network Management Request from interchange, because Network Management Information Code: %2 is not valid.
+Parameter1		=	Detail[0]: The name of the interchange.
+Parameter2		=	Detail[1]: Value of field 70. 
+
+EventId			=	+1
+EventName		=	SourceKeyExchangeInitiated
+Categories		=	Informational, OperationalState, MessageProcessing
+Description		=	Notification of a source key exchange.
+Action			=	None.
+Message			=	%1 has initiated a source key exchange.
+Parameter1		=	Detail[0]: Interchange Name.
+
+EventId			=	+1
+EventName		=	SourceNodeKeyNotConfigured
+Categories		=	Warning, OperationalState, MessageProcessing
+Description		=	KWP Key is not configuired.
+Action			=	Verify if it is necessary to configure the KWP Key, however interchange has created one.
+Message			=	%1 has not configured a KWP Key.
+Parameter1		=	Detail[0]: Interchange Name.
+
+EventId			=	+1
+EventName		=	SourceKeyGenerationFailed
+Categories		=	Error, OperationalState, MessageProcessing
+Description		=	KWP Key generation has failed.
+Action			=	Please contact your administrator.
+Message			=	%1 tried to generate a KWP key but the process failed.
+Parameter1		=	Detail[0]: Interchange Name.
+
+EventId         =   +1
+EventName       =   MissingField053SecurityInfo
+Categories      =   Warning, OperationalState, MessageProcessing
+Message         =   Field 53 "Security Info" is not in message 0800 to Key Exchange for interchange %1.
+Description     =   None.
+Action          =   Please, contact with your support sofware provider.
+Parameter1		=	Detail[0]: Interchange Name.
+
+EventId         =   +1
+EventName       =   InvalidTypeKey
+Categories      =   Warning, OperationalState
+Message         =   The MAC key to exchange is not supported in this software version for interchange %1.
+Description     =   None.
+Action          =   Unspecified
+Parameter1		=	Detail[0]: Interchange Name.
+
+EventId         =   +1
+EventName       =   MissingKeyOnField_123CryptoServiceMsg
+Categories      =   Warning, OperationalState, MessageProcessing
+Message         =   New Key Loading will fail. Interchange %1 has received field 123 "Crypto Service Message" in key exchange message does not have the encrypted key.
+Description     =   None.
+Action          =   Please, contact with in charge person in remote entity.
+Parameter1		=	Detail[0]: Interchange Name.
+
+​
+EventId         =   +1
+EventName       =   InvalidLenghtCryptoKeyIdll
+Categories      =   Error, OperationalState, MessageProcessing
+Message         =   The length key loaded for interchange %1 has different lenght compared with the cryptogram received in Field 123 "KD/" of  Key Exchange Message 0800.
+Description     =   None.
+Action          =   Verify that lengths are the same.
+Parameter1		=	Detail[0]: Interchange Name.
+
+EventId         =   +1
+EventName       =   IncorrectLengthField_120KeyManagement
+Categories      =   Warning, OperationalState, MessageProcessing
+Message         =   New Key loading fails. Field 120 "Key Management" recieved in key exchange message 0800 has a incorrect lenght. In interchange %1.
+Description     =   None.
+Action          =   Unspecified
+Parameter1		=	Detail[0]: Interchange Name.
+
+EventId         =   +1
+EventName       =   InvalidDataField_120KeyManagement
+Categories      =   Warning, OperationalState, MessageProcessing
+Message         =   New Key Loading fails. Field 120 "Key Managemnt" received in key exchange message(0800) contains an invalid value. This field should have only these characters 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, B, C, E, or F. %1 interface failed.
+Description     =   None.
+Action          =   Unspecified
+Parameter1		=	Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    SucessfullSourceKeyLoad
+Categories      =    Informational, OperationalState, MessageProcessing
+Message         =    Origin Key has been loaded successfully for interchange %1.
+Description     =    Source KWP key has been loaded successfully for interchange %1.
+Action          =    None.
+Parameter1		=	 Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    InvalidSourceKeyLoaded
+Categories      =    Error, OperationalState
+Message         =    There was an error while loading a key at source node for the interchage %1.
+Description     =    None.
+Action          =    Please, Check the user guide for more information about key managing at source node.
+Parameter1		=	 Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    InvalidDataField_123CryptoServiceMsg
+Categories      =    Warning, OperationalState, MessageProcessing
+Message         =    New key loading fails.Field 123 "Crypto Service Message" that was received in key exhange message (0800) has invalid data. In positions of cryptogram "KD/" of this field should be this characters 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, B, C, E, or F. Node %1 was recieved this message.
+Description     =    Please, contact with in charge person in remote entity.
+Action          =    Unspecified
+Parameter1		=	 Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    MissingField_120KeyManagement
+Categories      =    Warning, OperationalState, MessageProcessing
+Message         =    New Key Loading fails. Field 120 "Key Management" was not in key exchange message 0800. This Field should have check digits of new key that is in field 123 "Crypto Service Message". Interchange %1.
+Description     =    None.
+Action          =    Unspecified
+Parameter1		=	 Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    InvalidSinkKeyLoaded
+Categories      =    Error, OperationalState
+Message         =    There was an error while interchange %1 was trying to load a key for the sink node. 
+Description     =    None.
+Action          =    Please, check the user guide for more information about key managing for sink node.
+Parameter1		=	 Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    SucessfullSinkKeyLoad
+Categories      =    Informational, OperationalState
+Message         =    Destinity Key has been load successfully for interchage %1.
+Description     =    None.
+Action          =    None.
+Parameter1		=	 Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    SourceNodeKeyReceivedByNonsourceNode
+Categories      =    Warning, OperationalState
+Message         =    Interchange %1 has received a key exchange message to a source node. However, %1 does not have a source node associeted. 
+Description     =    None.
+Action          =    Please, verify that %1 has a source node configuired.
+Parameter1		=	 Detail[0]: Interchange Name.
+​
+EventId         =    +1
+EventName       =    SinkNodeKeyReceivedByNonsinkNode
+Categories      =    Error, OperationalState
+Message         =    Interchange %1 has received a key exchange message to a sink node. However, %1 does not have a sink node associeted.
+Description     =    None.
+Action          =    Please, verify that %1 has a sink node configuired.
+Parameter1		=	 Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    InvalidAddressKey
+Categories      =    Warning, OperationalState
+Message         =    key-exchange-request fails for interchange %1. Invalid direction of key has been detected.
+Description     =    None.
+Action          =    Please, check if key direction is '03'  (Inbound and Outbound Key).
+Parameter1		=	 Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    SinkNodeKeyNotConfigured
+Categories      =    Error, OperationalState
+Description     =    KWP Key is not configuired.
+Action          =    Verify if it is necessary to configure the KWP Key, however interchange has created one.
+Message         =    There was a error while trying to gene for sink node of interchange %1. Verify that sink node has been configuired to use any Pin encryption key. Please, check the user guide for more information about key configuration.
+Parameter1      =    Detail[0]: Interchange Name.
+
+EventId         =    +1
+EventName       =    CannotProcessAcqReconRspFromRemote
+Categories      =    Warning, OperationalState, MessageProcessing
+Message         =    Message "Acquirer Reconciliation Request Response" (0510) recieved of interchange %1 was discarded. The Original message "Acquirer Reconciliation Advice" (0520) received from Postilion was not found.
+Description     =    None.
+Action          =    Unspecified
+Parameter1      =    Detail[0]: Interchange Name.
+
+EventId			=	+1
+EventName		=	KeyExchangeReqFailed
+Categories		=	Warning, OperationalState
+Message			=	Key Exchange Request fails on interchange %1. 
+Description		=	None.
+Action			=	Please send again the set KEYEXCHANGE command.
+Parameter1      =   Detail[0]: Interchange Name.
+
+EventId			=	+1
+EventName		=	SignedOn
+Categories		=	Informational, OperationalState
+Message			=	Sign On over interchange" %1 was successful.
+Description		=	Unspecified.
+Action			=	None.
+Parameter1      =   Detail[0]: Interchange Name.

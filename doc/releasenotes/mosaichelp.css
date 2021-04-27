@@ -1,0 +1,381 @@
+/*=(===============================================================)*/
+
+/*=(===============================================================)*/
+/*=(Created with RoboEditor.)=======================================*/
+/*=(===============================================================)*/
+
+
+/*begin-old-version{{*/
+
+ /* $MVD$:color("18","80ffff","MosaicLightYellow","1") */
+ /* $MVD$:fontset("Normal","Verdana","Arial") */
+ /* $MVD$:fontset("Heading","Arial Black") */
+ /* $MVD$:fontset("Monospace","Courier New") */
+ /* $MVD$:fontset("Arial","Arial") */
+ CITE.expandspot { font-style : normal;
+                   color : green;
+                   cursor: hand;}
+ .mvd-CITE-expandspot { font-style : normal;
+                        color : green;
+                        cursor: hand;}
+ DFN.collapsed { font-style : italic;
+                 font-weight : normal;
+                 display :               'none';
+                 color : red;}
+ .mvd-DFN-collapsed { font-style : italic;
+                      font-weight : normal;
+                      display :               'none';
+                      color : red;}
+ DFN.expanded { font-style : italic;
+                font-weight : normal;
+                color : red;}
+ .mvd-DFN-expanded { font-style : italic;
+                     font-weight : normal;
+                     color : red;}
+ EM.dropspot { color : green;
+               cursor: hand;}
+ .mvd-EM-dropspot { color : green;
+                    cursor: hand;}
+ P { font-family : "Verdana", "Arial";
+     font-size : 9.0pt;
+     color : black;}
+ .mvd-P { font-family : "Verdana", "Arial";
+          font-size : 9.0pt;
+          color : black;}
+ H1 { font-family : "Arial Black";
+      font-weight : normal;
+      font-size : 14.0pt;
+      color : navy;
+      border-bottom : solid teal 1.0pt;}
+ .mvd-H1 { font-family : "Arial Black";
+           font-weight : normal;
+           font-size : 14.0pt;
+           color : navy;}
+ PRE { font-family : "Courier New";
+       font-size : 9.0pt;
+       color : black;}
+ .mvd-PRE { font-family : "Courier New";
+            font-size : 9.0pt;
+            color : black;}
+ H2 { font-family : "Arial";
+      font-weight : bold;
+      font-size : 12.0pt;
+      color : navy;}
+ .mvd-H2 { font-family : "Arial";
+           font-weight : bold;
+           font-size : 12.0pt;
+           color : navy;}
+ H3 { font-family : "Arial";
+      font-weight : bold;
+      font-size : 12.0pt;
+      color : teal;}
+ .mvd-H3 { font-family : "Arial";
+           font-weight : bold;
+           font-size : 12.0pt;
+           color : teal;}
+ H4 { font-family : "Arial";
+      font-weight : bold;
+      font-size : 12.0pt;
+      color : purple;}
+ .mvd-H4 { font-family : "Arial";
+           font-weight : bold;
+           font-size : 12.0pt;
+           color : purple;}
+ H5 { font-family : "Arial";
+      font-weight : bold;
+      font-size : 12.0pt;
+      color : black;}
+ .mvd-H5 { font-family : "Arial";
+           font-weight : bold;
+           font-size : 12.0pt;
+           color : black;}
+ H6 { font-family : "Verdana", "Arial";
+      font-weight : bold;
+      font-size : 10.0pt;
+      color : black;}
+ .mvd-H6 { font-family : "Verdana", "Arial";
+           font-weight : bold;
+           font-size : 10.0pt;
+           color : black;}
+ P.Highlight { background-color : #FFFF80;
+               color : navy;}
+ .mvd-P-Highlight { background-color : #FFFF80;
+                    color : navy;}
+ A:active { text-decoration :underline;
+            color : red;}
+ A:visited { text-decoration :underline;
+             color : purple;}
+ A:link { text-decoration :underline;
+          color : blue;}
+ BODY { font-family : "Verdana", "Arial";
+        font-size : 9.0pt;
+        background-color : white;
+        color : black;}
+ .mvd-BODY { font-family : "Verdana", "Arial";
+             font-size : 9.0pt;
+             background-color : white;
+             color : black;}
+ 
+ CITE.glossterm { font-style : normal;
+		color : maroon;
+		cursor : hand;}
+ .mvd-CITE-glossterm { font-style : normal;
+		color : maroon;
+		cursor : hand;}
+ DFN.glosscollapsed { font-style : italic;
+		font-weight : normal;
+		display : 'none';
+		color : blue;}
+ .mvd-DFN-glosscollapsed { font-style : italic;
+		font-weight : normal;
+		display : 'none';
+		color : blue;}
+ DFN.glossexpanded { font-style : italic;
+		font-weight : normal;
+		color : blue;}
+ .mvd-DFN-glossexpanded { font-style : italic;
+		font-weight : normal;
+		color : blue;}
+
+/*}}end-old-version*/
+P {
+	font-family: Verdana, Arial;
+	font-size: 9.0pt;
+	color: #000000;
+}
+
+/*=(Generated Code)=================================================*/
+/*=(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)===================*/
+/*begin!kadov{{=====================================================*/ 
+LI.kadov-P {
+	font-family: Verdana, Arial;
+	font-size: 9.0pt;
+	color: #000000;
+}
+/*}}end!kadov=======================================================*/ 
+
+
+
+H1 {
+	font-family: "Arial Black";
+	font-weight: normal;
+	font-size: 14.0pt;
+	color: #000080;
+	border-bottom: solid #008080 1.0pt;
+}
+
+/*=(Generated Code)=================================================*/
+/*=(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)===================*/
+/*begin!kadov{{=====================================================*/ 
+LI.kadov-H1 {
+	font-family: "Arial Black";
+	font-weight: normal;
+	font-size: 14.0pt;
+	color: #000080;
+}
+/*}}end!kadov=======================================================*/ 
+
+
+
+H2 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 12.0pt;
+	color: #000080;
+}
+
+/*=(Generated Code)=================================================*/
+/*=(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)===================*/
+/*begin!kadov{{=====================================================*/ 
+LI.kadov-H2 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 12.0pt;
+	color: #000080;
+}
+/*}}end!kadov=======================================================*/ 
+
+
+
+H3 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 12.0pt;
+	color: #008080;
+}
+
+/*=(Generated Code)=================================================*/
+/*=(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)===================*/
+/*begin!kadov{{=====================================================*/ 
+LI.kadov-H3 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 12.0pt;
+	color: #008080;
+}
+/*}}end!kadov=======================================================*/ 
+
+
+
+H4 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 12.0pt;
+	color: #800080;
+}
+
+/*=(Generated Code)=================================================*/
+/*=(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)===================*/
+/*begin!kadov{{=====================================================*/ 
+LI.kadov-H4 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 12.0pt;
+	color: #800080;
+}
+/*}}end!kadov=======================================================*/ 
+
+
+
+H5 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 12.0pt;
+	color: #000000;
+}
+
+/*=(Generated Code)=================================================*/
+/*=(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)===================*/
+/*begin!kadov{{=====================================================*/ 
+LI.kadov-H5 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 12.0pt;
+	color: #000000;
+}
+/*}}end!kadov=======================================================*/ 
+
+
+
+H6 {
+	font-family: Verdana, Arial;
+	font-weight: bold;
+	font-size: 10.0pt;
+	color: #000000;
+}
+
+/*=(Generated Code)=================================================*/
+/*=(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)===================*/
+/*begin!kadov{{=====================================================*/ 
+LI.kadov-H6 {
+	font-family: Verdana, Arial;
+	font-weight: bold;
+	font-size: 10.0pt;
+	color: #000000;
+}
+/*}}end!kadov=======================================================*/ 
+
+
+
+P.Highlight {
+	background-color: #FFFF80;
+	color: #000080;
+}
+
+/*=(Generated Code)=================================================*/
+/*=(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)===================*/
+/*begin!kadov{{=====================================================*/ 
+LI.kadov-P-CHighlight {
+	color: #000080;
+}
+/*}}end!kadov=======================================================*/ 
+
+
+
+A:active {
+	x-text-underline: normal;
+	color: #ff0000;
+	/*begin!kadov{{*/ text-decoration: underline; /*}}end!kadov*/ 
+}
+
+A:visited {
+	x-text-underline: normal;
+	color: #800080;
+	/*begin!kadov{{*/ text-decoration: underline; /*}}end!kadov*/ 
+}
+
+A:link {
+	x-text-underline: normal;
+	color: #0000ff;
+	/*begin!kadov{{*/ text-decoration: underline; /*}}end!kadov*/ 
+}
+
+BODY {
+	font-family: Verdana, Arial;
+	font-size: 9.0pt;
+	background-color: #ffffff;
+	color: #000000;
+}
+
+A.expandspot {
+	cursor: hand;
+	color: #008000;
+	font-style: normal;
+}
+
+SPAN.expandtext {
+	color: #ff0000;
+	font-weight: normal;
+	font-style: italic;
+}
+
+A.dropspot {
+	font-style: italic;
+	cursor: hand;
+	color: #008000;
+}
+
+P.Preformatted {
+	line-height: normal;
+	margin-bottom: 14pt;
+	margin-top: 14pt;
+	x-text-tab-stops: repeat 1in;
+	white-space: nowrap;
+	color: #000000;
+	font-size: 9.0pt;
+	font-family: "Courier New";
+}
+
+/*=(Generated Code)=================================================*/
+/*=(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)===================*/
+/*begin!kadov{{=====================================================*/ 
+LI.kadov-P-CPreformatted {
+	line-height: normal;
+	x-text-tab-stops: repeat 1in;
+	white-space: nowrap;
+	color: #000000;
+	font-size: 9.0pt;
+	font-family: "Courier New";
+}
+/*}}end!kadov=======================================================*/ 
+
+
+
+A.glossterm {
+	cursor: hand;
+	color: #800000;
+	font-style: normal;
+}
+
+SPAN.glosstext {
+	color: #0000ff;
+	font-weight: normal;
+	font-style: italic;
+}
+
+
+/*=(===============================================================)*/
+
+.Bullets {
+	list-style-type: disc;
+}

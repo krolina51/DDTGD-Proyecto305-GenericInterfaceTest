@@ -1,0 +1,261 @@
+<HTML>
+	<HEAD>
+		<!-- $MVD$:app("RoboHELP HTML Edition by Blue Sky Software, portions by MicroVision Dev. Inc.","769") -->
+		<!-- $MVD$:template("","0","0") -->
+		<!-- $MVD$:color("18","80ffff","MosaicLightYellow","0") -->
+		<!-- $MVD$:fontset("Normal","Verdana","Arial") -->
+		<!-- $MVD$:fontset("Heading","Arial Black") -->
+		<!-- $MVD$:fontset("Monospace","Courier New") -->
+		<!-- $MVD$:fontset("Arial","Arial") -->
+		<TITLE>Configuraci&oacute;n Interface</TITLE>
+		<META NAME="generator" CONTENT="RoboHELP by Blue Sky Software www.blue-sky.com HTML Edition">
+		<SCRIPT LANGUAGE="javascript" TITLE="BSSC Special Effects" SRC="BSSCDHTM.js">
+		</SCRIPT>
+		<LINK REL="StyleSheet" HREF="MosaicHelp.css"></HEAD>
+	<BODY ONLOAD="BSSCOnLoad();" ONCLICK="BSSCOnClick();" ONUNLOAD="BSSCOnUnload();">
+		<H1>
+			&nbsp;Configuraci&oacute;n Interfaz&nbsp;</H1>
+		<P>
+			En la consola de <I>Realtime Management Console</I> extender el men&uacute; <I>Configuration</I> y hay extender el men&uacute; <I>Realtime Framework </I>, all&iacute; seleccionar <I>Applications</I>, esto nos abre una consola en donde debemos seleccionar la pesta&ntilde;a <I>Interchanges</I>.</P>
+		<H2>Interchange</H2>
+		<P>Cree una nueva Interchange:</P>
+		<P>
+			<TABLE CELLPADDING="2" CELLSPACING="0" BORDER="1">
+				<TR>
+					<TD BGCOLOR="SILVER" VALIGN=TOP>
+						<P><SPAN STYLE="font-weight : bold;">Variable</SPAN></TD>
+					<TD BGCOLOR="SILVER" VALIGN=TOP>
+						<P><SPAN STYLE="font-weight : bold;">Escenario</SPAN></TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>Interface</TD>
+					<TD VALIGN=TOP>
+						<P>GenericInterface</TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>Interchange</TD>
+					<TD VALIGN=TOP>
+						<P>Establecer un nombre adecuado.</TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>Source Node</TD>
+					<TD VALIGN=TOP>
+						<P>
+							Seleccione el nombre del nodo source creado en la pagina <SPAN STYLE="font-weight : bold;">Source
+							Nodes </SPAN><SPAN STYLE="font-weight : normal;">de el </SPAN><SPAN STYLE="font-weight : bold;">Transaction
+							Manager Configurator</SPAN>.</TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>
+							<FONT COLOR="BLACK">User Parameters</FONT></TD>
+					<TD VALIGN=TOP>
+						<P>
+							Estos son descritos en la siguiente 
+							sub-secci&oacute;n &quot;par&aacute;metros de usuario&quot;. Estos 
+							par&aacute;metros deben ser separados por espacio en blanco.</TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>
+							Support Team</TD>
+					<TD VALIGN=TOP>
+						<P>
+							Tipicamente <SPAN STYLE="font-style : italic;">&lt;none&gt;</SPAN></TD>
+				</TR>
+			</TABLE></P>
+		<UL>
+			<P>
+				Par&aacute;metros de Usuario:</P>
+				<TABLE CELLPADDING="2" CELLSPACING="0" BORDER="1">
+					<TR>
+						<TD BGCOLOR="SILVER" VALIGN=TOP>
+							<P>
+								<SPAN STYLE="font-weight : bold;">Parametro</SPAN></TD>
+						<TD BGCOLOR="SILVER" VALIGN=TOP>
+							<P>
+								<SPAN STYLE="font-weight : bold;">Descripci&oacute;n</SPAN></TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>
+								Tiempo de Retenci&oacute;n</TD>
+						<TD VALIGN=TOP>
+							<P>
+								Tiempo en milisegundos que la interfaz va a mantener en memoria los mensajes que han llegado.</TD>
+						</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>Validaci&oacute;n de MAC</TD>
+						<TD VALIGN=TOP>
+							<P>Valor l&oacute;gico. Si es true indica validaci&oacute;n de MAC de lo contrario no realiza la validaci&oacute;n.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>LLave KWA</TD>
+						<TD VALIGN=TOP>
+							<P>Llave para realizar la validaci&oacute;n de MAC.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>Envio SignOn hacia Remoto</TD>
+						<TD VALIGN=TOP>
+							<P>
+								0/1: Se coloca el valor de 0 para que cuando la interfaz inicie y se conecte a remoto no genere ni envie el mensaje 0800 de
+								tipo SIGN ON. Se coloca el valor de 1 para que cuando la interfaz inicie y se conecte a remoto genere y envie el mensaje 0800 de
+								tipo SIGN ON.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>Validaciones de negocio</TD>
+						<TD VALIGN=TOP>
+							<P>
+								true, si desea realizar validaciones de negocio, de lo contrario false.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>Envio notificaciones</TD>
+						<TD VALIGN=TOP>
+							<P>
+								true, si desea enviar notificaciones hacia <i>Transaction Manager</i> de las declinaciones realizadas por la interfaz,
+								de lo contrario false.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>Issuer</TD>
+						<TD VALIGN=TOP>
+							<P>
+								N&uacute;mero del issuer dentro de Postcard. Para la consulta de informaci&oacute;n de cuentas.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>IP logger</TD>
+						<TD VALIGN=TOP>
+							<P>
+								IP del servidor <i>UDP</i> para guarda la informaci&oacute;n de monitoreo de la interfaz.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>Puerto logger</TD>
+						<TD VALIGN=TOP>
+							<P>
+								Puerto del servidor <i>UDP</i> para guarda la informaci&oacute;n de monitoreo de la interfaz.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>Consulta Convenios</TD>
+						<TD VALIGN=TOP>
+							<P>
+								true, para realizar consulta de convenios en la interfaz.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>Codificar Info</TD>
+						<TD VALIGN=TOP>
+							<P>
+								true, para codificar la información sensible de los tags del campo 127.22 en base 64.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>Enrutamiento</TD>
+						<TD VALIGN=TOP>
+							<P>
+								0, para enrutar en base al modulo del campo 11, si es impar enruta hacia la interchange con el puerto de ahorros del coordinador,
+								si es par enruta hacia la interchange con el puerto de corriente del coordinador. 10 para enrutar hacia la interchange con el 
+								puerto de ahorros del coordinador. 20 para enrutar hacia la interchange con el puerto de corriente del coordinador.</TD>
+					</TR>
+					<TR>
+						<TD VALIGN=TOP>
+							<P>URL CUT</TD>
+						<TD VALIGN=TOP>
+							<P>
+								http://ateneams07d.banbta.net:31301/api/entities?name=TxHomologadaxAplicacion, URL para establecer conexi&oacute;n a servico REST y realizar consulta del CUT.</TD>
+					</TR>
+                    <TR>
+						
+                        <TD VALIGN=TOP>
+							<P>IP Token 
+                         </TD>
+						<TD VALIGN=TOP>
+							<P>
+								<p>IP que consumimos para el servicio de activaci&oacute;n de token.</p>
+                         </TD>
+					</TR>
+                    <TR>
+						
+                        <TD VALIGN=TOP>
+							<P>PORT Token 
+                         </TD>
+						<TD VALIGN=TOP>
+							<P>
+								<p>Puerto que consumimos para el servicio de activaci&oacute;n de token.</p>
+                         </TD>
+					</TR>
+                    
+                    
+				</TABLE></P></UL>
+		<H2>
+			SAP</H2>
+		<P>
+			En el panel SAPs, creamos una SAP nueva, el siguiente cuadro muestra las principales configuraciones a realizar en esta nueva SAP:</P>
+		<P>
+			<TABLE CELLPADDING="2" CELLSPACING="0" BORDER="1">
+				<TR>
+					<TD BGCOLOR="SILVER" VALIGN=TOP>
+						<P>
+							<SPAN STYLE="font-weight : bold;">Variable</SPAN></TD>
+					<TD BGCOLOR="SILVER" VALIGN=TOP>
+						<P>
+							<SPAN STYLE="font-weight : bold;">Setting</SPAN></TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>
+							<FONT COLOR="BLACK">SAP</FONT></TD>
+					<TD VALIGN=TOP>
+						<P>
+							<FONT COLOR="BLACK">Es el nombre que va a tener la SAP. El producto genera uno por defecto. Se sugiere dejar el mismo.</FONT></P>
+					</TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>Type</TD>
+					<TD VALIGN=TOP>
+						<P>Seleccione <I>server</I>. Pues la interfaz va esperar conexiones desde la NixBridge Banco de Bogot&aacute;.</TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>Protocol</TD>
+					<TD VALIGN=TOP>
+						<P>Seleccione <I>(TCP/IP) Postilion</I>.</TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>IP Address</TD>
+					<TD VALIGN=TOP>
+						<P>No se especifica ninguna. Pues como se definio como tipo server, la interfaz solo va a esperar conexiones.</TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>Port Number</TD>
+					<TD VALIGN=TOP>
+						<P>Cualquier puerto valido. Verificar que no este uso.</TD>
+				</TR>
+				<TR>
+					<TD VALIGN=TOP>
+						<P>Max Connections</TD>
+					<TD VALIGN=TOP>
+						<P>Especificar el m&aacute;ximo de conexiones que va permitir.</TD>
+				</TR>
+			</TABLE></P>
+		<P>
+			<!-- $MVD$:spaceretainer() -->&nbsp;</P>	
+		<P>
+			<!-- $MVD$:spaceretainer() -->&nbsp;</P>
+		<H2>
+			<!-- $MVD$:spaceretainer() -->&nbsp;
+	</BODY>
+</HTML>

@@ -1,0 +1,1 @@
+UPDATE cust_equivalent_response_codes SET code_b24 = '47', code_iso ='47', active = '1'  WHERE code_isc = '0341'

@@ -1,0 +1,33 @@
+[OPTIONS]
+Compiled File=rn_GenericInterface.chm
+Title=GenericInterface Release Notes
+Index File=rn_GenericInterface.hhk
+Default topic=
+Default Window=NewWindow
+Error log file=
+Display compile progress=No
+Display compile notes=No
+Full-text search=Yes
+Binary Index=No
+Auto Index=No
+Enhanced decompilation=No
+Binary TOC=No
+Flat=No
+
+[WINDOWS]
+NewWindow="GenericInterface Release Notes",,,"","",,,,,0x0,0,0x200e,[0,0,724,697],0x0,0x0,,0,0,0
+
+[FILES]
+rn_GenericInterface.htm
+BSSCDHTM.js
+eHelp.xml
+
+rn_GenericInterface.brs
+[ALIAS]
+#include rn_GenericInterface.ali
+
+[MAP]
+
+[TEXT POPUPS]
+
+

@@ -1,0 +1,20 @@
+--[BEGIN OBJECT: NAME(GenericInterface_proc_7) GROUP(PROCEDURE) TYPE(SQL) ID(10007)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GET_customer_id_default_account_type_NAME]') AND type in (N'P', N'PC'))
+	BEGIN
+		DROP PROCEDURE [dbo].[GET_customer_id_default_account_type_NAME]
+	END
+--[END OBJECT: ID(10007)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_proc_8) GROUP(PROCEDURE) TYPE(SQL) ID(10008)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GET_customer_id_default_account_type_NAME_CNB]') AND type in (N'P', N'PC'))
+	BEGIN
+		DROP PROCEDURE [dbo].[GET_customer_id_default_account_type_NAME_CNB]
+	END
+--[END OBJECT: ID(10008)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_proc_9) GROUP(PROCEDURE) TYPE(SQL) ID(10009)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[pc_get_account_aditional_data]') AND type in (N'P', N'PC'))
+	BEGIN
+		DROP PROCEDURE [dbo].[pc_get_account_aditional_data]
+	END
+--[END OBJECT: ID(10009)]--

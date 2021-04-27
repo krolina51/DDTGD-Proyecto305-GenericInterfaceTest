@@ -1,0 +1,10 @@
+{
+  "cfgRetentionPeriod":"360000",
+  "cfgValidateMAC":false,
+  "cfgKwaName":"DesarrolloBog_KWA",
+  "sSignOn":"0",
+  "issuerId":"3",
+  "cfgIpUdpServer":"10.89.0.172",
+  "cfgPortUdpServer":"17",
+  "create0220ToTM":true
+}

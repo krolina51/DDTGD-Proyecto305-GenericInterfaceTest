@@ -1,0 +1,90 @@
+<html>
+<!-- Sitemap 1.0 -->
+<object type="text/site properties">
+  <param name="FrameName" value="right">
+  <param name="SiteType" value="toc">
+  <param name="Window Styles" value="0x800022">
+  <param name="ExWindow Styles" value="0x100">
+</object>
+<ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Introducción">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Descripción">
+      <param name="Local" value="Descripcion.htm">
+    </object>
+    <!-- <li><object type="text/sitemap">
+      <param name="Name" value="Limitaciones">
+      <param name="Local" value="Limitaciones.htm">
+    </object> -->
+    <li><object type="text/sitemap">
+      <param name="Name" value="Soporte">
+      <param name="Local" value="Soporte.htm">
+    </object>
+    </ul>
+	<li><object type="text/sitemap">
+    <param name="Name" value="Data Security Standards">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Data Security Standards">
+      <param name="Local" value="PCI_DSS_Compliancy.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Instalación">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Instruciones de Instalación">
+      <param name="Local" value="Instruciones_Instalacion.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Componentes">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Descripción">
+      <param name="Local" value="Descripcion_Componentes.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Configuración">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Descripción">
+      <param name="Local" value="Descripcion_Configuracion.htm">
+    </object>
+    <!--<li><object type="text/sitemap">
+      <param name="Name" value="Configuración Criptográfica">
+      <param name="Local" value="Configuracion_Criptografica.htm">
+    </object> -->
+    <li><object type="text/sitemap">
+      <param name="Name" value="Configuración de la Interfaz">
+      <param name="Local" value="Configuracion_Interface.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Control / Monitoreo">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="Instruciones Control / Monitor ">
+      <param name="Local" value="Instruciones_Control_Monitor.htm">
+    </object>
+    </ul>
+  <li><object type="text/sitemap">
+    <param name="Name" value="Solución de problemas">
+  </object>
+  <ul>
+    <li><object type="text/sitemap">
+      <param name="Name" value="descripción">
+      <param name="Local" value="Solucion_de_problemas.htm">
+    </object>
+    </ul>
+</ul>
+</html>

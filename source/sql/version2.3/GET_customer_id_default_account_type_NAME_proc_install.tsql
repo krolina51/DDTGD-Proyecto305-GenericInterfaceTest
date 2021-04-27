@@ -1,0 +1,55 @@
+--[BEGIN OBJECT: NAME(GenericInterface_proc_1) GROUP(PROCEDURE) TYPE(SQL) ID(2050100)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GET_customer_id_default_account_type_NAME]') AND type in (N'P', N'PC'))
+	BEGIN
+		DROP PROCEDURE [dbo].[GET_customer_id_default_account_type_NAME]
+	END
+--[END OBJECT: ID(2050100)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_proc_2) GROUP(PROCEDURE) TYPE(SQL) ID(2050101)]--
+	CREATE PROCEDURE GET_customer_id_default_account_type_NAME(
+	@pan					VARCHAR(66),
+	@expiry_date			VARCHAR(4),
+	@customer_id			VARCHAR(25) OUTPUT,
+	@default_account_type	CHAR(2) OUTPUT,
+	@name					VARCHAR(28) OUTPUT,
+	@issuer					INT OUTPUT,
+	@extended_fields		VARCHAR(12) OUTPUT,
+	@seq_nr					CHAR(3) OUTPUT,
+	@id_type				CHAR(1) OUTPUT
+	)
+	AS
+	BEGIN
+		DECLARE @issuersNumber INT
+		DECLARE @issuersCounter INT
+		DECLARE @curr_table_cards CHAR(1)
+		DECLARE @sentence NVARCHAR(281) 
+		DECLARE @ParmDefinition nvarchar(173)
+		SET @issuersCounter = 1
+		SELECT @issuersNumber = MAX(issuer_nr) from pc_issuers
+		WHILE @issuersCounter <= @issuersNumber
+		BEGIN 
+			SELECT @curr_table_cards = curr_table_cards FROM pc_issuers (NOLOCK) WHERE issuer_nr = @issuersCounter
+ 
+			SET @sentence = N'SELECT TOP 1 @default_account_type = default_account_type, @customer_id = customer_id, @extended_fields = extended_fields, @seq_nr = seq_nr FROM pc_cards_'+CAST(@issuersCounter AS nvarchar(2))+'_'+@curr_table_cards+' (NOLOCK) WHERE pan = @pan AND expiry_date = @expiry_date'
+			SET @ParmDefinition = N'@pan VARCHAR(66), @expiry_date VARCHAR(4), @default_account_type CHAR(2) OUTPUT, @customer_id VARCHAR(25) OUTPUT, @extended_fields VARCHAR(12) OUTPUT, @seq_nr CHAR(3) OUTPUT' 
+ 
+			EXECUTE sp_executesql @sentence, @ParmDefinition, @pan = @pan, @expiry_date = @expiry_date, @default_account_type = @default_account_type OUTPUT, @customer_id = @customer_id OUTPUT,  @extended_fields = @extended_fields  OUTPUT, @seq_nr = @seq_nr OUTPUT 
+ 
+			SET @sentence =N'SELECT TOP 1 @name = c1_first_name, @id_type = c1_title FROM pc_customers_'+CAST(@issuersCounter AS nvarchar(2))+'_'+@curr_table_cards+' (NOLOCK) WHERE customer_id = @customer_id '
+			SET @ParmDefinition = N'@customer_id VARCHAR(25), @name VARCHAR(28) OUTPUT, @id_type CHAR(1) OUTPUT'  
+ 
+			EXECUTE sp_executesql @sentence, @ParmDefinition, @customer_id = @customer_id, @name = @name OUTPUT,  @id_type = @id_type OUTPUT
+ 
+			IF (@customer_id IS NULL) AND (@default_account_type IS NULL) AND (@name IS NULL) AND (@extended_fields  IS NULL)  AND (@seq_nr IS NULL)
+				BEGIN
+					SET @issuersCounter += 1
+				END
+			ELSE 
+				BEGIN
+					SET @issuer = @issuersCounter
+					SET @issuersCounter = @issuersNumber + 1
+				END  
+		END
+	END
+
+--[END OBJECT: ID(2050101)]--
