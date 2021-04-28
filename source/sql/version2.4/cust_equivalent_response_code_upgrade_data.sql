@@ -1,3 +1,0 @@
-UPDATE [dbo].[cust_equivalent_response_codes] SET [code_b24] = '14', [code_iso] = '14' WHERE [code_isc] = '1047'
-UPDATE [dbo].[cust_equivalent_response_codes] SET [process] = '1' WHERE [code_b24] = 'U8'
-INSERT INTO [dbo].[cust_equivalent_response_codes] ([code_isc], [description_isc], [code_iso],[code_b24], [date], [commision_value],[active],[process]) VALUES ('3159','TRANSAC. 0306 NO PERMITIDA EN PROD.','57','95',GETDATE(),0,'1','1')
