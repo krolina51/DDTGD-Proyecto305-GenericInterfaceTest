@@ -1,0 +1,72 @@
+<HTML>
+	<HEAD>
+		<!-- $MVD$:app("RoboHELP HTML Edition by Blue Sky Software, portions by MicroVision Dev. Inc.","769") -->
+		<!-- $MVD$:template("","0","0") -->
+		<!-- $MVD$:color("18","80ffff","MosaicLightYellow","0") -->
+		<!-- $MVD$:fontset("Normal","Verdana","Arial") -->
+		<!-- $MVD$:fontset("Heading","Arial Black") -->
+		<!-- $MVD$:fontset("Monospace","Courier New") -->
+		<!-- $MVD$:fontset("Arial","Arial") -->
+		<TITLE>Instruciones Control / Monitor </TITLE>
+		<META NAME="generator" CONTENT="RoboHELP by Blue Sky Software www.blue-sky.com HTML Edition">
+		<SCRIPT LANGUAGE="javascript" TITLE="BSSC Special Effects" SRC="BSSCDHTM.js">
+		</SCRIPT><LINK
+		REL="StyleSheet" HREF="MosaicHelp.css"></HEAD>
+	<BODY ONLOAD="BSSCOnLoad();" ONCLICK="BSSCOnClick();" ONUNLOAD="BSSCOnUnload();">
+		<H1>Instruciones de Control / Monitor</H1>
+		<P>
+			La interface Postilion GenericInterface responde a los siguientes comandos 
+			usando <B>Postilion Monitor<SPAN STYLE="font-weight : normal;"> como 
+			se especifica a continuaci&oacute;n:</SPAN></B></P>
+		<H2>TRACE</H2>
+		<UL>
+			<LI CLASS="mvd-P"><P>TRACE &lt;Nombre de la Interchange&gt; &lt;Par&aacute;metro&gt;</P>
+		</UL>
+		<P>
+			<SPAN STYLE="font-weight :">&lt;Nombre de la Interchange&gt;</SPAN>:
+			El nombre asignado a la Interchange</P>
+		<P>&lt;Par&aacute;metro&gt;: ON/OFF/CLEAR/?</P>
+		<P>
+			Si el par&aacute;metro es ON, el trace est&aacute; encendido. Si el par&aacute;metro es OFF, el trace se deshabilita o apaga. Si el 
+			par&aacute;metro es CLEAR los traces que existan ser&aacute;n borrados. Si el par&aacute;metro es ? la interchange retorna si el 
+			trace est&aacute; encendido o apagado.</P>
+		<P>
+			Si el trace est&aacute; encendido o habilitado, el archivo de trace muestra los mensajes de 
+			&lt;Postilion&gt;\Trace\AthNode\&lt;Interchange&gt;. Los archivos del rastro est&aacute;n en formato del HTML y se pueden ver con un 
+			browser del Internet tal como Microsoft Internet Explorer.</P>
+			
+		<H2>SIGN ON</H2>
+		<UL>
+			<LI CLASS="mvd-P"><P>SET &lt;Nombre de la Interchange&gt; &lt;Par&aacute;metro&gt;</P>
+		</UL>
+		<P>
+			<SPAN STYLE="font-weight :">&lt;Nombre de la Interchange&gt;</SPAN>:
+			El nombre asignado a la Interchange</P>
+		<P>&lt;Par&aacute;metro&gt;: SIGN-ON</P>
+		<P>
+			Este comando envia un mensaje administrativo 0800 de tipo SIGN ON hacia la entidad remota. Se identifica porque en el Trace el campo 70
+			contiene el valor de 001</P>
+		<H2>KEY EXCHANGE</H2>
+		<UL>
+			<LI CLASS="mvd-P"><P>SET &lt;Nombre de la Interchange&gt; &lt;Par&aacute;metro&gt;</P>
+		</UL>
+		<P>
+			<SPAN STYLE="font-weight :">&lt;Nombre de la Interchange&gt;</SPAN>:
+			El nombre asignado a la Interchange</P>
+		<P>&lt;Par&aacute;metro&gt;: KEYEXCHANGE</P>
+		<P>
+			Este comando envia un mensaje administrativo 0800 de tipo NEW KEY hacia la entidad remota. Se identifica porque en el Trace el campo 70
+			contiene el valor de 162</P>
+		<H2>ECHO TEST</H2>
+		<UL>
+			<LI CLASS="mvd-P"><P>SET &lt;Nombre de la Interchange&gt; &lt;Par&aacute;metro&gt;</P>
+		</UL>
+		<P>
+			<SPAN STYLE="font-weight :">&lt;Nombre de la Interchange&gt;</SPAN>:
+			El nombre asignado a la Interchange</P>
+		<P>&lt;Par&aacute;metro&gt;: ECHO-TEST</P>
+		<P>
+			Este comando envia un mensaje administrativo 0800 de tipo ECHO TEST hacia la entidad remota. Se identifica porque en el Trace el campo 70
+			contiene el valor de 301</P>
+	</BODY>
+</HTML>

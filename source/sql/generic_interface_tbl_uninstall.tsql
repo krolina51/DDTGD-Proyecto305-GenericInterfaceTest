@@ -1,0 +1,27 @@
+--[BEGIN OBJECT: NAME(GenericInterface_tbl_9) GROUP(NODEX_CUSTOM) TYPE(SQL) ID(20009)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[institution_ids]') AND type in (N'U', N'IT'))
+	BEGIN
+		DROP TABLE [dbo].[institution_ids]
+	END
+--[END OBJECT: ID(20009)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_tbl_10) GROUP(NODEX_CUSTOM) TYPE(SQL) ID(20010)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[acquirer_network_desc]') AND type in (N'U', N'IT'))
+	BEGIN
+		DROP TABLE [dbo].[acquirer_network_desc]
+	END
+--[END OBJECT: ID(20010)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_tbl_11) GROUP(NODEX_CUSTOM) TYPE(SQL) ID(20011)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[cust_equivalent_response_codes]') AND type in (N'U', N'IT'))
+	BEGIN
+		DROP TABLE [dbo].[cust_equivalent_response_codes]
+	END
+--[END OBJECT: ID(20011)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_tbl_12) GROUP(NODEX_CUSTOM) TYPE(SQL) ID(20012)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[cust_tm_config_tran]') AND type in (N'U', N'IT'))
+	BEGIN
+		DROP TABLE [dbo].[cust_tm_config_tran]
+	END
+--[END OBJECT: ID(20012)]--

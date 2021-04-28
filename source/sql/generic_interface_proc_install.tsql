@@ -1,0 +1,168 @@
+--[BEGIN OBJECT: NAME(GenericInterface_proc_1) GROUP(PROCEDURE) TYPE(SQL) ID(10001)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GET_customer_id_default_account_type_NAME]') AND type in (N'P', N'PC'))
+	BEGIN
+		DROP PROCEDURE [dbo].[GET_customer_id_default_account_type_NAME]
+	END
+--[END OBJECT: ID(10001)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_proc_2) GROUP(PROCEDURE) TYPE(SQL) ID(10002)]--
+	CREATE PROCEDURE GET_customer_id_default_account_type_NAME(
+	@pan					VARCHAR(66),
+	@expiry_date			VARCHAR(4),
+	@customer_id			VARCHAR(25) OUTPUT,
+	@default_account_type	CHAR(2) OUTPUT,
+	@name					VARCHAR(28) OUTPUT,
+	@issuer					INT OUTPUT,
+	@extended_fields		VARCHAR(12) OUTPUT,
+	@seq_nr					CHAR(3) OUTPUT
+	)
+	AS
+	BEGIN
+		DECLARE @issuersNumber INT
+		DECLARE @issuersCounter INT
+		DECLARE @curr_table_cards CHAR(1)
+		DECLARE @sentence NVARCHAR(281) 
+		DECLARE @ParmDefinition nvarchar(173)
+		SET @issuersCounter = 1
+		SELECT @issuersNumber = MAX(issuer_nr) from pc_issuers
+		WHILE @issuersCounter <= @issuersNumber
+		BEGIN 
+			SELECT @curr_table_cards = curr_table_cards FROM pc_issuers (NOLOCK) WHERE issuer_nr = @issuersCounter
+ 
+			SET @sentence = N'SELECT TOP 1 @default_account_type = default_account_type, @customer_id = customer_id, @extended_fields = extended_fields, @seq_nr = seq_nr FROM pc_cards_'+CAST(@issuersCounter AS nvarchar(2))+'_'+@curr_table_cards+' (NOLOCK) WHERE pan = @pan AND expiry_date = @expiry_date'
+			SET @ParmDefinition = N'@pan VARCHAR(66), @expiry_date VARCHAR(4), @default_account_type CHAR(2) OUTPUT, @customer_id VARCHAR(25) OUTPUT, @extended_fields VARCHAR(12) OUTPUT, @seq_nr CHAR(3) OUTPUT' 
+ 
+			EXECUTE sp_executesql @sentence, @ParmDefinition, @pan = @pan, @expiry_date = @expiry_date, @default_account_type = @default_account_type OUTPUT, @customer_id = @customer_id OUTPUT,  @extended_fields = @extended_fields  OUTPUT, @seq_nr = @seq_nr OUTPUT 
+ 
+			SET @sentence =N'SELECT TOP 1 @name = c1_first_name FROM pc_customers_'+CAST(@issuersCounter AS nvarchar(2))+'_'+@curr_table_cards+' (NOLOCK) WHERE customer_id = @customer_id '
+			SET @ParmDefinition = N'@customer_id VARCHAR(25), @name VARCHAR(28) OUTPUT'  
+ 
+			EXECUTE sp_executesql @sentence, @ParmDefinition, @customer_id = @customer_id, @name = @name OUTPUT 
+ 
+			IF (@customer_id IS NULL) AND (@default_account_type IS NULL) AND (@name IS NULL) AND (@extended_fields  IS NULL)  AND (@seq_nr IS NULL)
+				BEGIN
+					SET @issuersCounter += 1
+				END
+			ELSE 
+				BEGIN
+					SET @issuer = @issuersCounter
+					SET @issuersCounter = @issuersNumber + 1
+				END  
+		END
+	END
+
+--[END OBJECT: ID(10002)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_proc_3) GROUP(PROCEDURE) TYPE(SQL) ID(10003)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[GET_customer_id_default_account_type_NAME_CNB]') AND type in (N'P', N'PC'))
+	BEGIN
+		DROP PROCEDURE [dbo].[GET_customer_id_default_account_type_NAME_CNB]
+	END
+--[END OBJECT: ID(10003)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_proc_4) GROUP(PROCEDURE) TYPE(SQL) ID(10004)]--
+	CREATE PROCEDURE [dbo].[GET_customer_id_default_account_type_NAME_CNB](
+	@pan					VARCHAR(66),
+	@customer_id			VARCHAR(25) OUTPUT,
+	@default_account_type	CHAR(2) OUTPUT,
+	@name					VARCHAR(28) OUTPUT,
+	@issuer					INT OUTPUT,
+	@extended_fields		VARCHAR(12) OUTPUT,
+	@seq_nr					CHAR(3) OUTPUT
+	)
+	AS
+	BEGIN
+		DECLARE @issuersNumber INT
+		DECLARE @issuersCounter INT
+		DECLARE @curr_table_cards CHAR(1)
+		DECLARE @sentence NVARCHAR(281) 
+		DECLARE @ParmDefinition nvarchar(173)
+		SET @issuersCounter = 1
+		SELECT @issuersNumber = MAX(issuer_nr) from pc_issuers
+		WHILE @issuersCounter <= @issuersNumber
+		BEGIN 
+			SELECT @curr_table_cards = curr_table_cards FROM pc_issuers (NOLOCK) WHERE issuer_nr = @issuersCounter
+ 
+			SET @sentence = N'SELECT TOP 1 @default_account_type = default_account_type, @customer_id = customer_id, @extended_fields = extended_fields, @seq_nr = seq_nr FROM pc_cards_'+CAST(@issuersCounter AS nvarchar(2))+'_'+@curr_table_cards+' (NOLOCK) WHERE pan = @pan'
+			SET @ParmDefinition = N'@pan VARCHAR(66), @default_account_type CHAR(2) OUTPUT, @customer_id VARCHAR(25) OUTPUT, @extended_fields VARCHAR(12) OUTPUT, @seq_nr CHAR(3) OUTPUT' 
+ 
+			EXECUTE sp_executesql @sentence, @ParmDefinition, @pan = @pan, @default_account_type = @default_account_type OUTPUT, @customer_id = @customer_id OUTPUT,  @extended_fields = @extended_fields  OUTPUT, @seq_nr = @seq_nr OUTPUT 
+ 
+			SET @sentence =N'SELECT TOP 1 @name = c1_first_name FROM pc_customers_'+CAST(@issuersCounter AS nvarchar(2))+'_'+@curr_table_cards+' (NOLOCK) WHERE customer_id = @customer_id '
+			SET @ParmDefinition = N'@customer_id VARCHAR(25), @name VARCHAR(28) OUTPUT'  
+ 
+			EXECUTE sp_executesql @sentence, @ParmDefinition, @customer_id = @customer_id, @name = @name OUTPUT 
+ 
+			IF (@customer_id IS NULL) AND (@default_account_type IS NULL) AND (@name IS NULL) AND (@extended_fields  IS NULL)  AND (@seq_nr IS NULL)
+				BEGIN
+					SET @issuersCounter += 1
+				END
+			ELSE 
+				BEGIN
+					SET @issuer = @issuersCounter
+					SET @issuersCounter = @issuersNumber + 1
+				END  
+		END
+	END
+
+--[END OBJECT: ID(10004)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_proc_5) GROUP(PROCEDURE) TYPE(SQL) ID(10005)]--
+	IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[pc_get_account_aditional_data]') AND type in (N'P', N'PC'))
+	BEGIN
+		DROP PROCEDURE [dbo].[pc_get_account_aditional_data]
+	END
+--[END OBJECT: ID(10005)]--
+
+--[BEGIN OBJECT: NAME(GenericInterface_proc_6) GROUP(PROCEDURE) TYPE(SQL) ID(10006)]--
+	CREATE PROCEDURE [dbo].[pc_get_account_aditional_data] 
+		-- Add the parameters for the stored procedure here
+		@issuer_nr int,
+		@encriptedAccountId varchar(max),
+		@account_type varchar(10)
+		
+	AS
+	BEGIN
+		DECLARE @acc_tblname VARCHAR(50)
+		DECLARE @sentence NVARCHAR(max)
+	
+		DECLARE @ParmDefinition nvarchar(173)
+		DECLARE @account_id nvarchar(173)
+	
+	
+		DECLARE @customer_id nvarchar(173)
+		DECLARE @extended_fields nvarchar(173)
+		DECLARE @pan_encrypted nvarchar(173)
+		DECLARE @c1_first_name nvarchar(173)
+	
+		
+		SELECT
+			
+			@acc_tblname = curr_table_accts
+			
+		FROM
+			pc_issuers
+		WHERE
+			issuer_nr = @issuer_nr
+	
+	
+	-- SELECT @sqlstr =N'select account_id from pc_accounts_' + CONVERT(varchar(1),@issuer_nr) + '_@acc_tblname where account_id_encrypted = @encriptedAccountId'
+	--SET @sentence = N'select @account_id=account_id from pc_accounts_' + CONVERT(varchar(1),@issuer_nr) + '_@acc_tblname where account_id_encrypted = @encriptedAccountId'
+	SET @sentence = N'select @account_id=account_id from pc_accounts_' + CONVERT(varchar(1),@issuer_nr) +'_' +@acc_tblname +' where account_id_encrypted = @encriptedAccountId and account_type=@account_type'
+	SET @ParmDefinition = N'@encriptedAccountId VARCHAR(max),@account_type varchar(10),@account_id nvarchar(173) output'
+	
+	EXECUTE sp_executesql @sentence, @ParmDefinition,@encriptedAccountId=@encriptedAccountId,@account_type=@account_type,@account_id=@account_id out
+	
+	if @account_id is not null
+		begin
+	
+		SET @sentence =N'SELECT @customer_id=Accounts.customer_id,@extended_fields=cards.extended_fields,@pan_encrypted=pan_encrypted,@c1_first_name=customers.c1_first_name FROM pc_cards_' + CONVERT(varchar(1),@issuer_nr) +'_' +@acc_tblname +' cards inner join pc_customer_accounts_' + CONVERT(varchar(1),@issuer_nr) +'_' +@acc_tblname +' accounts on cards.customer_id = accounts.customer_id inner join pc_customers_' + CONVERT(varchar(1),@issuer_nr) +'_' +@acc_tblname +' customers on customers.customer_id = cards.customer_id where account_id=@account_id and accounts.account_type='+@account_type
+	
+		SET @ParmDefinition = N'@customer_id nvarchar(173) output,@extended_fields nvarchar(173) output,@pan_encrypted nvarchar(173) output,@c1_first_name nvarchar(173) output,@account_id nvarchar(173)'
+		EXECUTE sp_executesql @sentence, @ParmDefinition,@customer_id=@customer_id out,@extended_fields=@extended_fields out,@pan_encrypted=@pan_encrypted out,@c1_first_name=@c1_first_name output,@account_id=@account_id
+		end
+	
+	select @customer_id as customer_id,@extended_fields as extended_fields,@pan_encrypted as pan_encrypted,@c1_first_name as c1_first_name
+	
+	END
+--[END OBJECT: ID(10006)]--

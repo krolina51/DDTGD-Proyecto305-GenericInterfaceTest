@@ -1,0 +1,2 @@
+INSERT INTO institution_ids VALUES ('Savings','10','ISCHostRoutingGroup','Identificador de institución para enrutar trasacciones con cuenta de ahorros en el autorizador en Línea')
+INSERT INTO institution_ids VALUES ('Check','20','ISCHostRoutingGroup','Identificador de institución para enrutar trasacciones con cuenta de corriente en el autorizador en Línea')

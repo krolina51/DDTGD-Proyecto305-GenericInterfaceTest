@@ -1,0 +1,73 @@
+/* Javadoc style sheet */
+
+/* Define colors, fonts and other style attributes here to override the defaults */
+
+/* Page background color */
+body { background-color: #FFFFFF }
+
+/* Headings */
+h1 { font-size: 145% }
+
+/* Table colors */
+.TableHeadingColor     { background: #CCCCFF } /* Dark mauve */
+.TableSubHeadingColor  { background: #EEEEFF } /* Light mauve */
+.TableRowColor         { background: #FFFFFF } /* White */
+
+/* Font used in left-hand frame lists */
+.FrameTitleFont   { font-size: 100%; font-family: Helvetica, Arial, sans-serif }
+.FrameHeadingFont { font-size:  90%; font-family: Helvetica, Arial, sans-serif }
+.FrameItemFont    { font-size:  90%; font-family: Helvetica, Arial, sans-serif }
+
+/* Navigation bar fonts and colors */
+.NavBarCell1    { background-color:#EEEEFF;} /* Light mauve */
+.NavBarCell1Rev { background-color:#00008B;} /* Dark Blue */
+.NavBarFont1    { font-family: Arial, Helvetica, sans-serif; color:#000000;}
+.NavBarFont1Rev { font-family: Arial, Helvetica, sans-serif; color:#FFFFFF;}
+
+.NavBarCell2    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF;}
+.NavBarCell3    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF;}
+
+ CITE.expandspot { font-style : normal;
+		color : green;
+		cursor: hand;}
+ .mvd-CITE-expandspot { font-style : normal;
+		color : green;
+		cursor: hand;}
+ DFN.collapsed { font-style : italic;
+		font-weight : normal;
+		display : 'none';
+		color : red;}
+ .mvd-DFN-collapsed { font-style : italic;
+		font-weight : normal;
+		display : 'none';
+		color : red;}
+ DFN.expanded { font-style : italic;
+		font-weight : normal;
+		color : red;}
+ .mvd-DFN-expanded { font-style : italic;
+		font-weight : normal;
+		color : red;}
+ EM.dropspot { cursor : hand;
+		color : green;}
+ .mvd-EM-dropspot { cursor : hand;
+		color : green;}
+ CITE.glossterm { font-style : normal;
+		color : maroon;
+		cursor : hand;}
+ .mvd-CITE-glossterm { font-style : normal;
+		color : maroon;
+		cursor : hand;}
+ DFN.glosscollapsed { font-style : italic;
+		font-weight : normal;
+		display : 'none';
+		color : blue;}
+ .mvd-DFN-glosscollapsed { font-style : italic;
+		font-weight : normal;
+		display : 'none';
+		color : blue;}
+ DFN.glossexpanded { font-style : italic;
+		font-weight : normal;
+		color : blue;}
+ .mvd-DFN-glossexpanded { font-style : italic;
+		font-weight : normal;
+		color : blue;}
