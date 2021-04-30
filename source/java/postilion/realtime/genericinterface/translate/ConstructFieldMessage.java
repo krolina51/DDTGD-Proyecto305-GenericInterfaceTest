@@ -12,6 +12,7 @@ import postilion.realtime.library.common.util.constants.ServiceRestrictionCode;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -117,6 +118,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 			if (msgToTm.isFieldSet(Iso8583Post.Bit._123_POS_DATA_CODE) && msgToTm.getPosDataCode()
 					.getPinCaptureCapability().equals(PosDataCode.PinCaptureCapability._4_FOUR)) {
 				posPinCaptureCode = PosPinCaptureCode.FOUR;
+			}else {
+				posPinCaptureCode = "00";
 			}
 		} catch (Exception e) {
 			try {
@@ -2555,6 +2558,11 @@ public class ConstructFieldMessage extends MessageTranslator {
 	public static String constructField35Virtual(Object object, Integer num) throws XPostilion {
 		return Constants.General.DEFAULT_TRACK2_MASIVA;
 	}
+	
+	public static String constructField35Oficinas(Object object, Integer num) throws XPostilion {
+		return "0099010000000000000D991200000001";
+	}
+	
 
 	/**
 	 * Routing by account type
@@ -3589,4 +3597,20 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return field35;
 	}
+	
+	public String constructField17(Object object, Integer num) throws XPostilion {
+		Iso8583Post msg = (Iso8583Post) object;
+		String field;
+		Base24Ath originalMsg = (Base24Ath) sourceTranToTmHashtableB24
+				.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR));
+		if (msg.isFieldSet(17)) {
+			field = msg.getField(17);
+		} else {
+			LocalDate local = LocalDate.now();
+			String date = local.format(DateTimeFormatter.ofPattern("MMdd"));
+			field = date;
+		}
+		return field;
+	}
+	
 }

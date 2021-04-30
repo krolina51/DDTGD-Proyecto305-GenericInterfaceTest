@@ -482,6 +482,38 @@ public class Constants {
 	    public static final String ATPA="ATPA";
 	}
 	
+	public static final class ErrorTypeCsm {
+		public static final int INT_CSM_DATA = 1;
+		public static final int INT_CSM_RSM_SRC = 2;
+		public static final int INT_CSM_ERROR_GRAL_SRC = 3;
+		public static final int INT_CSM_ERROR_CTP = 4;
+		public static final int INT_CSM_RSM_SNK = 5;
+		public static final int INT_CSM_ERROR_GRAL_SNK = 6;
+	}
+	
+	public static final class KeyExchangeMethod {
+		public static final String KEY_REQUEST = new String("161");
+		public static String NEW_KEY = new String("162");
+		public static String SOURCE_KEY_IND = new String("1");
+		public static String SINK_KEY_IND = new String("2");
+		public static String KEY_EXCHANGE_FAILED = new String("ESM");
+		public static String SUCCESSFUL_KEY_EXCHANGE = new String("RSM");
+		public static String TIPO_LLAVE_PIN = new String("00");
+		public static String KEY_EXCHANGE_ADDN_DATA = new String("01M00");
+		public static String CSM_DATA = new String("CSM(MCL/KSM RCV/0000 ORG/1111 KD/");
+		public static String CSM_DATA_ATH = new String("CSM(MCL/KSM RCV/BOG              ORG/ATH              KD/");
+		public static String CSM_RSM = new String("CSM(MCL/RSM RCV/RATH ORG/ATH )");
+		public static String CSM_RSM_161_SRC = new String("CSM(MCL/RSI RCV/RATH ORG/ATH SVR/ )");
+		public static String CSM_RSM_161_SNK = new String("CSM(MCL/RSI RCV/RATH ORG/ATH SVR/ )");
+		public static String CSM_ERROR_GRAL_SRC = new String("CSM(MCL/ESM RCV/RATH ORG/ATH ERF/C )");
+		public static String CSM_ERROR_GRAL_SNK = new String("CSM(MCL/ESM RCV/RATH ORG/ATH ERF/C )");
+
+		public static String CSM_ERROR_CTP = new String("CSM(MCL/ESM RCV/RATH ORG/ATH ERF/P )");
+		public static String CSM_SOURCE_KEY_DATA = new String(" CTP/0 )");
+		public static String CSM_SINK_KEY_DATA = new String(" CTP/1 )");
+		public static String CSM_SOURCE_KEY_DATA_ATH = new String(" CTP/00000000002B3D )                                        ");
+	}
+	
 	
 
 }

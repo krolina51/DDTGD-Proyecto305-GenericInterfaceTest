@@ -89,6 +89,8 @@ import java.util.Map;
 
 import org.json.simple.parser.JSONParser;
 
+import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
+
 
 
 /**
@@ -240,7 +242,35 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		
 		
+		transformFieldsMultipleCases.put("3", "3");
 		
+		transformFields.put("3", "N/A");
+		transformFields.put("3-270110", "transformField3ForDepositATM");
+		transformFields.put("3-270120", "transformField3ForDepositATM");
+		transformFields.put("3-270100", "transformField3ForCreditPaymentATM");
+		transformFields.put("3-270140", "transformField3ForCreditPaymentATM");
+		transformFields.put("3-270141", "transformField3ForCreditPaymentATM");
+		transformFields.put("3-890000", "constructProcessingCode");
+		transformFields.put("15", "compensationDateValidationP17ToP15");
+		transformFields.put("32", "constructAcquiringInstitutionIDCodeToTM");
+		transformFields.put("41", "constructCardAcceptorTermIdToTranmgr");
+		transformFields.put("52", "constructPinDataToTranmgr");
+		transformFields.put("54", "constructAdditionalAmounts");
+		transformFields.put("28", "transformAmountFeeFields");
+		transformFields.put("30", "transformAmountFeeFields");
+		transformFields.put("35", "constructField35Oficinas");
+		transformFields.put("95", "constructReplacementAmounts");
+		transformFields.put("100", "constructField100");
+		
+		
+		
+		
+		
+		skipCopyFields.put("48", "48");
+		skipCopyFields.put("102", "102");
+		skipCopyFields.put("103", "103");
+		skipCopyFields.put("104", "104");
+		skipCopyFields.put("105", "105");
 		
 		
 
@@ -255,7 +285,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFields.put("15", "compensationDateValidationP17ToP15");
 		createFields.put("22", "constructField22");
 		createFields.put("25", "constructPosConditionCodeToTranmgr");
-		createFields.put("26", "constructDefaultField26");
 		createFields.put("42", "constructDefaultCardAceptorCode");
 		createFields.put("43", "constructField43");
 		createFields.put("59", "constructEchoData");
@@ -264,6 +293,22 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFields.put("123", "constructPosDataCode");
 		
 		
+		copyFieldsResponse.put("3", "3");
+		copyFieldsResponse.put("4", "4");
+		copyFieldsResponse.put("7", "7");
+		copyFieldsResponse.put("11", "11");
+		copyFieldsResponse.put("12", "12");
+		copyFieldsResponse.put("13", "13");
+		copyFieldsResponse.put("15", "15");
+		copyFieldsResponse.put("22", "22");
+		copyFieldsResponse.put("32", "32");
+		copyFieldsResponse.put("35", "35");
+		copyFieldsResponse.put("37", "37");
+		copyFieldsResponse.put("38", "38");
+		copyFieldsResponse.put("39", "39");
+		copyFieldsResponse.put("48", "48");
+		copyFieldsResponse.put("49", "49");
+		copyFieldsResponse.put("103", "103");
 		
 		
 		transformFieldsMultipleCasesResponse.put("3", "3");
@@ -540,33 +585,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		transformFieldsResponse.put("126-510100", "constructField126IsoTranslate");
 		transformFieldsResponse.put("126-510140", "constructField126IsoTranslate");
 		transformFieldsResponse.put("126-510141", "constructField126IsoTranslate");
-		
-		
-		transformFieldsResponseRev.put("3-510100", "transformField3ForCreditPaymentATM");
-		transformFieldsResponseRev.put("3-510140", "transformField3ForCreditPaymentATM");
-		transformFieldsResponseRev.put("3-510100", "transformField3ForDepositATM");
-		transformFieldsResponseRev.put("3-510140", "transformField3ForDepositATM");
-		transformFieldsResponseRev.put("3-210110", "transformField3ForDepositATM");
-		transformFieldsResponseRev.put("3-210120", "transformField3ForDepositATM");
-		transformFieldsResponseRev.put("3-510141", "transformField3ForDepositATM");
-//		transformFieldsResponseRev.put("41-011000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-012000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-401000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-402000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-502000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-501000", "constructAdditionalRspData");
-		transformFieldsResponseRev.put("41-501043", "constructAdditionalRspData");
-		transformFieldsResponseRev.put("41-502043", "constructAdditionalRspData");
-		transformFieldsResponseRev.put("95-012000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-401000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-402000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-011000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-501000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-502000", "constructReplacementAmountsZero");
-		
-		
-		
-		
+		transformFieldsResponse.put("128-401010", "constructField128");
+	
 		
 		
 		
@@ -811,6 +831,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFieldsResponse.put("100-324000_404010", "constructField100DefaultInstitutionID");
 		createFieldsResponse.put("100-324000_404020", "constructField100DefaultInstitutionID");
 		createFieldsResponse.put("100-401000", "constructField100DefaultInstitutionID");
+		createFieldsResponse.put("100-401010", "constructField100DefaultInstitutionIDMasiva");
 		createFieldsResponse.put("100-402000", "constructField100DefaultInstitutionID");
 		createFieldsResponse.put("100-404010", "constructField100DefaultInstitutionID");
 		createFieldsResponse.put("100-404020", "constructField100DefaultInstitutionID");
@@ -879,14 +900,39 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFieldsResponse.put("105-501000", "constructField105DefaultOrCopy");
 		createFieldsResponse.put("105-321000_401000", "constructField105DefaultOrCopy");
 		createFieldsResponse.put("105-322000_402000", "constructField105DefaultOrCopy");
+		createFieldsResponse.put("128-401010", "constructField128");
 		
 		
+		deleteFieldsResponse.put("011000", "104");
+		deleteFieldsResponse.put("012000", "104");
+		deleteFieldsResponse.put("401000", "15-40-44");
+		deleteFieldsResponse.put("402000", "15-40-44");
+		deleteFieldsResponse.put("321000", "44-54-62-100-104-105");
+		deleteFieldsResponse.put("322000", "44-54-62-100-104-105");
+		deleteFieldsResponse.put("501041", "15");
+		deleteFieldsResponse.put("401010", "15-22-52");
 		
-		createFieldsResponseAdv.put("17", "constructOriginalFieldMsg");
-		createFieldsResponseAdv.put("38", "constructAuthorizationIdResponse");
-		createFieldsResponseAdv.put("48", "constructOriginalFieldMsg");
-		createFieldsResponseAdv.put("100", "construct0210ErrorFields");
 		
+		copyFieldsResponseRev.put("3", "3");
+		copyFieldsResponseRev.put("4", "4");
+		copyFieldsResponseRev.put("7", "7");
+		copyFieldsResponseRev.put("11", "11");
+		copyFieldsResponseRev.put("12", "12");
+		copyFieldsResponseRev.put("13", "13");
+		copyFieldsResponseRev.put("22", "22");
+		copyFieldsResponseRev.put("32", "32");
+		copyFieldsResponseRev.put("35", "35");
+		copyFieldsResponseRev.put("37", "37");
+		copyFieldsResponseRev.put("38", "38");
+		copyFieldsResponseRev.put("39", "39");
+		//copyFieldsResponseRev.put("41", "41");
+		copyFieldsResponseRev.put("48", "48");
+		copyFieldsResponseRev.put("49", "49");
+		copyFieldsResponseRev.put("54", "54");
+		copyFieldsResponseRev.put("90", "90");
+		copyFieldsResponseRev.put("95", "95");
+		copyFieldsResponseRev.put("102", "102");
+		copyFieldsResponseRev.put("103", "103");
 		
 //		createFieldsResponseRev.put("48-401000", "constructFieldFromTimedHashTable");
 //		createFieldsResponseRev.put("48-402000", "constructFieldFromTimedHashTable");
@@ -897,55 +943,50 @@ public class GenericInterface extends AInterchangeDriver8583 {
 //		createFieldsResponseRev.put("95-510141", "constructReplacementAmounts");
 		createFieldsResponseRev.put("112-501043", "constructField112");
 		createFieldsResponseRev.put("112-502043", "constructField112");
-
+		createFieldsResponseRev.put("17-401010", "constructField17");
+		createFieldsResponseRev.put("104-401010", "constructDefaultField104");
+		
+		transformFieldsResponseRev.put("3-510100", "transformField3ForCreditPaymentATM");
+		transformFieldsResponseRev.put("3-510140", "transformField3ForCreditPaymentATM");
+		transformFieldsResponseRev.put("3-510100", "transformField3ForDepositATM");
+		transformFieldsResponseRev.put("3-510140", "transformField3ForDepositATM");
+		transformFieldsResponseRev.put("3-210110", "transformField3ForDepositATM");
+		transformFieldsResponseRev.put("3-210120", "transformField3ForDepositATM");
+		transformFieldsResponseRev.put("3-510141", "transformField3ForDepositATM");
+//		transformFieldsResponseRev.put("41-011000", "constructAdditionalRspData");
+//		transformFieldsResponseRev.put("41-012000", "constructAdditionalRspData");
+//		transformFieldsResponseRev.put("41-401000", "constructAdditionalRspData");
+//		transformFieldsResponseRev.put("41-402000", "constructAdditionalRspData");
+//		transformFieldsResponseRev.put("41-502000", "constructAdditionalRspData");
+//		transformFieldsResponseRev.put("41-501000", "constructAdditionalRspData");
+		transformFieldsResponseRev.put("41-501043", "constructAdditionalRspData");
+		transformFieldsResponseRev.put("41-502043", "constructAdditionalRspData");
+		transformFieldsResponseRev.put("95-012000", "constructReplacementAmountsZero");
+		transformFieldsResponseRev.put("95-401000", "constructReplacementAmountsZero");
+		transformFieldsResponseRev.put("95-402000", "constructReplacementAmountsZero");
+		transformFieldsResponseRev.put("95-011000", "constructReplacementAmountsZero");
+		transformFieldsResponseRev.put("95-501000", "constructReplacementAmountsZero");
+		transformFieldsResponseRev.put("95-502000", "constructReplacementAmountsZero");
+		
+		//deleteFieldsResponseRev.put("17", "17");
+		//deleteFieldsResponseRev.put("102", "102");
+		//deleteFieldsResponseRev.put("103", "103");
+		//deleteFieldsResponseRev.put("104", "104");
 		
 		
+		deleteFieldsResponseRev.put("401000", "100-61-60");
+		deleteFieldsResponseRev.put("402000", "100-61-60");
+		deleteFieldsResponseRev.put("401010", "22-61-95");
+		deleteFieldsResponseRev.put("401020", "61");
+		deleteFieldsResponseRev.put("402010", "61");
+		deleteFieldsResponseRev.put("402020", "61");
+				
 		
 		
-		transformFieldsMultipleCases.put("3", "3");
-		
-		transformFields.put("3", "N/A");
-		transformFields.put("3-270110", "transformField3ForDepositATM");
-		transformFields.put("3-270120", "transformField3ForDepositATM");
-		transformFields.put("3-270100", "transformField3ForCreditPaymentATM");
-		transformFields.put("3-270140", "transformField3ForCreditPaymentATM");
-		transformFields.put("3-270141", "transformField3ForCreditPaymentATM");
-		transformFields.put("3-890000", "constructProcessingCode");
-		transformFields.put("15", "compensationDateValidationP17ToP15");
-		transformFields.put("32", "constructAcquiringInstitutionIDCodeToTM");
-		transformFields.put("41", "constructCardAcceptorTermIdToTranmgr");
-		transformFields.put("52", "constructPinDataToTranmgr");
-		transformFields.put("54", "constructAdditionalAmounts");
-		transformFields.put("28", "transformAmountFeeFields");
-		transformFields.put("30", "transformAmountFeeFields");
-		transformFields.put("95", "constructReplacementAmounts");
-		transformFields.put("100", "constructField100");
-		
-		
-		
-		
-		skipCopyFields.put("48", "48");
-		skipCopyFields.put("102", "102");
-		skipCopyFields.put("103", "103");
-		skipCopyFields.put("104", "104");
-		skipCopyFields.put("105", "105");
-		
-		copyFieldsResponse.put("3", "3");
-		copyFieldsResponse.put("4", "4");
-		copyFieldsResponse.put("7", "7");
-		copyFieldsResponse.put("11", "11");
-		copyFieldsResponse.put("12", "12");
-		copyFieldsResponse.put("13", "13");
-		copyFieldsResponse.put("15", "15");
-		copyFieldsResponse.put("22", "22");
-		copyFieldsResponse.put("32", "32");
-		copyFieldsResponse.put("35", "35");
-		copyFieldsResponse.put("37", "37");
-		copyFieldsResponse.put("38", "38");
-		copyFieldsResponse.put("39", "39");
-		copyFieldsResponse.put("48", "48");
-		copyFieldsResponse.put("49", "49");
-		copyFieldsResponse.put("103", "103");
+		createFieldsResponseAdv.put("17", "constructOriginalFieldMsg");
+		createFieldsResponseAdv.put("38", "constructAuthorizationIdResponse");
+		createFieldsResponseAdv.put("48", "constructOriginalFieldMsg");
+		createFieldsResponseAdv.put("100", "construct0210ErrorFields");
 		
 		
 		copyFieldsResponseAdv.put("3", "3");
@@ -954,6 +995,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		copyFieldsResponseAdv.put("11", "11");
 		copyFieldsResponseAdv.put("12", "12");
 		copyFieldsResponseAdv.put("13", "13");
+		copyFieldsResponseAdv.put("17", "17");
 		copyFieldsResponseAdv.put("15", "15");
 		copyFieldsResponseAdv.put("22", "22");
 		copyFieldsResponseAdv.put("32", "32");
@@ -964,318 +1006,23 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		copyFieldsResponseAdv.put("90", "90");
 		copyFieldsResponseAdv.put("102", "102");
 		
-		copyFieldsResponseRev.put("3", "3");
-		copyFieldsResponseRev.put("4", "4");
-		copyFieldsResponseRev.put("7", "7");
-		copyFieldsResponseRev.put("11", "11");
-		copyFieldsResponseRev.put("22", "22");
-		copyFieldsResponseRev.put("32", "32");
-		copyFieldsResponseRev.put("35", "35");
-		copyFieldsResponseRev.put("37", "37");
-		copyFieldsResponseRev.put("39", "39");
-		//copyFieldsResponseRev.put("41", "41");
-		copyFieldsResponseRev.put("48", "48");
-		copyFieldsResponseRev.put("49", "49");
-		copyFieldsResponseRev.put("54", "54");
-		copyFieldsResponseRev.put("90", "90");
-		copyFieldsResponseRev.put("95", "95");
-		
-		
-		
-		
-		
-		deleteFieldsResponse.put("011000", "104");
-		deleteFieldsResponse.put("012000", "104");
-		deleteFieldsResponse.put("401000", "15-40-44");
-		deleteFieldsResponse.put("402000", "15-40-44");
-		deleteFieldsResponse.put("321000", "44-54-62-100-104-105");
-		deleteFieldsResponse.put("322000", "44-54-62-100-104-105");
-		deleteFieldsResponse.put("501041", "15");
-		
-		
-		
 		
 		deleteFieldsResponseAdv.put("28", "28");
 		deleteFieldsResponseAdv.put("30", "30");
 		
-		deleteFieldsResponseRev.put("17", "17");
-		deleteFieldsResponseRev.put("102", "102");
-		deleteFieldsResponseRev.put("103", "103");
-		deleteFieldsResponseRev.put("104", "104");
-		
-		
-		deleteFieldsResponseRev.put("401000", "100-61-60");
-		deleteFieldsResponseRev.put("402000", "100-61-60");
-		deleteFieldsResponseRev.put("401010", "61");
-		deleteFieldsResponseRev.put("401020", "61");
-		deleteFieldsResponseRev.put("402010", "61");
-		deleteFieldsResponseRev.put("402020", "61");
 		
 
 		
-
-		
-
-
-		
-		
-
-		migratedOpCodes.put("201000", "201000");
-		migratedOpCodes.put("202000", "202000");
-
-		migratedOpCodes.put("001000", "001000");
-		migratedOpCodes.put("002000", "002000");
-		migratedOpCodes.put("401010", "401010");
-		migratedOpCodes.put("401020", "401020");
-		migratedOpCodes.put("402010", "402010");
-		migratedOpCodes.put("402020", "402020");
-
-		migratedOpCodes.put("322000", "322000");
-		migratedOpCodes.put("321000", "321000");
-
-		migratedOpCodes.put("381000", "381000");
-		migratedOpCodes.put("382000", "382000");
-		migratedOpCodes.put("890000", "890000");
-		migratedOpCodes.put("402000", "402000");
-		migratedOpCodes.put("401000", "401000");
-		migratedOpCodes.put("011000", "011000");
-		migratedOpCodes.put("012000", "012000");
-		migratedOpCodes.put("314000", "314000");
-		migratedOpCodes.put("311000", "311000");
-		migratedOpCodes.put("312000", "312000");
-
-		migratedOpCodes.put("401024", "401024");
-		migratedOpCodes.put("401014", "401014");
-		migratedOpCodes.put("402024", "402024");
-		migratedOpCodes.put("402014", "402014");
-		migratedOpCodes.put("404010", "404010");
-		migratedOpCodes.put("404020", "404020");
-		migratedOpCodes.put("501043", "501043");
-		migratedOpCodes.put("502043", "502043");
-		
-		migratedOpCodes.put("401410", "401410");
-		migratedOpCodes.put("402410", "402410");
-		migratedOpCodes.put("401420", "401420");
-		migratedOpCodes.put("402420", "402420");
-
-
-		migratedOpCodes.put("501030", "501030");
-		migratedOpCodes.put("502030", "502030");
-
-		migratedOpCodes.put("270110", "270110");
-		migratedOpCodes.put("270120", "270120");
-
-		migratedOpCodes.put("270100", "270100");
-		migratedOpCodes.put("270140", "270140");
-		//migratedOpCodes.put("270141", "270141");
-
-		migratedOpCodes.put("501000", "501000");
-		migratedOpCodes.put("502000", "502000");
-
-		migratedOpCodes.put("501040", "501040");
-		migratedOpCodes.put("502040", "502040");
-		migratedOpCodes.put("501041", "501041");
-		migratedOpCodes.put("502041", "502041");
-		migratedOpCodes.put("500100", "500100");
-		migratedOpCodes.put("500200", "500200");
-		migratedOpCodes.put("500130", "500130");
-		migratedOpCodes.put("500230", "500230");
-		migratedOpCodes.put("500140", "500140");
-		migratedOpCodes.put("500240", "500240");
-
-		migratedOpCodes.put("500141", "500141");
-		migratedOpCodes.put("500241", "500241");
-		migratedOpCodes.put("501042", "501042");
-		migratedOpCodes.put("502042", "502042");
-		migratedOpCodes.put("270130", "270130");
-
-		migratedOpCodes.put("950000", "950000");
-
-		migratedBins.put("008823", "008823");
-		migratedBins.put("008802", "008802");
-		migratedBins.put("008852", "008852");
-		migratedBins.put("530710", "530710");
-//		migratedBins.put("777790", "777790");
-//		migratedBins.put("777760", "777760");
-//		migratedBins.put("777791", "777791");
-
-		migratedCards.put("4576030000030265", "4576030000030265");
-		migratedCards.put("4509420010043782", "4509420010043782");
-		migratedCards.put("4915110205551966", "4915110205551966");
-		migratedCards.put("6013679017727259", "6013679017727259");
-		migratedCards.put("5307100090056620", "5307100090056620");
-		migratedCards.put("4546167323769315", "4546167323769315");
-		migratedCards.put("4000020000003129", "4000020000003129");
-		migratedCards.put("7425300031761634", "7425300031761634");
-		migratedCards.put("4915110200100637", "4915110200100637");
-		migratedCards.put("6013679000029721", "6013679000029721");
-
-		migratedCards.put("4546167323765636", "4546167323765636");
-		migratedCards.put("5307100090056646", "5307100090056646");
-		migratedCards.put("5185030000004575", "5185030000004575");
-
-		migratedCards.put("4215440000106477", "4215440000106477");
-		migratedCards.put("4509420000958882", "4509420000958882");
-		migratedCards.put("4573200000164587", "4573200000164587");
-		migratedCards.put("4573200000164595", "4573200000164595");
-		migratedCards.put("4573210000093389", "4573210000093389");
-		migratedCards.put("4573210000096234", "4573210000096234");
-		migratedCards.put("4573210000141873", "4573210000141873");
-		migratedCards.put("4576020000066930", "4576020000066930");
-		migratedCards.put("4576030000158140", "4576030000158140");
-		migratedCards.put("4576030000160633", "4576030000160633");
-		migratedCards.put("4576040000143455", "4576040000143455");
-		migratedCards.put("4576050000041252", "4576050000041252");
-		migratedCards.put("4646200115001685", "4646200115001685");
-		migratedCards.put("4915110205374526", "4915110205374526");
-		migratedCards.put("4915110205386504", "4915110205386504");
-		migratedCards.put("4915110205386520", "4915110205386520");
-
-		migratedCards.put("4915110205552006", "4915110205552006");
-		migratedCards.put("4915110205552014", "4915110205552014");
-		migratedCards.put("4915110205553905", "4915110205553905");
-		migratedCards.put("4915110205552220", "4915110205552220");
-
-		migratedCards.put("4576020000066922", "4576020000066922");
-
-		migratedCards.put("5454541234567890", "5454541234567890");
-		migratedCards.put("4473990520002999", "4473990520002999");
-		migratedCards.put("4573210000096242", "4573210000096242");
-		migratedCards.put("4915110200103953", "4915110200103953");
-		migratedCards.put("4576020000066914", "4576020000066914");
-		
-		migratedCards.put("4915110205553442", "4915110205553442");
-		migratedCards.put("4915110205553392", "4915110205553392");
-		migratedCards.put("4915110205553426", "4915110205553426");
-		migratedCards.put("4915110205553467", "4915110205553467");
-		migratedCards.put("4915110205553418", "4915110205553418");
-		migratedCards.put("4915110200114703", "4915110200114703");
-		migratedCards.put("4000020000003129", "4000020000003129");
-		
-		
-
-
-		migratedOpCodes.put("500100", "500100");
-		migratedOpCodes.put("890000", "890000");
-
-		migratedOpCodes.put("011000", "011000");
-		migratedOpCodes.put("012000", "012000");
-		migratedOpCodes.put("311000", "311000");
-		migratedOpCodes.put("312000", "312000");
-		migratedOpCodes.put("381000", "381000");
-		migratedOpCodes.put("382000", "382000");
-
-		migratedOpCodesAtm.put("011000", "011000");
-		migratedOpCodesAtm.put("012000", "012000");
-		migratedOpCodesAtm.put("311000", "311000");
-		migratedOpCodesAtm.put("312000", "312000");
-		migratedOpCodesAtm.put("381000", "381000");
-		migratedOpCodesAtm.put("382000", "382000");
-		migratedOpCodesAtm.put("890000", "890000");
-
-		migratedBins.put("457602", "457602");
-		migratedBins.put("450942", "450942");
-		migratedBins.put("421544", "421544");
-		migratedBins.put("491614", "491614");
-		migratedBins.put("457320", "457320");
-		migratedBins.put("457605", "457605");
-		migratedBins.put("457603", "457603");
-		migratedBins.put("464620", "464620");
-		migratedBins.put("457321", "457321");
-		migratedBins.put("457604", "457604");
-
-
-
-		migratedCards.put("4915110114372017", "4915110114372017");
-		migratedCards.put("4915110099198007", "4915110099198007");
-		migratedCards.put("4915110111298280", "4915110111298280");
-		migratedCards.put("4576030009659056", "4576030009659056");
-		migratedCards.put("4509420001964350", "4509420001964350");
-		migratedCards.put("4576030003416800", "4576030003416800");
 
 		getLogger().logLine("#=== Enter to [Init] Method Interchange " + interchange.getName() + " ===#");
 
 		//String[] userParams = Pack.splitParams(interchange.getUserParameter());
 //		acquirersNetwork = postilion.realtime.genericinterface.translate.database.DBHandler.getAcquirerDesc();
 		this.nameInterface = interchange.getName();
-//		String[] logParms = { nameInterface, Integer.toString(Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED),
-//				Integer.toString(userParams.length), interchange.getUserParameter() };
-//
-//		if (userParams.length != Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED) {
-//			EventRecorder.recordEvent(new IncorrectRuntimeParameters(new String[] { interchange.getName(),
-//					Integer.toString(Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED),
-//					Integer.toString(userParams.length), interchange.getUserParameter() }));
-//			throw new XPostilion(new IncorrectRuntimeParameters(
-//					new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
-//		}
+
 		getParameters();
-		//validateParameters(userParams);
 		udpClient = new Client(ipUdpServer, portUdpServer);
 
-
-//		structureContent = DBHandler.getConfigTypeMsg();
-//
-//		if (structureContent.size() == 0) {
-//			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-//					GenericInterface.class.getName(), "Method: [init]",
-//					"Error to load the database configuration. The interface not working without the messages configuration. Map structureContent",
-//					"N/A" }));
-//			throw new XPostilion(
-//					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
-//		}
-//
-//		allCodesIsoToB24 = DBHandler.getResponseCodes(false, "0");
-//
-//		if (allCodesIsoToB24.size() == 0) {
-//			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-//					GenericInterface.class.getName(), "Method: [init]",
-//					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesIsoToB24",
-//					"N/A" }));
-//			throw new XPostilion(
-//					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
-//		}
-//
-//		allCodesIscToIso = DBHandler.getResponseCodes(true, "0");
-//		if (allCodesIscToIso.size() == 0) {
-//			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-//					GenericInterface.class.getName(), "Method: [init]",
-//					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesIscToIso",
-//					"N/A" }));
-//			throw new XPostilion(
-//					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
-//		}
-//
-//		institutionid = postilion.realtime.genericinterface.translate.database.DBHandler.setInstitutionIds();
-//		if (institutionid.size() == 0) {
-//			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-//					GenericInterface.class.getName(), "Method: [init]",
-//					"Error to load the database configuration. The interface not working without the messages configuration. Map institutionid",
-//					"N/A" }));
-//			throw new XPostilion(
-//					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
-//		}
-//
-////		validator = Validation.getInstance();
-//
-//		allCodesIsoToB24TM = DBHandler.getResponseCodes(false, "1");
-//		if (allCodesIsoToB24TM.size() == 0) {
-//			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-//					GenericInterface.class.getName(), "Method: [init]",
-//					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesIsoToB24TM",
-//					"N/A" }));
-//			throw new XPostilion(
-//					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
-//		}
-//
-//		allCodesB24ToIso = DBHandler.getResponseCodesBase24("1");
-//		if (allCodesB24ToIso.size() == 0) {
-//			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-//					GenericInterface.class.getName(), "Method: [init]",
-//					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesB24ToIso",
-//					"N/A" }));
-//			throw new XPostilion(
-//					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
-//		}
 
 		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId,udpClient,
 				nameInterface);
@@ -1296,25 +1043,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			String cfgValidateMAC = userParameters[Constants.Indexes.VALIDATE_MAC];
 			String cfgKwaName = userParameters[Constants.Indexes.KWA_NAME];
 			sSignOn = userParameters[Constants.Indexes.SEND_SIGN_ON];
-//			businessValidation = userParameters[Constants.Indexes.BUSINESS_VALIDATION].equals(General.TRUE);
-//			create0220ToTM = userParameters[Constants.Indexes.CREATE_0220].equals(General.TRUE);
 			issuerId = userParameters[Constants.Indexes.ISSUERID];
-			//String cfgIpUdpServer = userParameters[Constants.Indexes.IP_UDP_SERVER];
-			//String cfgPortUdpServer = userParameters[Constants.Indexes.PORT_UDP_SERVER];
-			//consultCovenants = userParameters[Constants.Indexes.CONSULT_COVENANTS].equals(General.TRUE);
-			//encodeData = userParameters[Constants.Indexes.ENCODE_DATA].equalsIgnoreCase(General.TRUE);
-			//routingField100 = userParameters[Constants.Indexes.ROUTING_FIELD_100];
-			//exeptionValidateExpiryDate = false;
-			//urlCutWS = userParameters[Constants.Indexes.URL_CUT_WS];
 
-			//exeptionValidateExpiryDate = userParameters[Constants.Indexes.EXEPTION_EXPIRY_DATE].equals(General.TRUE);
-
-
-			// exeptionValidateExpiryDate =
-			// userParameters[Constants.Indexes.EXEPTION_EXPIRY_DATE].equals(General.TRUE);
-
-			//String cfgIpServer = userParameters[Constants.Indexes.IP_UDP_SERVER_TOKEN_ACTIVATION];
-			//String cfgPortServer = userParameters[Constants.Indexes.PORT_UDP_SERVER_TOKEN_ACTIVATION];
 
 			if (cfgRetentionPeriod != null) {
 				try {
@@ -1803,14 +1533,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						msg.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, Constants.General.DEFAULT_P41);
 					}
 					
-					
-					
-
 					 Iso8583Post Isomsg =
 					 translator.constructIso8583(msgFromRemote);
-					 
-			
-					
+	
 					this.getLogger().logLine("MENSAJEIso8583Post:"+Isomsg.toString());
 					
 					action.putMsgToTranmgr(Isomsg);
@@ -1878,14 +1603,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			
 				MessageTranslator translator = new MessageTranslator(params);
 				
-				
-
-				
 				Base24Ath msgToRemote2=translator.constructBase24((Iso8583Post) msg);
 				udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
 				this.getLogger().logLine("210CONSTRUCTISO8583:"+msgToRemote2);
-
+				msgToRemote2.putField(128, "FFFFFFFF00000000");
 
 				action.putMsgToRemote(msgToRemote2);
 			
@@ -1911,6 +1633,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			throws Exception {
 		
 	
+		msg.clearField(28);
+		msg.clearField(30);
 		putRecordIntoSourceToTmHashtable(
 				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msg);
 		
@@ -1939,6 +1663,40 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		
 	}
 	
+	
+	
+	@Override
+	public Action processTranAdvFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
+			throws Exception {
+		MessageTranslator translator = new MessageTranslator(params);
+		Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
+		
+		putRecordIntoSourceToTmHashtable(
+				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msg);
+		Action action = new Action();
+		
+		action.putMsgToRemote(msgToRemote);
+		return action;
+	}
+	
+	
+
+	@Override
+	public Action processTranAdvRspFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msgFromRemote)
+			throws Exception {
+		Iso8583Post originalMsg = (Iso8583Post) sourceTranToTmHashtable
+				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+		
+		originalMsg.putMsgType(msgFromRemote.getMsgType());
+		originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
+		originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
+		
+		Action action = new Action();
+		action.putMsgToTranmgr(originalMsg);
+		
+		return action;
+	}
+
 	@Override
 	public Action processTranReqRspFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msgFromRemote)
 			throws Exception {
@@ -2026,6 +1784,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
 		Iso8583Post msgToTm = new Iso8583Post();
+		putRecordIntoSourceToTmHashtableB24(
+				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);	
 		Base24Ath msgToRemote = new Base24Ath(kwa);
 		MessageTranslator translator = new MessageTranslator(params);
 		try {
@@ -2092,7 +1852,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
 			this.getLogger().logLine("430CONSTRUCTISO8583:"+msgToRemote2);
-
+			msgToRemote2.putField(128, "FFFFFFFF00000000");
 
 			action.putMsgToRemote(msgToRemote2);
 			
@@ -2249,6 +2009,840 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 	public static void setLogger(Logger logger) {
 		GenericInterface.logger = logger;
+	}
+	
+	/**************************************************************************************
+	 * Processes a Network Management Request (0800/0801) from a remote interchange.
+	 * Drivers capable of handling this message should implement this method.
+	 * Otherwise, null should be returned.
+	 *************************************************************************************/
+	@Override
+	public Action processNwrkMngReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws Exception {
+		Action action = new Action();
+		try {
+			switch (Integer.parseInt(msg.getField(Iso8583.Bit.NETWORK_MNG_INFO_CODE))) {
+			case Base24Ath.InfoCode.SIGN_ON:// 001
+				action = processSignOnReqFromInterchange(interchange, msg);
+				break;
+			case Base24Ath.InfoCode.SIGN_OFF:// 002
+				action = processSignOffReqFromInterchange(interchange, msg);
+				break;
+			case Base24Ath.InfoCode.ECHO_TEST:// 301
+				action = processEchoTestReqFromInterchange(interchange, msg);
+				break;
+			case Base24Ath.InfoCode.CHANGE_KEY:// 161
+				action = processKeyRequestReqFromInterchange(interchange, msg);
+				break;
+			case Base24Ath.InfoCode.NEW_KEY: // 162
+				action = processKeyLoadKeyReqFromInterchange(interchange, msg);
+				break;
+			default:
+				break;
+			}
+		} catch (Exception e) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [processNwrkMngReqFromInterchange]",
+					Utils.getStringMessageException(e), "Unknown" }));
+			EventRecorder.recordEvent(e);
+			udpClient.sendData(Client.getMsgKeyValue("Unknown",
+					"Exception in processNwrkMngReqFromInterchange:  " + e.getMessage(), "LOG", nameInterface));
+		}
+		return action;
+	}
+	
+	/**
+	 * Construye un mensaje de respuesta de una Solicitud de Mensaje Administrativo.
+	 * 
+	 * @param interchange InformaciÃ³n de la interchange en Postilion.
+	 * @param msg         Mensaje desde ATH.
+	 * @return Action con el mensaje a enviar.
+	 * @throws XPostilion Al obtener o poner un campo en el mensaje
+	 */
+	public Action processKeyLoadKeyReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws XPostilion {
+		Base24Ath msgFromAth = (Base24Ath) msg;
+		Action action = new Action();
+
+		int errMac = msgFromAth.failedMAC();
+		if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR) {
+			action.putMsgToRemote(constructEchoMsgIndicatorFailedMAC(msgFromAth, errMac));
+		} else {
+
+			Base24Ath msgToRemote = new Base24Ath(kwa);
+			msgToRemote = constructNwrkMngMsgRspToRemote(msg, msgToRemote);
+
+			if (!msg.isFieldSet(Base24Ath.Bit.CRYPTO_SERVICE_MSG)) {
+				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
+						Base24Ath.RspCode._17_CUSTOMER_CANCEL, null));
+				reportEvent(EventId.MISSING_FIELD053_SECURITY_INFO, interchange, null);
+				return action;
+			}
+			String cryptoServiceMsg = msg.getField(Base24Ath.Bit.CRYPTO_SERVICE_MSG);
+			if (!msg.isFieldSet(Iso8583.Bit._053_SECURITY_INFO)) {
+				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
+						Base24Ath.RspCode._21_NO_ACTION_TAKEN, null));
+				reportEvent(EventId.MISSING_FIELD053_SECURITY_INFO, interchange, null);
+				return action;
+			}
+
+			String secInfo = msg.getField(Iso8583.Bit._053_SECURITY_INFO);
+			String tipoLlave = secInfo.substring(0, 2);
+
+			if (tipoLlave.equals(Constants.KeyExchangeMethod.TIPO_LLAVE_PIN)) {
+				if (interchange.isSourceNode()) {
+					return processKeyLoadKeyReqFromInterchangeToSourceNode(cryptoServiceMsg, msgToRemote, interchange,
+							msgFromAth);
+				}
+
+			} else // Si no es una llave de PIN
+			{
+				EventRecorder.recordEvent(new InvalidTypeKey(new String[] { interchange.getName() }));
+				return (new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromAth,
+						Base24Ath.MACError.KEY_SYNCRONIZATION_ERROR, interchange), null, null));
+			}
+		}
+		return action;
+	}
+	
+	/**
+	 * Hace un echo message del mensaje recibido de ATH. En el header se devuelve el
+	 * tipo de la transacciÃ³n anteponiendole un '9' y el STATUS con el cÃ³digo
+	 * de error correspondiente a la MAC.
+	 * 
+	 * @param rsp       Mensaje desde ATH.
+	 * @param codeError CÃ³digo de error.
+	 * @return Mensaje Base24Ath hacia ATH.
+	 * @throws XPostilion En caso de error.
+	 */
+	Base24Ath constructEchoMsgIndicatorFailedMAC(Base24Ath rsp, int codeError,
+			AInterchangeDriverEnvironment interchange) throws XPostilion {
+		Header hdrInic = rsp.getHeader();
+
+		switch (codeError) {
+		case Base24Ath.MACError.KEY_SYNCRONIZATION_ERROR:
+			hdrInic.putField(Header.Field.STATUS, General.VOIDSTRING + Base24Ath.MACError.KEY_SYNCRONIZATION_ERROR);
+			break;
+
+		case Base24Ath.MACError.INVALID_MAC_ERROR:
+			hdrInic.putField(Header.Field.STATUS, General.VOIDSTRING + Base24Ath.MACError.INVALID_MAC_ERROR);
+			break;
+
+		case Base24Ath.MACError.SECURITY_OPERATION_FAIL:
+			hdrInic.putField(Header.Field.STATUS, General.VOIDSTRING + Base24Ath.MACError.SECURITY_OPERATION_FAIL);
+			break;
+
+		case Base24Ath.MACError.SECURITY_DEVICE_FAILURE:
+			hdrInic.putField(Header.Field.STATUS, General.VOIDSTRING + Base24Ath.MACError.SECURITY_DEVICE_FAILURE);
+			break;
+
+		default:
+			break;
+		}
+		rsp.putHeader(hdrInic);
+		rsp.putMsgType(0x9000 + rsp.getMsgType());
+
+		EventRecorder.recordEvent(new InvalidMacRdbnNtwrk(
+				new String[] { rsp.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), interchange.getName() }));
+		rsp.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG, Constants.KeyExchangeMethod.CSM_ERROR_GRAL_SRC);
+
+		return rsp;
+	}
+	
+	
+	public Action processKeyLoadKeyReqFromInterchangeToSourceNode(String cryptoServiceMsg, Base24Ath msgToRemote,
+			AInterchangeDriverEnvironment interchange, Base24Ath msg) throws XPostilion {
+
+		Action action = new Action();
+		int indexKey = cryptoServiceMsg.indexOf("KD/");
+		if (indexKey == -1) {
+			action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
+					Base24Ath.RspCode._68_RESPONSE_RECEIVED_LATE, null));
+			reportEvent(EventId.MISSING_KEY_ON_FIELD_123_CRYPTO_SERVICE_MSG, interchange, null);
+			return action;
+		}
+
+		String key = null;
+		String isDES = null;
+
+		isDES = cryptoServiceMsg.substring(indexKey + 19, indexKey + 20);
+
+		if (isDES.equals(" ")) {
+			key = cryptoServiceMsg.substring(indexKey + 3, indexKey + 19);
+		} else {
+			key = cryptoServiceMsg.substring(indexKey + 3, indexKey + 35);
+		}
+
+		if (!isLoadableKeyLength(key, interchange)) {
+			EventRecorder.recordEvent(new InvalidLenghtCryptoKeyIdll(new String[] { interchange.getName() }));
+		}
+
+		String checkDigits = msgToRemote.getField(Base24Ath.Bit.KEY_MANAGEMENT);
+		if (checkDigits.length() != Base24Ath.Length.CHECK_DIGIT_6) {
+			action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
+					Base24Ath.RspCode._17_CUSTOMER_CANCEL, checkDigits));
+			reportEvent(EventId.INCORRECT_LENGTH_FIELD_120_KEY_MANAGEMENT, interchange, null);
+			return action;
+		}
+
+		checkDigits = checkDigits.substring(0, Base24Ath.Length.CHECK_DIGIT);
+		if (!isHexadecimal(checkDigits)) {
+			action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
+					Base24Ath.RspCode._17_CUSTOMER_CANCEL, checkDigits));
+			reportEvent(EventId.INVALID_DATA_FIELD_120_KEY_MANAGEMENT, interchange, null);
+			return action;
+		}
+
+		udpClient.sendData(
+				Client.getMsgKeyValue("N/A", "key " + key + " checkdigits " + checkDigits, "LOG", nameInterface));
+
+		try {
+
+			if (interchange.loadSourceNodeKwp(key, checkDigits)) {
+
+				if (interchange.relayKeySyncToActiveActivePartner()) {
+
+					try {
+
+						action.putMsgToActiveActivePartner(
+								new ActiveActiveKeySyncMsgHandler(this, new NodeDriverEnvAdapter(interchange))
+										.constructKeySyncMsgToPartner(interchange.getName(),
+												interchange.getSourceNodeKwp().getContents()));
+					} catch (Exception e) {
+
+						action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_RSM_SRC,
+								Iso8583.RspCode._06_ERROR, null));
+
+						EventRecorder.recordEvent(new TryCatchException(
+								new String[] { this.nameInterface, GenericInterface.class.getName(),
+										"Method: [processKeyLoadKeyReqFromInterchangeToSourceNode]",
+										Utils.getStringMessageException(e), "Unknown" }));
+						EventRecorder.recordEvent(e);
+						udpClient.sendData(Client.getMsgKeyValue("Unknown",
+								"Exception in Method: processKeyLoadKeyReqFromInterchangeToSourceNode "
+										+ e.getMessage(),
+								"LOG", nameInterface));
+
+					}
+				}
+				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_RSM_SRC,
+						Iso8583.RspCode._00_SUCCESSFUL, null));
+				reportEvent(EventId.SUCESSFULL_SOURCE_KEY_LOAD, interchange, null);
+
+				Iso8583Post msgToTM = new Iso8583Post();
+
+				MessageTranslator translator = new MessageTranslator(params);
+
+				translator.constructAutra0800Message(msg, msgToTM);
+				udpClient.sendData(Client.getMsgKeyValue("N/A",
+						interchange.getSourceNodeKwp().getContents().getValueUnderKsk(), "KWP", interchange.getName()));
+				if (kwa != null)
+					udpClient.sendData(
+							Client.getMsgKeyValue("N/A", kwa.getValueUnderKsk(), "KWA", interchange.getName()));
+
+				action.putMsgToTranmgr(msgToTM);
+
+				return action;
+			} else // Si los digitos de chequeo no coinciden
+			{
+				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
+						Base24Ath.RspCode._12_BAD_CHECK_DIGITS, null));
+				reportEvent(EventId.INVALID_SOURCE_KEY_LOADED, interchange, null);
+				return action;
+			}
+		} catch (Exception e) {
+
+			action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_RSM_SRC,
+					Iso8583.RspCode._06_ERROR, null));
+
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [processKeyLoadKeyReqFromInterchangeToSourceNode]",
+					Utils.getStringMessageException(e), "Unknown" }));
+			EventRecorder.recordEvent(e);
+
+			udpClient.sendData(Client.getMsgKeyValue("Unknown",
+					"Exception in Method: processKeyLoadKeyReqFromInterchangeToSourceNode " + e.getMessage(), "LOG",
+					nameInterface));
+
+			return action;
+		}
+	}
+	
+	/**
+	 * Compara el tamaÃ±o de la llave actual con el tamaÃ±o de la llave que
+	 * estÃ¡ entrando.
+	 * 
+	 * @param keyUnderParent Llave cifrada con la llave padre.
+	 * @param interchange    InfomraciÃ³n de la interchange en Postilion.
+	 * @return True si la llave es vÃ¡lida.
+	 */
+	public final boolean isLoadableKeyLength(String keyUnderParent, AInterchangeDriverEnvironment interchange) {
+		boolean result = false;
+
+		try {
+			DesKwp nodeKwp = null;
+			if (interchange.isSourceNode()) {
+				nodeKwp = interchange.getSourceNodeKwp();
+			} else if (interchange.isSinkNode()) {
+				nodeKwp = interchange.getSinkNodeKwp();
+			}
+
+			DesKeyLength keyInL = DesKeyLength.getFromCryptogram(keyUnderParent);
+			if (nodeKwp != null) {
+				DesKeyLength actualKeyL = nodeKwp.getKeyLength();
+				if (keyInL.equals(actualKeyL)) {
+					result = true;
+				} else {
+					result = false;
+				}
+			}
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
+			result = false;
+		}
+		return result;
+	}
+	
+	/**
+	 * Construye el eco de un mensaje 800 de intercambio de llave de PIN, retornando
+	 * el indicador del campo del Mensaje Criptografico (123)
+	 * 
+	 * @param rsp         Mensaje desde ATH.
+	 * @param csmType     Tipo de CSM.
+	 * @param rspCode     CÃ³digo de respuesta.
+	 * @param checkDigits DÃ­gitos de chequeo.
+	 * @return Mensaje Base24Ath hacia ATH.
+	 * @throws XPostilion En caso de error.
+	 */
+	public Base24Ath constructRspMsgExchangePIN(Base24Ath rsp, int csmType, String rspCode, String checkDigits)
+			throws XPostilion {
+		switch (csmType) {
+		case Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC:
+			rsp.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG, Constants.KeyExchangeMethod.CSM_ERROR_GRAL_SRC);
+			break;
+		case Constants.ErrorTypeCsm.INT_CSM_ERROR_CTP:
+			rsp.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG, Constants.KeyExchangeMethod.CSM_ERROR_CTP);
+			break;
+		case Constants.ErrorTypeCsm.INT_CSM_DATA:
+			rsp.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG, Constants.KeyExchangeMethod.CSM_DATA);
+			break;
+		case Constants.ErrorTypeCsm.INT_CSM_RSM_SRC:
+			rsp.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG, Constants.KeyExchangeMethod.CSM_RSM);
+			break;
+		case Constants.ErrorTypeCsm.INT_CSM_RSM_SNK:
+			rsp.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG, Constants.KeyExchangeMethod.CSM_RSM);
+			break;
+		default:
+			rsp.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG, Constants.KeyExchangeMethod.CSM_ERROR_GRAL_SRC);
+			break;
+		}
+
+		rsp.putField(Iso8583.Bit._039_RSP_CODE, rspCode);
+		return rsp;
+	}
+	
+	/**
+	 * Construye un mensaje de respuesta hacia Ath cuando se recibe una solicitud de
+	 * intercambio de llaves. Este método es llamado por POSTILION sólo si se
+	 * define como MAESTRO.
+	 *
+	 * @param interchange Información de la interchange en Postilion.
+	 * @param msg         Mensaje desde ATH.
+	 * @return Action con el mensaje a enviar.
+	 * @throws Exception En caso de error.
+	 *************************************************************************************/
+	public Action processKeyRequestReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws Exception {
+		Base24Ath msgFromAth = (Base24Ath) msg;
+		Action action = new Action();
+		try {
+
+			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"entro metodo processKeyRequestReqFromInterchange ********** ", "LOG", nameInterface));
+
+			Base24Ath msgToRemote = constructNwrkMngMsgRspToRemote(msg);
+			msgToRemote.copyFieldFrom(Iso8583.Bit.SECURITY_INFO, msgFromAth); // 053
+			msgToRemote.copyFieldFrom(Iso8583.Bit.MAC_NORMAL, msgFromAth); // 064
+			msgToRemote.copyFieldFrom(Base24Ath.Bit.KEY_MANAGEMENT, msgFromAth); // 120
+			msgToRemote.copyFieldFrom(Base24Ath.Bit.CRYPTO_SERVICE_MSG, msgFromAth); // 123
+			msgToRemote.copyFieldFrom(Iso8583.Bit.MAC_EXTENDED, msgFromAth); // 128
+			action.putMsgToRemote(msgToRemote);
+
+			if (interchange.isSourceNode()) {
+				udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"entro al if metodo processKeyRequestReqFromInterchange ", "LOG", nameInterface));
+
+				Base24Ath sourceMsg = null;
+
+				sourceMsg = constructSourceNodeExchangeKwpMsgToRemote(interchange);
+				action.putMsgToRemote(sourceMsg);
+				action.putTimerAction(new Action.Timer(Base24Ath.CommandMsg.SOURCE_NODE_KEY_EXCHANGE,
+						Long.valueOf(Base24Ath.PeriodTime.KEY_EXCHANGE_WAIT_TIME),
+						new StringBuilder().append(sourceMsg.getField(Base24Ath.Bit.KEY_MANAGEMENT))
+								.append(sourceMsg.getField(Base24Ath.Bit.CRYPTO_SERVICE_MSG)).toString()));
+				EventRecorder.recordEvent(new SourceKeyExchangeInitiated(new String[] { interchange.getName() }));
+			}
+		} catch (Exception e) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [processKeyRequestReqFromInterchange]",
+					Utils.getStringMessageException(e), "N/A" }));
+			EventRecorder.recordEvent(e);
+		}
+		return action;
+	}
+	
+	/**************************************************************************************
+	 * Construye un mensaje de petición de intercambio de llave (0800).
+	 *
+	 * @param interchange Información de la interchange en Postilion.
+	 * @return Mensaje Base24Ath hacia ATH.
+	 * @throws Exception En caso de error.
+	 *************************************************************************************/
+	public Base24Ath constructSourceNodeExchangeKwpMsgToRemote(AInterchangeDriverEnvironment interchange)
+			throws Exception {
+		Base24Ath msgToRemote = null;
+		try {
+			if (interchange.getSourceNodeKwp() == null) {
+				throw new XPostilion(
+						new SourceNodeKeyNotConfigured(new AContext[] { new ApplicationContext(interchange.getName()) },
+								new String[] { interchange.getName() }));
+			}
+			interchange.generateSourceNodeKwp();
+			if (interchange.getSourceNodeKwp() != null) {
+				DesKwp sourceNodeKey = interchange.getSourceNodeKwp();
+				DateTime dateTimeLocal = new DateTime();
+				msgToRemote = constructKeyExchangeNwrkMsgToRemote(interchange);
+				msgToRemote.putField(Iso8583.Bit.SYSTEMS_TRACE_AUDIT_NR,
+						new StringBuilder().append(Constants.KeyExchange.SOURCE_KEY_IND)
+								.append(dateTimeLocal.get(Constants.FormatDate.HHMMSS).substring(1)).toString());
+				msgToRemote.putField(Base24Ath.Bit.KEY_MANAGEMENT, sourceNodeKey.getCheckDigits().substring(0, 6));
+				msgToRemote.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG,
+						new StringBuilder().append(Constants.KeyExchange.CSM_DATA)
+								.append(sourceNodeKey.getValueUnderParent())
+								.append(Constants.KeyExchange.CSM_SOURCE_KEY_DATA).toString());
+			} else {
+				EventRecorder.recordEvent(new SourceKeyGenerationFailed(new String[] { interchange.getName() }));
+				msgToRemote = null;
+			}
+		} catch (Exception e) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [constructSourceNodeExchangeKwpMsgToRemote]",
+					Utils.getStringMessageException(e), "N/A" }));
+			EventRecorder.recordEvent(e);
+		}
+		return msgToRemote;
+	}
+	
+	/**
+	 * Method to process an echo test request received from remote
+	 * 
+	 * @param interchange The interchange involved
+	 * @param msg
+	 * @return The Action with the response message
+	 * @throws Exception
+	 */
+	public Action processEchoTestReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws Exception {
+		Action action = new Action();
+		try {
+			Base24Ath msg_to_remote = constructNwrkMngMsgRspToRemote(msg);
+			return new Action(null, msg_to_remote, null, null);
+		} catch (Exception e) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [processEchoTestReqFromInterchange]",
+					Utils.getStringMessageException(e), "Unknown" }));
+			EventRecorder.recordEvent(e);
+			udpClient.sendData(Client.getMsgKeyValue("Unknown",
+					"Exception in processEchoTestReqFromInterchange: " + e.getMessage(), "LOG", nameInterface));
+		}
+		return action;
+	}
+	
+	/**
+	 * Method to process a sign off request received from remote
+	 * 
+	 * @param interchange The interchange involved
+	 * @param msg         The message with the sign off request
+	 * @return An action with the message containing the response
+	 * @throws Exception
+	 */
+	public Action processSignOffReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws Exception {
+		Base24Ath msg_to_remote = constructNwrkMngMsgRspToRemote(msg);
+		this.signed_on = false;
+		return new Action(null, msg_to_remote, null, null);
+	}
+	
+	@Override
+	public Action processNwrkMngReqFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
+			throws Exception {
+		GenericInterface.getLogger().logLine("Entro processNwrkMngReqFromTranmgr");
+		String sdData = msg.getStructuredData().get("B24_Message");
+		String keyMsg = msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
+
+		putRecordIntoSourceToTmHashtable(keyMsg, msg);
+
+		Action action = new Action();
+		if (sdData != null) {
+			byte[] decodedBytes = Base64.getDecoder().decode(sdData);
+
+			String decodedString = new String(decodedBytes);
+
+			Base24Ath msgDecoded = new Base24Ath(null);
+
+			msgDecoded.fromMsg(decodedString);
+			action.putMsgToRemote(msgDecoded);
+
+			GenericInterface.getLogger().logLine("B24_Message: " + decodedString);
+		}
+
+		return action;
+	}
+	
+	/**
+	 * Method to construct an 0800 message to send to the remote entity
+	 * 
+	 * @param info_code The information code to put in field 70
+	 * @return The 0800 message
+	 * @throws Exception
+	 */
+	public Base24Ath constructNwrkMngReqToRemote(AInterchangeDriverEnvironment interchange, String info_code)
+			throws Exception {
+		Base24Ath msgToRemote = new Base24Ath(kwa);
+		DateTime dateTimeGmt = new DateTime(0);
+		DateTime date_time_local = new DateTime();
+		try {
+			switch (Integer.parseInt(info_code)) {
+			case Base24Ath.InfoCode.SIGN_ON:
+			case Base24Ath.InfoCode.ECHO_TEST:
+				msgToRemote.putHeader((Header) constructNewNetworkHeader());
+				msgToRemote.putMsgType(Iso8583Post.MsgType._0800_NWRK_MNG_REQ);
+				msgToRemote.putField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME, dateTimeGmt.get("MMddHHmmss"));
+				msgToRemote.putField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR, date_time_local.get("HHmmss"));
+				msgToRemote.putField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE, info_code);
+				break;
+			case Base24Ath.InfoCode.CHANGE_KEY:
+				msgToRemote.putHeader(constructNewNetworkHeader());
+				msgToRemote.putMsgType(Iso8583Post.MsgType._0800_NWRK_MNG_REQ);
+				msgToRemote.putField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME, dateTimeGmt.get("MMddHHmmss"));
+				msgToRemote.putField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR, date_time_local.get("HHmmss"));
+				msgToRemote.putField(Iso8583.Bit._053_SECURITY_INFO, MsgTypeCsm.KEY_EXCHANGE_INBOUND_OUTBOUND_MSG);
+
+				msgToRemote.putField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE, Constants.KeyExchange.KEY_REQUEST);
+				boolean is_source_node = interchange.isSourceNode();
+				if (is_source_node) {
+					msgToRemote.putField(Iso8583Post.Bit._123_POS_DATA_CODE, Constants.KeyExchange.CSM_RSM_161_SRC);
+				} else {
+					msgToRemote.putField(Iso8583Post.Bit._123_POS_DATA_CODE, Constants.KeyExchange.CSM_RSM_161_SNK);
+				}
+				EventRecorder.recordEvent(new SourceKeyExchangeInitiated(new String[] { interchange.getName() }));
+				break;
+			case Base24Ath.InfoCode.NEW_KEY:
+
+				getLogger()
+						.logLine("entro a case Base24Ath.InfoCode.NEW_KEY: en el metodo  constructNwrkMngReqToRemote");
+
+				DesKwp source_node_key = interchange.getSourceNodeKwp();
+				msgToRemote = constructKeyExchangeNwrkMsgToRemote(interchange);
+				msgToRemote.putField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR,
+						Constants.KeyExchange.SOURCE_KEY_IND + date_time_local.get("hhmmss").substring(1));
+				msgToRemote.putField(Base24Ath.Bit.KEY_MANAGEMENT, source_node_key.getCheckDigits());
+				msgToRemote.putField(Iso8583Post.Bit._123_POS_DATA_CODE,
+						KeyExchange.CSM_DATA + source_node_key.getValueUnderParent() + KeyExchange.CSM_SOURCE_KEY_DATA);
+				break;
+			default:
+				break;
+			}
+		} catch (Exception e) {
+			EventRecorder.recordEvent(
+					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
+							"Method: [constructNwrkMngReqToRemote]", Utils.getStringMessageException(e), "Unknown" }));
+			EventRecorder.recordEvent(e);
+			udpClient.sendData(Client.getMsgKeyValue("N/A",
+					"Exception in constructNwrkMngReqToRemote: " + e.getMessage(), "LOG", nameInterface));
+		}
+		return msgToRemote;
+	}
+	
+	/**
+	 * Method to build header for 0800 messages
+	 * 
+	 * @return The header
+	 */
+	public Header constructNewNetworkHeader() {
+		Header network_header = new Header(default_header);
+		try {
+			network_header.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.POS);
+			network_header.putField(Header.Field.RELEASE_NUMBER, Base24Ath.Version.REL_NR_34);
+		} catch (Exception e) {
+			EventRecorder.recordEvent(
+					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
+							"Method: [constructNewNetworkHeader]", Utils.getStringMessageException(e), "Unknown" }));
+			EventRecorder.recordEvent(e);
+			udpClient.sendData(Client.getMsgKeyValue("N/A", "Exception in constructNewNetworkHeader: " + e.getMessage(),
+					"LOG", nameInterface));
+		}
+		return network_header;
+	}
+	
+	/**
+	 * Processes a Network Management Request Response (0810) from a remote
+	 * interchange. Drivers capable of handling this message should implement this
+	 * method. Otherwise, null should be returned.
+	 * 
+	 * @param interchange
+	 * @param msg
+	 */
+	public Action processNwrkMngReqRspFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws java.lang.Exception {
+		Action action = new Action();
+		try {
+			switch (Integer.parseInt(msg.getField(Iso8583.Bit.NETWORK_MNG_INFO_CODE))) {
+			case Base24Ath.InfoCode.SIGN_ON: // 001
+			{
+				action = processSignOnReqRspFromInterchange(interchange, msg);
+				break;
+			}
+
+			case Base24Ath.InfoCode.CHANGE_KEY: // 161
+			{
+				action = processNewKeyExchangeReqRspFromInterchange(interchange, msg);
+				break;
+			}
+
+			case Base24Ath.InfoCode.NEW_KEY: // 162
+			{
+				GenericInterface.getLogger().logLine("Entro processTranReqRspFromInterchange");
+				Base24Ath msgFromRemote = (Base24Ath) msg;
+
+				Iso8583Post msgToTM = (Iso8583Post) sourceTranToTmHashtable
+						.get(msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+
+				sourceTranToTmHashtable.remove(msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+				// Iso8583Post msgToTM = new Iso8583Post();
+
+				MessageTranslator translator = new MessageTranslator(params);
+
+				translator.constructAutra0810ResponseMessage(msgFromRemote, msgToTM);
+
+				action.putMsgToTranmgr(msgToTM);
+
+				// constructAutra0810ResponseMessage
+				// action = processNewKeyExchangeReqRspFromInterchange(interchange, msg);
+				break;
+			}
+
+			default: {
+				EventRecorder.recordEvent(new UnsupportedNmi(
+						new String[] { interchange.getName(), msg.getField(Iso8583.Bit.NETWORK_MNG_INFO_CODE) }));
+				break;
+			}
+			}
+			return action;
+
+		} catch (Exception e) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [processNwrkMngReqRspFromInterchange]",
+					Utils.getStringMessageException(e), "Unknown" }));
+			EventRecorder.recordEvent(e);
+			udpClient.sendData(Client.getMsgKeyValue("Unknown",
+					"Exception in processNwrkMngReqRspFromInterchange: " + e.getMessage(), "LOG", nameInterface));
+		}
+		return action;
+	}
+	
+	/**
+	 * Procesa la respuesta de solicitud de intercambio de Llaves "161".
+	 * 
+	 * @param interchange Información de la interchange en Postilion.
+	 * @param msg         Mensaje desde ATH.
+	 * @return Action con el mensaje a enviar.
+	 * @throws XPostilion al obtener un campo del mensaje
+	 * @throws Exception  En caso de error.
+	 */
+	public Action processNewKeyExchangeReqRspFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws XPostilion {
+		Base24Ath msgFromAth = (Base24Ath) msg;
+		Action action = new Action();
+		int errMac = msgFromAth.failedMAC();
+		if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR) {
+			action.putMsgToRemote(constructEchoMsgIndicatorFailedMAC(msgFromAth, errMac));
+		} else {
+
+			action.putTimerAction(
+					new Action.Timer(Base24Ath.CommandMsg.MANUAL_KEY_EXCHANGE_REQ, Action.Timer.STOP, null));
+
+			keyExchangeState = Base24Ath.KeyExchangeState.IDLE;
+
+			if (!msg.getField(Iso8583.Bit._039_RSP_CODE).equals(Iso8583.RspCode._00_SUCCESSFUL)) {
+				EventRecorder.recordEvent(new KeyExchangeReqFailed(new String[] { interchange.getName() }));
+			}
+		}
+		return action;
+	}
+	
+	/**
+	 * Procesa un mensaje de respuesta sign_on de la Interchange.
+	 * 
+	 * @param interchange Informaci�n de la interchange en Postilion.
+	 * @param msg         Mensaje desde ATH.
+	 * @return Action con el mensaje a enviar.
+	 * @throws Exception En caso de error.
+	 */
+	public Action processSignOnReqRspFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws Exception {
+		Action action = new Action();
+
+		action.putTimerAction(new Action.Timer(Base24Ath.CommandMsg.AUTO_SIGN_ON, Action.Timer.STOP, null));
+
+		action.putTimerAction(new Action.Timer(Base24Ath.CommandMsg.MANUAL_SIGN_ON, Action.Timer.STOP, null));
+
+		signed_on = true;
+
+//		signon_state = Base24Ath.SignOnState.IDLE;
+
+		EventRecorder.recordEvent(new SignedOn(new String[] { interchange.getName() }));
+
+		return action;
+	}
+	
+	@Override
+	public Action processNwrkMngReqRspFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
+			throws Exception {
+
+		Action action = new Action();
+		return action;
+	}
+	
+	/**
+	 * Construye un eco del mensaje que llega.
+	 * 
+	 * @param msg Mensaje desde ATH.
+	 * @return Mensaje Base24Ath hacia ATH.
+	 * @throws XPostilion al copiar o poner un campo en el mensaje
+	 * @throws Exception  En caso de error.
+	 */
+
+	public Base24Ath constructNwrkMngMsgRspToRemote(Iso8583 msg, Base24Ath msgToRemote) throws XPostilion {
+
+		msgToRemote.putHeader(constructNetworkHeader(((Base24Ath) msg).getHeader()));
+
+		msgToRemote.putMsgType(Iso8583.MsgType.NWRK_MNG_REQ_RSP);
+
+		msgToRemote.copyFieldFrom(Iso8583.Bit.TRANSMISSION_DATE_TIME, msg);
+		msgToRemote.copyFieldFrom(Iso8583.Bit.SYSTEMS_TRACE_AUDIT_NR, msg);
+		msgToRemote.putField(Iso8583.Bit.RSP_CODE, Iso8583.RspCode.SUCCESSFUL);
+		msgToRemote.copyFieldFrom(Iso8583.Bit.NETWORK_MNG_INFO_CODE, msg);
+		msgToRemote.copyFieldFrom(Iso8583.Bit._053_SECURITY_INFO, msg);
+		if (msg.isFieldSet(Base24Ath.Bit.KEY_MANAGEMENT))
+			msgToRemote.copyFieldFrom(Base24Ath.Bit.KEY_MANAGEMENT, msg);
+		msgToRemote.copyFieldFrom(Base24Ath.Bit.CRYPTO_SERVICE_MSG, msg);
+		return msgToRemote;
+	}
+	
+	/**************************************************************************************
+	 * Construye el header del mensaje hacia ATH para un mensaje administrativo
+	 * (0800).
+	 *
+	 * @param msgFromRemoteHeader Encabezado de mensaje desde ATH.
+	 * @return Objeto Header.
+	 *************************************************************************************/
+	public Header constructNetworkHeader(Header msgFromRemoteHeader) {
+		Header networkHeader = new Header(msgFromRemoteHeader);
+		try {
+			networkHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.NETWORK);
+			networkHeader.putField(Header.Field.RELEASE_NUMBER, Base24Ath.Version.REL_NR_60);
+			networkHeader.putField(Header.Field.RESPONDER_CODE, Header.SystemCode.HOST);
+		} catch (Exception e) {
+			EventRecorder.recordEvent(
+					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
+							"Method: [constructNetworkHeader]", Utils.getStringMessageException(e), "N/A" }));
+			EventRecorder.recordEvent(e);
+		}
+		return networkHeader;
+	}
+	
+	/**************************************************************************************
+	 * Construye un mensaje de intercambio 0800. Campo 70 = 162.
+	 *
+	 * @param interchange Información de la interchange en Postilion.
+	 * @return Mensaje Base24Ath hacia ATH.
+	 * @throws Exception En caso de error.
+	 *************************************************************************************/
+	public Base24Ath constructKeyExchangeNwrkMsgToRemote(AInterchangeDriverEnvironment interchange) throws Exception {
+		DateTime date_time_gmt = new DateTime(0);
+		Base24Ath msgToRemote = new Base24Ath(kwa);
+		try {
+			msgToRemote.putHeader(constructNewNetworkHeader());
+			msgToRemote.putMsgType(Iso8583.MsgType.NWRK_MNG_REQ);
+			msgToRemote.putField(Iso8583.Bit.TRANSMISSION_DATE_TIME,
+					date_time_gmt.get(Validation.FormatDate.MMDDhhmmss));
+			msgToRemote.putField(Iso8583.Bit.SECURITY_INFO, MsgTypeCsm.KEY_EXCHANGE_INBOUND_OUTBOUND_MSG);
+			msgToRemote.putField(Iso8583.Bit.NETWORK_MNG_INFO_CODE, Constants.KeyExchange.NEW_KEY);
+		} catch (Exception e) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [constructKeyExchangeNwrkMsgToRemote]",
+					Utils.getStringMessageException(e), "N/A" }));
+			EventRecorder.recordEvent(e);
+			udpClient.sendData(Client.getMsgKeyValue("N/A",
+					"Exception in constructKeyExchangeNwrkMsgToRemote: " + e.getMessage(), "LOG", nameInterface));
+		}
+		return msgToRemote;
+	}
+	
+	/**************************************************************************************
+	 * Construye un eco del mensaje que llega.
+	 *
+	 * @param msg Mensaje desde ATH.
+	 * @return Mensaje Base24Ath hacia ATH.
+	 * @throws Exception En caso de error.
+	 *************************************************************************************/
+	public Base24Ath constructNwrkMngMsgRspToRemote(Iso8583 msg) throws Exception {
+		Base24Ath msgToRemote = new Base24Ath(kwa);
+		try {
+			msgToRemote.putHeader(constructNetworkHeader(((Base24Ath) msg).getHeader()));
+			msgToRemote.putMsgType(Iso8583.MsgType.NWRK_MNG_REQ_RSP); // 810
+			msgToRemote.copyFieldFrom(Iso8583.Bit.TRANSMISSION_DATE_TIME, msg); // 007
+			msgToRemote.copyFieldFrom(Iso8583.Bit.SYSTEMS_TRACE_AUDIT_NR, msg); // 011
+			msgToRemote.putField(Iso8583.Bit.RSP_CODE, Iso8583.RspCode.SUCCESSFUL); // 039
+			msgToRemote.copyFieldFrom(Iso8583.Bit.NETWORK_MNG_INFO_CODE, msg); // 070
+			msgToRemote.copyFieldFrom(Iso8583.Bit._053_SECURITY_INFO, msg); // 053
+			msgToRemote.copyFieldFrom(Base24Ath.Bit.KEY_MANAGEMENT, msg); // 120
+			msgToRemote.copyFieldFrom(Base24Ath.Bit.CRYPTO_SERVICE_MSG, msg); // 123
+		} catch (Exception e) {
+			EventRecorder.recordEvent(
+					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
+							"Method: [constructNwrkMngMsgRspToRemote]", Utils.getStringMessageException(e), "N/A" }));
+			EventRecorder.recordEvent(e);
+		}
+		return msgToRemote;
+	}
+	
+	/**
+	 * Method to process an sign request received from remote
+	 * 
+	 * @param interchange The interchange involved
+	 * @param msg
+	 * @return The Action with the response message
+	 * @throws Exception
+	 */
+	public Action processSignOnReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws Exception {
+		Action action = new Action();
+		try {
+			Base24Ath response = constructNwrkMngMsgRspToRemote(msg);
+			response.copyFieldFrom(Iso8583.Bit._048_ADDITIONAL_DATA, msg);
+			action.putMsgToRemote(response);
+		} catch (Exception e) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [processSignOnReqFromInterchange]",
+					Utils.getStringMessageException(e), "Unknown" }));
+			EventRecorder.recordEvent(e);
+			udpClient.sendData(Client.getMsgKeyValue("Unknown",
+					"Exception in processSignOnReqFromInterchange: " + e.getMessage(), "LOG", nameInterface));
+		}
+		return action;
 	}
 
 }

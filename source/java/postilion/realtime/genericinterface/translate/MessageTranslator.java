@@ -2,6 +2,7 @@ package postilion.realtime.genericinterface.translate;
 
 import java.math.BigInteger;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,7 @@ import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.database.DBHandler;
 import postilion.realtime.genericinterface.translate.stream.Header;
 import postilion.realtime.genericinterface.translate.util.Constants;
+import postilion.realtime.genericinterface.translate.util.Constants.FormatDate;
 import postilion.realtime.genericinterface.translate.util.Constants.General;
 import postilion.realtime.genericinterface.translate.util.Constants.StatusMsg;
 import postilion.realtime.genericinterface.translate.util.Utils;
@@ -36,6 +38,7 @@ import postilion.realtime.sdk.message.bitmap.Iso8583.TranType;
 import postilion.realtime.sdk.message.xml.XMLMessage2;
 import postilion.realtime.sdk.message.xml.XXMLMessageUnableToExtract;
 import postilion.realtime.sdk.util.Convert;
+import postilion.realtime.sdk.util.DateTime;
 import postilion.realtime.sdk.util.TimedHashtable;
 import postilion.realtime.sdk.util.XPostilion;
 import postilion.realtime.sdk.util.convert.Pack;
@@ -146,13 +149,12 @@ public class MessageTranslator extends GenericInterface {
 			
 			StructuredData sd = new StructuredData();
 			sd = msg.getStructuredData();
-			for(int i=2;i<=128;i++)
+			for(int i=3;i<=126;i++)
 			{
-				if(msg.isFieldSet(i))
-					msgToRmto.putField(i, msg.getField(i));
-				
 				if(sd!=null && sd.get("B24_Field_"+String.valueOf(i))!=null)
 					msgToRmto.putField(i, sd.get("B24_Field_"+String.valueOf(i)));
+				else if(msg.isFieldSet(i))
+					msgToRmto.putField(i, msg.getField(i));
 			}
 
 			
@@ -866,7 +868,93 @@ public class MessageTranslator extends GenericInterface {
 	}
 	
 	
+	public void constructAutra0800Message(Base24Ath msg, Iso8583Post msgToTM) throws XPostilion {
+		msgToTM.putMsgType(Iso8583.MsgType._0800_NWRK_MNG_REQ);
+
+		if (msg.isFieldSet(Iso8583.Bit._007_TRANSMISSION_DATE_TIME))
+			msgToTM.putField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME,
+					msg.getField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME).toString());
+
+		if (msg.isFieldSet(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR))
+			msgToTM.putField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR,
+					msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR).toString());
+
+		if (msg.isFieldSet(Iso8583.Bit._012_TIME_LOCAL)) {
+			msgToTM.putField(Iso8583.Bit._012_TIME_LOCAL, msg.getField(Iso8583.Bit._012_TIME_LOCAL).toString());
+		} else {
+			msgToTM.putField(Iso8583.Bit._012_TIME_LOCAL, new DateTime().get(FormatDate.HHMMSS));
+		}
+
+		if (msg.isFieldSet(Iso8583.Bit._013_DATE_LOCAL)) {
+			msgToTM.putField(Iso8583.Bit._013_DATE_LOCAL, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
+		} else {
+			msgToTM.putField(Iso8583.Bit._013_DATE_LOCAL, new DateTime().get(FormatDate.MMDD));
+
+		}
+
+		if (msg.isFieldSet(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE))
+			msgToTM.putField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE,
+					msg.getField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE).toString());
+
+		msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+
+//		msgToTM.putField(Iso8583.Bit._025_POS_CONDITION_CODE, Iso8583.PosCondCode._00_NORMAL_PRESENTMENT);
+//		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
+//		msgToTM.putField(Iso8583Post.Bit._123_POS_DATA_CODE, General.POSDATACODE);
+//		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
+
+		String OriginalInput = new String(msg.toMsg(false));
+		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
+
+		GenericInterface.getLogger().logLine("Original Input B24 : " + OriginalInput);
+		GenericInterface.getLogger().logLine("Encoded Input B24 : " + encodedString);
+
+		StructuredData sd = new StructuredData();
+		sd.put("B24_Message", encodedString);
+		msgToTM.putStructuredData(sd);
+		msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
+				new ConstructFieldMessage(this.params).constructSwitchKey(msg, "ATM"));
+	}
 	
+	public void constructAutra0810ResponseMessage(Base24Ath msg, Iso8583Post msgToTM) throws XPostilion {
+
+		msgToTM.putMsgType(Iso8583.MsgType._0810_NWRK_MNG_REQ_RSP);
+
+		if (msg.isFieldSet(Iso8583.Bit._007_TRANSMISSION_DATE_TIME))
+			msgToTM.putField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME,
+					msg.getField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME).toString());
+
+		if (msg.isFieldSet(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR))
+			msgToTM.putField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR,
+					msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR).toString());
+
+		if (msg.isFieldSet(Iso8583.Bit._012_TIME_LOCAL))
+			msgToTM.putField(Iso8583.Bit._012_TIME_LOCAL, msg.getField(Iso8583.Bit._012_TIME_LOCAL).toString());
+
+		if (msg.isFieldSet(Iso8583.Bit._013_DATE_LOCAL))
+			msgToTM.putField(Iso8583.Bit._013_DATE_LOCAL, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
+
+		if (msg.isFieldSet(Iso8583.Bit._039_RSP_CODE))
+			msgToTM.putField(Iso8583.Bit._039_RSP_CODE, msg.getField(Iso8583.Bit._039_RSP_CODE).toString());
+
+		if (msg.isFieldSet(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE))
+			msgToTM.putField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE,
+					msg.getField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE).toString());
+
+		msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+
+//		msgToTM.putField(Iso8583.Bit._025_POS_CONDITION_CODE, Iso8583.PosCondCode._00_NORMAL_PRESENTMENT);
+//		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
+//		msgToTM.putField(Iso8583Post.Bit._123_POS_DATA_CODE, General.POSDATACODE);
+//		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
+
+		String OriginalInput = new String(msg.toMsg(false));
+		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
+
+		StructuredData sd = msgToTM.getStructuredData();
+		sd.put("B24_MessageRsp", encodedString);
+		msgToTM.putStructuredData(sd);
+	}
 
 
 	
