@@ -156,6 +156,32 @@ public class MessageTranslator extends GenericInterface {
 				else if(msg.isFieldSet(i))
 					msgToRmto.putField(i, msg.getField(i));
 			}
+			
+			String PCode=msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+			Set<String> set=deleteFieldsRequest.keySet().stream().filter(s->s.length()<=3).collect(Collectors.toSet());
+			
+			if(set.size()>0)
+			{
+				for(String item:set)
+				{
+					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
+					{
+						msgToRmto.clearField(Integer.parseInt(item));
+					}
+				}
+			}
+			
+			if(deleteFieldsRequest.containsKey(PCode))
+			{
+				String[] parts=deleteFieldsRequest.get(PCode).split("-");
+				for(String item:parts)
+				{
+					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
+					{
+						msgToRmto.clearField(Integer.parseInt(item));
+					}
+				}
+			}
 
 			
 		}
@@ -290,36 +316,6 @@ public class MessageTranslator extends GenericInterface {
 						msgToRmto.getFieldLength(Iso8583.Bit._102_ACCOUNT_ID_1), '0', false));
 			}
 			
-			//Busca si hay que eliminar campos dado el processingCode
-			
-			String PCode=msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-			Set<String> set=deleteFieldsResponse.keySet().stream().filter(s->s.length()<=3).collect(Collectors.toSet());
-			
-			if(set.size()>0)
-			{
-				for(String item:set)
-				{
-					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
-					{
-						msgToRmto.clearField(Integer.parseInt(item));
-					}
-				}
-			}
-			
-			if(deleteFieldsResponse.containsKey(PCode))
-			{
-				String[] parts=deleteFieldsResponse.get(PCode).split("-");
-				for(String item:parts)
-				{
-					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
-					{
-						msgToRmto.clearField(Integer.parseInt(item));
-					}
-				}
-			}
-			
-			
-			
 			//SKIP-TRANSFORM y TRANSFORM
 			 
 			
@@ -377,6 +373,34 @@ public class MessageTranslator extends GenericInterface {
 					if(!methodName.equals("N/A"))
 						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
 								methodName, msg, i));
+				}
+			}
+			
+			//Busca si hay que eliminar campos dado el processingCode
+			
+			String PCode=msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+			Set<String> set=deleteFieldsResponse.keySet().stream().filter(s->s.length()<=3).collect(Collectors.toSet());
+			
+			if(set.size()>0)
+			{
+				for(String item:set)
+				{
+					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
+					{
+						msgToRmto.clearField(Integer.parseInt(item));
+					}
+				}
+			}
+			
+			if(deleteFieldsResponse.containsKey(PCode))
+			{
+				String[] parts=deleteFieldsResponse.get(PCode).split("-");
+				for(String item:parts)
+				{
+					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
+					{
+						msgToRmto.clearField(Integer.parseInt(item));
+					}
 				}
 			}
 			
