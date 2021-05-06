@@ -169,9 +169,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public static Map<String, String> deleteFieldsResponseRev = new HashMap<>();
 	public static Map<String, String> createFieldsResponseRev = new HashMap<>();
 	public static Map<String, String> transformFieldsResponseRev = new HashMap<>();
-	public static Map<String, String> transformFieldsMultipleCasesResponseRev = new HashMap<>();
-	public static Map<String, String> deleteFieldsRequest = new HashMap<>();
-	
+	public static Map<String, String> transformFieldsMultipleCasesResponseRev = new HashMap<>();	
 	
 	public static Map<String, String> primerFiltroTest1 = new HashMap<>();
 	public static Map<String, String> primerFiltroTest2 = new HashMap<>();
@@ -179,7 +177,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public static Map<String, String> segundoFiltro = new HashMap<>();
 	
 	public static Map<String, String> createFields220ToTM = new HashMap<>();
-
+	
+	public static Map<String, String> deleteFieldsRequest = new HashMap<>();
+	public static Map<String, String> createFieldsRequest = new HashMap<>();
+	
 	public String issuerId = null;
 
 	public String ipUdpServer = "0";
@@ -243,6 +244,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		
 		deleteFieldsRequest.put("501030", "14-15-22-25-26-40-42-56-98-100-123");
 		deleteFieldsRequest.put("401010", "14-15-22-25-26-40-42-56-100-123");
+		
+		createFieldsRequest.put("3-270110", "compensationDateValidationP17ToP15");
 
 		
 		

@@ -142,19 +142,50 @@ public class MessageTranslator extends GenericInterface {
 	{
 		Base24Ath msgToRmto = new Base24Ath(this.kwa);
 		try {
-			
+			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 
 			msgToRmto.putHeader(constructAtmHeaderSourceNode(msgToRmto));
 			msgToRmto.putMsgType(msg.getMsgType());
 			
 			StructuredData sd = new StructuredData();
 			sd = msg.getStructuredData();
+			String pCode126=sd.get("B24_Field_126")!=null? sd.get("B24_Field_126").substring(22, 28):null;
 			for(int i=3;i<=126;i++)
 			{
 				if(sd!=null && sd.get("B24_Field_"+String.valueOf(i))!=null)
 					msgToRmto.putField(i, sd.get("B24_Field_"+String.valueOf(i)));
 				else if(msg.isFieldSet(i))
 					msgToRmto.putField(i, msg.getField(i));
+				
+				String key1=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE)+"_"+ pCode126;
+				String key2=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+				String key3=String.valueOf(i);
+				
+				String methodName=null;
+				
+				if(createFieldsRequest.containsKey(key1))
+				{
+					methodName=createFieldsRequest.get(key1);
+					if(!methodName.equals("N/A"))
+						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+								methodName, msg, i));
+					
+				}
+				else if(createFieldsRequest.containsKey(key2))
+				{
+					methodName=createFieldsRequest.get(key2);
+					if(!methodName.equals("N/A"))
+						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+								methodName, msg, i));
+				}
+				else if(createFieldsRequest.containsKey(key3))
+				{
+					methodName=createFieldsRequest.get(key3);
+					if(!methodName.equals("N/A"))
+						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+								methodName, msg, i));
+				}
+				
 			}
 			
 			String PCode=msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
