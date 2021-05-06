@@ -1539,20 +1539,45 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR) {
 					action = new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromRemote, errMac), null, null);
 				} else {
+					
+					Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
+							General.VOIDSTRING, new HashMap<String, String>(), params) {
+
+						@Override
+						public void validations(Base24Ath msg, Super objectValidations) {
+
+						}
+					};
 
 					if (!msg.isFieldSet(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID)) {
 						msg.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, Constants.General.DEFAULT_P41);
 					}
 					
-					 Iso8583Post Isomsg =
-					 translator.constructIso8583(msgFromRemote);
-	
-					this.getLogger().logLine("MENSAJEIso8583Post:"+Isomsg.toString());
-					
-					action.putMsgToTranmgr(Isomsg);
+					objectValidations = objectValidations.businessValidation(msgFromRemote,
+							objectValidations);// PONER CUIDADO***********************
+					if (!objectValidations.getValidationResult()) {
+						udpClient.sendData(
+								Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+										"no paso las validaciones de negocio", "LOG", nameInterface));
+						action.putMsgToTranmgr(translator.construct0220ToTm(msg, interchange.getName()));
+						msgToRemote = translator.constructBase24(msgFromRemote, objectValidations);
+						udpClient.sendData(Client.getMsgKeyValue(
+								msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+								Transform.fromBinToHex(Transform.getString(msgToRemote.toMsg(false))),
+								"B24", nameInterface));
+						action.putMsgToRemote(msgToRemote);
+					}else {
+						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote);
+		
+						this.getLogger().logLine("MENSAJEIso8583Post:"+Isomsg.toString());
+						
+						action.putMsgToTranmgr(Isomsg);
 
-					putRecordIntoSourceToTmHashtable(
-							Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+						putRecordIntoSourceToTmHashtable(
+								Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+					}
+					
+					 
 		
 
 				}

@@ -320,6 +320,7 @@ public class Constants {
 		public static final String CNB = "CNB";
 		public static final String CBCO= "CBCO";
 		public static final String VTL= "VTL";
+		public static final String IVR= "IVR";
 		//CNB
 		//Retiro con tarjeta CNB
 		public static final String PCODE_RETIRO_CON_TARJETA_CNB_A = "501043";
