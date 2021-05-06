@@ -968,7 +968,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 												"LOG", this.nameInterface));
 						if (new DBHandler(this.params).updateResgistry(field39, "0")) {
 							this.allCodesIsoToB24 = postilion.realtime.library.common.db.DBHandler
-									.getResponseCodes(false, "0");
+									.getResponseCodes(false, "0",responseCodesVersion);
 							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(field39, this.allCodesIsoToB24);
 						} else {
 							responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
@@ -1059,7 +1059,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 										Constants.General.ERROR_CODE),
 								"0")) {
 							this.allCodesIscToIso = postilion.realtime.library.common.db.DBHandler
-									.getResponseCodes(true, "0");
+									.getResponseCodes(true, "0",responseCodesVersion);
 							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(sdFromTm.get(
 									Constants.General.ERROR_CODE),
 									this.allCodesIscToIso);
@@ -1117,7 +1117,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 					if (new DBHandler(this.params).updateResgistry(field39, "0")) {
 
 						this.allCodesIsoToB24 = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false,
-								"0");
+								"0",responseCodesVersion);
 						responseCode = InitialLoadFilter.getFilterCodeIsoToB24(field39, this.allCodesIsoToB24);
 					} else {
 						responseCode = new ResponseCode("10002", "Error Code could not extracted from message", field39,
@@ -2028,7 +2028,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 						if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
 								"1")) {
 							this.allCodesB24ToIso = postilion.realtime.library.common.db.DBHandler
-									.getResponseCodesBase24("1");
+									.getResponseCodesBase24("1",responseCodesVersion);
 							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(
 									msg.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesB24ToIso);
 						} else {
@@ -2076,7 +2076,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 							if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
 									"1")) {
 								this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler
-										.getResponseCodes(false, "1");
+										.getResponseCodes(false, "1",responseCodesVersion);
 								responseCode = InitialLoadFilter.getFilterCodeIsoToB24(
 										msg.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesIsoToB24TM);
 							} else {
@@ -2202,7 +2202,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 							if (new DBHandler(this.params)
 									.updateResgistry(msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "1")) {
 								this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler
-										.getResponseCodes(false, "1");
+										.getResponseCodes(false, "1",responseCodesVersion);
 								cResponse = InitialLoadFilter.getFilterCodeIsoToB24(
 										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesIsoToB24TM);
 							} else {
@@ -2236,7 +2236,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 							if (new DBHandler(this.params)
 									.updateResgistry(msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "0")) {
 								this.allCodesIsoToB24 = postilion.realtime.library.common.db.DBHandler
-										.getResponseCodes(false, "0");
+										.getResponseCodes(false, "0",responseCodesVersion);
 								cResponse = InitialLoadFilter.getFilterCodeIsoToB24(
 										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesIsoToB24);
 							} else {
@@ -2947,7 +2947,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 								+ Utils.getStringMessageException(e),
 						"LOG", this.nameInterface));
 				if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE), "1")) {
-					this.allCodesB24ToIso = postilion.realtime.library.common.db.DBHandler.getResponseCodesBase24("1");
+					this.allCodesB24ToIso = postilion.realtime.library.common.db.DBHandler.getResponseCodesBase24("1",responseCodesVersion);
 					responseCode = InitialLoadFilter.getFilterCodeIsoToB24(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
 							this.allCodesB24ToIso);
 				} else {

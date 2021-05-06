@@ -6,5 +6,6 @@
   "issuerId":"3",
   "cfgIpUdpServer":"10.89.0.172",
   "cfgPortUdpServer":"17",
-  "create0220ToTM":true
+  "create0220ToTM":true,
+  "responseCodesVersion":"1"
 }

@@ -86,6 +86,8 @@ import java.util.Base64;
 import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.json.simple.parser.JSONParser;
 
@@ -168,8 +170,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public static Map<String, String> deleteFieldsResponseRev = new HashMap<>();
 	public static Map<String, String> createFieldsResponseRev = new HashMap<>();
 	public static Map<String, String> transformFieldsResponseRev = new HashMap<>();
-	public static Map<String, String> transformFieldsMultipleCasesResponseRev = new HashMap<>();
-	
+	public static Map<String, String> transformFieldsMultipleCasesResponseRev = new HashMap<>();	
 	
 	public static Map<String, String> primerFiltroTest1 = new HashMap<>();
 	public static Map<String, String> primerFiltroTest2 = new HashMap<>();
@@ -177,7 +178,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public static Map<String, String> segundoFiltro = new HashMap<>();
 	
 	public static Map<String, String> createFields220ToTM = new HashMap<>();
-
+	
+	public static Map<String, String> deleteFieldsRequest = new HashMap<>();
+	public static Map<String, String> createFieldsRequest = new HashMap<>();
+	
 	public String issuerId = null;
 
 	public String ipUdpServer = "0";
@@ -194,6 +198,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public String routingField100 = "";
 	public boolean exeptionValidateExpiryDate = false;
 	public String urlCutWS = null;
+	public String responseCodesVersion=null;
 
 	public Parameters params;
 
@@ -238,6 +243,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFields220ToTM.put("102", "102");
 		createFields220ToTM.put("104", "104");
 		createFields220ToTM.put("123", "123");
+		
+		deleteFieldsRequest.put("501030", "14-15-22-25-26-40-42-56-98-100-123");
+		deleteFieldsRequest.put("401010", "14-15-22-25-26-40-42-56-100-123");
+		
+		createFieldsRequest.put("3-270110", "compensationDateValidationP17ToP15");
 
 		
 		
@@ -910,6 +920,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		deleteFieldsResponse.put("322000", "44-54-62-100-104-105");
 		deleteFieldsResponse.put("501041", "15");
 		deleteFieldsResponse.put("401010", "15-22-52");
+		deleteFieldsResponse.put("501030", "15-22-44-52-105");
 		
 		
 		copyFieldsResponseRev.put("3", "3");
@@ -1110,6 +1121,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		String cfgValidateMAC = jsonObject.get("cfgValidateMAC").toString();
 		String cfgKwaName = jsonObject.get("cfgKwaName").toString();
 		sSignOn = jsonObject.get("sSignOn").toString();
+		responseCodesVersion=jsonObject.get("responseCodesVersion").toString();
 
 		issuerId = jsonObject.get("issuerId").toString();
 		String cfgIpUdpServer = jsonObject.get("cfgIpUdpServer").toString();
