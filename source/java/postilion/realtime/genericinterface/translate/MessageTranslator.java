@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 import postilion.realtime.genericinterface.InvokeMethodByConfig;
 import postilion.realtime.genericinterface.Parameters;
-
+import postilion.realtime.genericinterface.channels.Super;
 import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
@@ -1011,6 +1011,185 @@ public class MessageTranslator extends GenericInterface {
 		msgToTM.putStructuredData(sd);
 	}
 
+	public Base24Ath constructBase24(Base24Ath msg, Super error) throws XPostilion {
+		this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+				"ENTRO AL constructMsgRspToRem0210DeclinedRegExBussines ESTA COLOCANDO ESTO EN EL sWITCH "
+						+ msg.getResponseMessageType(),
+				"LOG", this.nameInterface));
+		Base24Ath msgToRem = new Base24Ath(this.kwa);
+		String resposeMessageType = msg.getResponseMessageType();
 
+		ResponseCode responseCode;
+		try {
+			responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(), allCodesIsoToB24TM);
+		} catch (NoSuchElementException e) {
+			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines "
+							+ Utils.getStringMessageException(e),
+					"LOG", this.nameInterface));
+			if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1")) {
+				try {
+					allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false, "1");
+				} catch (SQLException e1) {
+					EventRecorder.recordEvent(new TryCatchException(new String[] { nameInterface,
+							ConstructFieldMessage.class.getName(),
+							"Method: [constructMsgRspToRem0210DeclinedRegExBussines]",
+							Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+					EventRecorder.recordEvent(e);
+				}
+				responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(), allCodesIsoToB24TM);
+			} else {
+				responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
+						error.getErrorCodeISO(), error.getErrorCodeISO());
+				EventRecorder.recordEvent(
+						new TryCatchException(new String[] { nameInterface, ConstructFieldMessage.class.getName(),
+								"Method: [constructMsgRspToRem0210DeclinedRegExBussines]",
+								Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventRecorder.recordEvent(e);
+				this.udpClient
+						.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+								"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines value"
+										+ error.getErrorCodeISO() + " is not in the table.",
+								"LOG", this.nameInterface));
+			}
+		}
+
+		Map<String, String> copyFieldsResponse = null;
+		Map<String, String> deleteFieldsResponse = null;
+		Map<String, String> createFieldsResponse = null;
+		Map<String, String> transformFieldsResponse = null;
+
+		switch (resposeMessageType) {
+		case "0210":
+
+			copyFieldsResponse = GenericInterface.copyFieldsResponse;
+			deleteFieldsResponse = GenericInterface.deleteFieldsResponse;
+			createFieldsResponse = GenericInterface.createFieldsResponse;
+			transformFieldsResponse = GenericInterface.transformFieldsResponse;
+
+			msgToRem.putMsgType(Iso8583.MsgType._0210_TRAN_REQ_RSP);
+
+			msgToRem.putField(Base24Ath.Bit.ENTITY_ERROR,
+					Pack.resize(new StringBuilder().append(responseCode.getKeyIsc())
+							// .append(responseCode.getDescriptionIsc().trim())
+							.append(error.getDescriptionError()).toString(), General.LENGTH_44, General.SPACE, true));
+
+			break;
+		case "0230":
+
+			copyFieldsResponse = GenericInterface.copyFieldsResponseAdv;
+			deleteFieldsResponse = GenericInterface.deleteFieldsResponseAdv;
+			createFieldsResponse = GenericInterface.createFieldsResponseAdv;
+			transformFieldsResponse = GenericInterface.transformFieldsResponseAdv;
+
+			msgToRem.putMsgType(Iso8583.MsgType._0230_TRAN_ADV_RSP);
+
+			msgToRem.putField(Base24Ath.Bit.ENTITY_ERROR,
+					Pack.resize(new StringBuilder().append(responseCode.getKeyIsc())
+							// .append(responseCode.getDescriptionIsc().trim())
+							.append(error.getDescriptionError()).toString(), General.LENGTH_44, General.SPACE, true));
+
+			break;
+
+		case "0430":
+
+			copyFieldsResponse = GenericInterface.copyFieldsResponseRev;
+			deleteFieldsResponse = GenericInterface.deleteFieldsResponseRev;
+			createFieldsResponse = GenericInterface.createFieldsResponseRev;
+			transformFieldsResponse = GenericInterface.transformFieldsResponseRev;
+
+			msgToRem.putMsgType(Iso8583.MsgType._0430_ACQUIRER_REV_ADV_RSP);
+
+			break;
+		default:
+
+			break;
+		}
+
+		// Copia los campos en el mensaje B24
+		for (String key : copyFieldsResponse.keySet()) {
+
+			int intKey = Integer.parseInt(key);
+			if (msg.isFieldSet(intKey)) {
+				msgToRem.putField(intKey, msg.getField(intKey));
+			}
+
+		}
+		// Busca si hay que eliminar campos dado el processingCode
+
+		String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+		Set<String> set = deleteFieldsResponse.keySet().stream().filter(s -> s.length() <= 3)
+				.collect(Collectors.toSet());
+
+		if (set.size() > 0) {
+			for (String item : set) {
+				if (msgToRem.isFieldSet(Integer.parseInt(item))) {
+					msgToRem.clearField(Integer.parseInt(item));
+				}
+			}
+		}
+
+		if (deleteFieldsResponse.containsKey(PCode)) {
+			String[] parts = deleteFieldsResponse.get(PCode).split("-");
+			for (String item : parts) {
+				if (msgToRem.isFieldSet(Integer.parseInt(item))) {
+					msgToRem.clearField(Integer.parseInt(item));
+				}
+			}
+		}
+
+		String ProcCode = null;
+		String keyHash = null;
+
+		try {
+			msgToRem.putHeader(constructAtmHeaderSourceNode(msg));
+
+			try {
+				responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(),
+						this.allCodesIsoToB24TM);
+			} catch (NoSuchElementException e) {
+				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines "
+								+ Utils.getStringMessageException(e),
+						"LOG", this.nameInterface));
+				if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1")) {
+					this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false,
+							"1");
+					responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(),
+							this.allCodesIsoToB24TM);
+				} else {
+					responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
+							error.getErrorCodeISO(), error.getErrorCodeISO());
+					EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+							ConstructFieldMessage.class.getName(),
+							"Method: [constructMsgRspToRem0210DeclinedRegExBussines]",
+							Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+					EventRecorder.recordEvent(e);
+					this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+							"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines value"
+									+ error.getErrorCodeISO() + " is not in the table.",
+							"LOG", this.nameInterface));
+				}
+			}
+			msgToRem.putField(Base24Ath.Bit.ENTITY_ERROR,
+					Pack.resize(new StringBuilder().append(responseCode.getKeyIsc())
+							// .append(responseCode.getDescriptionIsc().trim())
+							.append(error.getDescriptionError()).toString(), General.LENGTH_44, General.SPACE, true));
+
+			msgToRem.putField(Iso8583.Bit._039_RSP_CODE, error.getErrorCodeISO());
+		} catch (Exception e) {
+			msgToRem.putField(Base24Ath.Bit.ENTITY_ERROR, Pack.resize(
+					"10002" + "Error Code could not extracted from message", General.LENGTH_44, General.SPACE, true));
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					MessageTranslator.class.getName(), "constructMsgRspToRem0210DeclinedRegExBussines",
+					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+			EventRecorder.recordEvent(e);
+			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"Exception in Method: constructMsgRspToRem0210DeclinedRegExBussines "
+							+ Utils.getStringMessageException(e),
+					"LOG", this.nameInterface));
+		}
+		return msgToRem;
+	}
 	
 }
