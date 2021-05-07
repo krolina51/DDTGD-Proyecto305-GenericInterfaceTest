@@ -292,7 +292,7 @@ public class DBHandler {
 	 * 
 	 * @return update true si activo false de lo contrario
 	 */
-	public boolean updateResgistry(String code, String process) {
+	public boolean updateResgistry(String code, String process, String version) {
 		boolean update = false;
 		Statement st = null;
 		ResultSet rs = null;
@@ -301,7 +301,7 @@ public class DBHandler {
 		try {
 			con = JdbcManager.getDefaultConnection();
 			st = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			rs = st.executeQuery(String.format(Queries.SELECT_ALL_FROM_CUST_EQUIVALENT_RESPONSE_CODES, code, process));
+			rs = st.executeQuery(String.format(Queries.SELECT_ALL_FROM_CUST_EQUIVALENT_RESPONSE_CODES, code, process, version));
 			rows = new Utils(this.params).countRows(rs);
 			boolean go = true;
 			if (rows > 0)
@@ -407,7 +407,7 @@ public class DBHandler {
 	 *
 	 */
 	public static class Queries {
-		public static final String SELECT_ALL_FROM_CUST_EQUIVALENT_RESPONSE_CODES = "SELECT * FROM cust_equivalent_response_codes WHERE code_iso = '%s' and process='%s'";
+		public static final String SELECT_ALL_FROM_CUST_EQUIVALENT_RESPONSE_CODES = "SELECT * FROM cust_equivalent_response_codes WHERE code_iso = '%s' and process='%s' and version='%s";
 		public static final String UPDATE_ACTIVE_CUST_EQUIVALENT_RESPONSE_CODES = "UPDATE cust_equivalent_response_codes SET active = '1' WHERE id='%s'";
 		public static final String UPDATE_ACTIVE_AND_PROCESS_CUST_EQUIVALENT_RESPONSE_CODES = "UPDATE cust_equivalent_response_codes SET active = '1', process = '%s' WHERE id='%s'";
 	}

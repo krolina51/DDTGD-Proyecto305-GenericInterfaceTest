@@ -1567,7 +1567,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 								"B24", nameInterface));
 						action.putMsgToRemote(msgToRemote);
 					}else {
-						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote);
+						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,objectValidations.getInforCollectedForStructData());
 		
 						this.getLogger().logLine("MENSAJEIso8583Post:"+Isomsg.toString());
 						
@@ -1832,9 +1832,17 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				action = new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromRemote, errMac), null, null);
 			} else {
 
+				Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
+						General.VOIDSTRING, new HashMap<String, String>(), params) {
+
+					@Override
+					public void validations(Base24Ath msg, Super objectValidations) {
+
+					}
+				};
 
 				 Iso8583Post Isomsg =
-				 translator.constructIso8583(msgFromRemote);
+				 translator.constructIso8583(msgFromRemote,objectValidations.getInforCollectedForStructData());
 				 
 				
 				
@@ -1945,9 +1953,17 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			} else {
 
 				
+				Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
+						General.VOIDSTRING, new HashMap<String, String>(), params) {
+
+					@Override
+					public void validations(Base24Ath msg, Super objectValidations) {
+
+					}
+				};
 
 				 Iso8583Post Isomsg =
-				 translator.constructIso8583(msgFromRemote);
+				 translator.constructIso8583(msgFromRemote, objectValidations.getInforCollectedForStructData());
 				 
 			
 				

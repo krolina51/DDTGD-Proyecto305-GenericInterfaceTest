@@ -462,7 +462,7 @@ public class MessageTranslator extends GenericInterface {
 		return msgToRmto;
 	}
 
-	public Iso8583Post constructIso8583(Base24Ath msgFromRemote) 
+	public Iso8583Post constructIso8583(Base24Ath msgFromRemote,HashMap<String, String> returnInfoValidations) 
 	{
 		Iso8583Post Iso=new Iso8583Post();
 		tStart = System.currentTimeMillis();
@@ -520,7 +520,24 @@ public class MessageTranslator extends GenericInterface {
 				Iso.putPrivField(Iso8583Post.PrivBit._011_ORIGINAL_KEY, msgFromRemote.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0,32));
 				//Iso.putField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS, msgFromRemote.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS));
 			}
-						
+			
+			if (!(returnInfoValidations == null)) {
+				this.udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"Entro poner hashmap si trae algo el map" + returnInfoValidations.toString(), "LOG",
+						this.nameInterface));
+
+				for (Map.Entry<String, String> info : returnInfoValidations.entrySet()) {
+
+					sd.put(info.getKey(), info.getValue());
+
+		
+
+					this.udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+							"Entro poner hashmap si trae algo el map Key: " + info.getKey() + " Value: "
+									+ info.getValue(),
+							"LOG", this.nameInterface));
+				}
+			}
 			
 			
 			Iso.putStructuredData(sd);
@@ -1027,7 +1044,7 @@ public class MessageTranslator extends GenericInterface {
 					"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines "
 							+ Utils.getStringMessageException(e),
 					"LOG", this.nameInterface));
-			if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1")) {
+			if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1",responseCodesVersion)) {
 				try {
 					allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false, "1",responseCodesVersion);
 				} catch (SQLException e1) {
@@ -1152,7 +1169,7 @@ public class MessageTranslator extends GenericInterface {
 						"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines "
 								+ Utils.getStringMessageException(e),
 						"LOG", this.nameInterface));
-				if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1")) {
+				if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1",responseCodesVersion)) {
 					this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false,
 							"1",responseCodesVersion);
 					responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(),

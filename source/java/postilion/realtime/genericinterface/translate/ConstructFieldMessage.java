@@ -966,7 +966,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 												"NoSuchElementException in Method: constructField126IsoTranslate "
 														+ Utils.getStringMessageException(e),
 												"LOG", this.nameInterface));
-						if (new DBHandler(this.params).updateResgistry(field39, "0")) {
+						if (new DBHandler(this.params).updateResgistry(field39, "0",responseCodesVersion)) {
 							this.allCodesIsoToB24 = postilion.realtime.library.common.db.DBHandler
 									.getResponseCodes(false, "0",responseCodesVersion);
 							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(field39, this.allCodesIsoToB24);
@@ -1057,7 +1057,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 						if (new DBHandler(this.params).updateResgistry(
 								sdFromTm.get(
 										Constants.General.ERROR_CODE),
-								"0")) {
+								"0",responseCodesVersion)) {
 							this.allCodesIscToIso = postilion.realtime.library.common.db.DBHandler
 									.getResponseCodes(true, "0",responseCodesVersion);
 							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(sdFromTm.get(
@@ -1114,7 +1114,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 							"NoSuchElementException in Method: constructField126IsoTranslateApprove "
 									+ Utils.getStringMessageException(e),
 							"LOG", this.nameInterface));
-					if (new DBHandler(this.params).updateResgistry(field39, "0")) {
+					if (new DBHandler(this.params).updateResgistry(field39, "0",responseCodesVersion)) {
 
 						this.allCodesIsoToB24 = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false,
 								"0",responseCodesVersion);
@@ -2026,7 +2026,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 														+ Utils.getStringMessageException(e),
 												"LOG", this.nameInterface));
 						if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
-								"1")) {
+								"1",responseCodesVersion)) {
 							this.allCodesB24ToIso = postilion.realtime.library.common.db.DBHandler
 									.getResponseCodesBase24("1",responseCodesVersion);
 							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(
@@ -2074,7 +2074,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 															+ Utils.getStringMessageException(e),
 													"LOG", this.nameInterface));
 							if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
-									"1")) {
+									"1",responseCodesVersion)) {
 								this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler
 										.getResponseCodes(false, "1",responseCodesVersion);
 								responseCode = InitialLoadFilter.getFilterCodeIsoToB24(
@@ -2200,7 +2200,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 															+ Utils.getStringMessageException(e),
 													"LOG", this.nameInterface));
 							if (new DBHandler(this.params)
-									.updateResgistry(msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "1")) {
+									.updateResgistry(msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "1",responseCodesVersion)) {
 								this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler
 										.getResponseCodes(false, "1",responseCodesVersion);
 								cResponse = InitialLoadFilter.getFilterCodeIsoToB24(
@@ -2234,7 +2234,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 															+ Utils.getStringMessageException(e),
 													"LOG", this.nameInterface));
 							if (new DBHandler(this.params)
-									.updateResgistry(msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "0")) {
+									.updateResgistry(msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "0",responseCodesVersion)) {
 								this.allCodesIsoToB24 = postilion.realtime.library.common.db.DBHandler
 										.getResponseCodes(false, "0",responseCodesVersion);
 								cResponse = InitialLoadFilter.getFilterCodeIsoToB24(
@@ -2946,7 +2946,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 						"NoSuchElementException in Method: constructP39For0220NotiBloq "
 								+ Utils.getStringMessageException(e),
 						"LOG", this.nameInterface));
-				if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE), "1")) {
+				if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE), "1",responseCodesVersion)) {
 					this.allCodesB24ToIso = postilion.realtime.library.common.db.DBHandler.getResponseCodesBase24("1",responseCodesVersion);
 					responseCode = InitialLoadFilter.getFilterCodeIsoToB24(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
 							this.allCodesB24ToIso);
