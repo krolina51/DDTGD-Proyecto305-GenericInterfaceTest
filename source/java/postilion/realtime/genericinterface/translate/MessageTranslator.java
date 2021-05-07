@@ -1029,7 +1029,7 @@ public class MessageTranslator extends GenericInterface {
 					"LOG", this.nameInterface));
 			if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1")) {
 				try {
-					allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false, "1");
+					allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false, "1",responseCodesVersion);
 				} catch (SQLException e1) {
 					EventRecorder.recordEvent(new TryCatchException(new String[] { nameInterface,
 							ConstructFieldMessage.class.getName(),
@@ -1154,7 +1154,7 @@ public class MessageTranslator extends GenericInterface {
 						"LOG", this.nameInterface));
 				if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1")) {
 					this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false,
-							"1");
+							"1",responseCodesVersion);
 					responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(),
 							this.allCodesIsoToB24TM);
 				} else {
