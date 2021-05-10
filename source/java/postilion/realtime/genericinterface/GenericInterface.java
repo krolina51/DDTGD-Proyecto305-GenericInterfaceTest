@@ -912,8 +912,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFieldsResponse.put("128-401010", "constructField128");
 		
 		
-		deleteFieldsResponse.put("011000", "104");
-		deleteFieldsResponse.put("012000", "104");
+		deleteFieldsResponse.put("011000", "104-49-52");
+		deleteFieldsResponse.put("012000", "104-49-52");
 		deleteFieldsResponse.put("401000", "15-40-44");
 		deleteFieldsResponse.put("402000", "15-40-44");
 		deleteFieldsResponse.put("321000", "44-54-62-100-104-105");
@@ -1583,8 +1583,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				}
 			} catch (Exception e) {
 				
-				Iso8583Post msg220=translator.construct0220ToTm(msg, nameInterface);
-				action.putMsgToTranmgr(msg220);
+				//Iso8583Post msg220=translator.construct0220ToTm(msg, nameInterface);
+				//action.putMsgToTranmgr(msg220);
 
 				e.printStackTrace();
 				udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
@@ -1775,14 +1775,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 					action.putMsgToRemote(msgToRemote2);
 				}
-				else if(originalMsg.getMessageType().equals(Iso8583.MsgType.toString(MsgType._0200_TRAN_REQ)))
-				{
-					originalMsg.putMsgType(MsgType._0210_TRAN_REQ_RSP);
-					originalMsg.putField(Iso8583.Bit._039_RSP_CODE, "06");
-					originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, "000000");
-					
-					action.putMsgToRemote(originalMsg);
-				}
+//				else if(originalMsg.getMessageType().equals(Iso8583.MsgType.toString(MsgType._0200_TRAN_REQ)))
+//				{
+//					originalMsg.putMsgType(MsgType._0210_TRAN_REQ_RSP);
+//					originalMsg.putField(Iso8583.Bit._039_RSP_CODE, "06");
+//					originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, "000000");
+//					
+//					action.putMsgToRemote(originalMsg);
+//				}
 				else if(originalMsg.getMessageType().equals(Iso8583.MsgType.toString(MsgType._0420_ACQUIRER_REV_ADV)))
 				{
 					originalMsg.putMsgType(MsgType._0430_ACQUIRER_REV_ADV_RSP);

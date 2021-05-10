@@ -1075,7 +1075,8 @@ public class MessageTranslator extends GenericInterface {
 		Map<String, String> deleteFieldsResponse = null;
 		Map<String, String> createFieldsResponse = null;
 		Map<String, String> transformFieldsResponse = null;
-
+		String pCode126=null;
+		InvokeMethodByConfig invoke=new InvokeMethodByConfig(params);
 		switch (resposeMessageType) {
 		case "0210":
 
@@ -1083,6 +1084,7 @@ public class MessageTranslator extends GenericInterface {
 			deleteFieldsResponse = GenericInterface.deleteFieldsResponse;
 			createFieldsResponse = GenericInterface.createFieldsResponse;
 			transformFieldsResponse = GenericInterface.transformFieldsResponse;
+			pCode126=msg.getField(126)!=null? msg.getField(126).substring(22, 28):null;
 
 			msgToRem.putMsgType(Iso8583.MsgType._0210_TRAN_REQ_RSP);
 
@@ -1132,9 +1134,81 @@ public class MessageTranslator extends GenericInterface {
 			}
 
 		}
+		
+		
+		
+		//SKIP-TRANSFORM y TRANSFORM
+		 
+		
+		for(int i=3;i<127;i++)
+		{
+			
+			String key1=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE)+"_"+ pCode126;
+			String key2=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+			String key3=String.valueOf(i);
+			
+
+			
+			String methodName=null;
+			
+			if(createFieldsResponse.containsKey(key1))
+			{
+				methodName=createFieldsResponse.get(key1);
+				if(!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+							methodName, msg, i));
+				
+			}
+			else if(createFieldsResponse.containsKey(key2))
+			{
+				methodName=createFieldsResponse.get(key2);
+				if(!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+							methodName, msg, i));
+			}
+			else if(createFieldsResponse.containsKey(key3))
+			{
+				methodName=createFieldsResponse.get(key3);
+				if(!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+							methodName, msg, i));
+			}
+			if(transformFieldsResponse.containsKey(key1))
+			{
+				methodName=transformFieldsResponse.get(key1);
+				if(!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+							methodName, msg, i));
+				
+			}
+			else if(transformFieldsResponse.containsKey(key2))
+			{
+				methodName=transformFieldsResponse.get(key2);
+				if(!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+							methodName, msg, i));
+			}
+			else if(transformFieldsResponse.containsKey(key3))
+			{
+				methodName=transformFieldsResponse.get(key3);
+				if(!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+							methodName, msg, i));
+			}
+		}
+		
+		
+		
+		
+		
+		
+		
 		// Busca si hay que eliminar campos dado el processingCode
 
 		String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+		
+		
+		
 		Set<String> set = deleteFieldsResponse.keySet().stream().filter(s -> s.length() <= 3)
 				.collect(Collectors.toSet());
 
@@ -1194,6 +1268,7 @@ public class MessageTranslator extends GenericInterface {
 							.append(error.getDescriptionError()).toString(), General.LENGTH_44, General.SPACE, true));
 
 			msgToRem.putField(Iso8583.Bit._039_RSP_CODE, error.getErrorCodeISO());
+			msgToRem.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID));
 		} catch (Exception e) {
 			msgToRem.putField(Base24Ath.Bit.ENTITY_ERROR, Pack.resize(
 					"10002" + "Error Code could not extracted from message", General.LENGTH_44, General.SPACE, true));
