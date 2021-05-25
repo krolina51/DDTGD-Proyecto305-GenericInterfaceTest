@@ -13,7 +13,6 @@ import postilion.realtime.library.common.model.ResponseCode;
 import postilion.realtime.genericinterface.channels.Super;
 import postilion.realtime.genericinterface.eventrecorder.events.CannotProcessAcqReconRspFromRemote;
 import postilion.realtime.genericinterface.eventrecorder.events.IncorrectLengthField_120KeyManagement;
-import postilion.realtime.genericinterface.eventrecorder.events.IncorrectRuntimeParameters;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidAddressKey;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidDataField_120KeyManagement;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidDataField_123CryptoServiceMsg;
@@ -48,51 +47,33 @@ import postilion.realtime.genericinterface.translate.util.Constants.KeyExchange;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
 import postilion.realtime.genericinterface.translate.validations.Validation;
-import postilion.realtime.genericinterface.translate.validations.Validation.ErrorMessages;
 import postilion.realtime.sdk.message.IMessage;
 import postilion.realtime.sdk.message.bitmap.BitmapMessage;
 import postilion.realtime.sdk.message.bitmap.Iso8583;
 import postilion.realtime.sdk.message.bitmap.Iso8583.MsgType;
 import postilion.realtime.sdk.message.bitmap.Iso8583Post;
-import postilion.realtime.sdk.message.bitmap.PosEntryMode;
-import postilion.realtime.sdk.message.bitmap.ProcessingCode;
 import postilion.realtime.sdk.message.bitmap.StructuredData;
-import postilion.realtime.sdk.message.bitmap.XFieldUnableToConstruct;
-import postilion.realtime.sdk.message.xml.XMLMessage2;
 import postilion.realtime.sdk.node.AInterchangeDriver8583;
 import postilion.realtime.sdk.node.AInterchangeDriverEnvironment;
 import postilion.realtime.sdk.node.Action;
-import postilion.realtime.sdk.node.XNodeParameterUnknown;
 import postilion.realtime.sdk.node.XNodeParameterValueInvalid;
 import postilion.realtime.sdk.util.DateTime;
 import postilion.realtime.sdk.util.TimedHashtable;
 import postilion.realtime.sdk.util.XPostilion;
-import postilion.realtime.sdk.util.convert.Pack;
 import postilion.realtime.sdk.util.convert.Transform;
+import postilion.realtime.validations.crypto.FactoryCommonRules;
 import postilion.realtime.sdk.node.ActiveActiveKeySyncMsgHandler;
 import postilion.realtime.sdk.node.NodeDriverEnvAdapter;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.charset.Charset;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.json.simple.parser.JSONParser;
-
-
-
 
 /**
  *
@@ -131,7 +112,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							// the remote entity. 1 - Send SignOn
 							// on connection with the remote entity
 
-	public static String exceptionMessage=null;
+	public static String exceptionMessage = null;
 	/** Inicia la variable keyExchangeState en inactivo. */
 	protected int keyExchangeState = Base24Ath.KeyExchangeState.IDLE;
 	public boolean signed_on = false;
@@ -170,18 +151,18 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public static Map<String, String> deleteFieldsResponseRev = new HashMap<>();
 	public static Map<String, String> createFieldsResponseRev = new HashMap<>();
 	public static Map<String, String> transformFieldsResponseRev = new HashMap<>();
-	public static Map<String, String> transformFieldsMultipleCasesResponseRev = new HashMap<>();	
-	
+	public static Map<String, String> transformFieldsMultipleCasesResponseRev = new HashMap<>();
+
 	public static Map<String, String> primerFiltroTest1 = new HashMap<>();
 	public static Map<String, String> primerFiltroTest2 = new HashMap<>();
 	public static Map<String, String> segundoFiltroTest2 = new HashMap<>();
 	public static Map<String, String> segundoFiltro = new HashMap<>();
-	
+
 	public static Map<String, String> createFields220ToTM = new HashMap<>();
-	
+
 	public static Map<String, String> deleteFieldsRequest = new HashMap<>();
 	public static Map<String, String> createFieldsRequest = new HashMap<>();
-	
+
 	public String issuerId = null;
 
 	public String ipUdpServer = "0";
@@ -198,7 +179,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public String routingField100 = "";
 	public boolean exeptionValidateExpiryDate = false;
 	public String urlCutWS = null;
-	public String responseCodesVersion=null;
+	public String responseCodesVersion = null;
+	public String ipCryptoValidation = "10.86.82.119";
+	public int portCryptoValidation = 7000;
 
 	public Parameters params;
 
@@ -218,8 +201,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 //						GRPCServer.runServer();
 //			}});
 //		grpcServer.start();
-		
-		
+
 		createFields220ToTM.put("3", "3");
 		createFields220ToTM.put("4", "4");
 		createFields220ToTM.put("7", "7");
@@ -243,16 +225,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFields220ToTM.put("102", "102");
 		createFields220ToTM.put("104", "104");
 		createFields220ToTM.put("123", "123");
-		
+
 		deleteFieldsRequest.put("501030", "14-15-22-25-26-40-42-56-98-100-123");
 		deleteFieldsRequest.put("401010", "14-15-22-25-26-40-42-56-100-123");
-		
+
 		createFieldsRequest.put("3-270110", "compensationDateValidationP17ToP15");
 
-		
-		
 		transformFieldsMultipleCases.put("3", "3");
-		
+
 		transformFields.put("3", "N/A");
 		transformFields.put("3-270110", "transformField3ForDepositATM");
 		transformFields.put("3-270120", "transformField3ForDepositATM");
@@ -270,18 +250,12 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		transformFields.put("35", "constructField35Oficinas");
 		transformFields.put("95", "constructReplacementAmounts");
 		transformFields.put("100", "constructField100");
-		
-		
-		
-		
-		
+
 		skipCopyFields.put("48", "48");
 		skipCopyFields.put("102", "102");
 		skipCopyFields.put("103", "103");
 		skipCopyFields.put("104", "104");
 		skipCopyFields.put("105", "105");
-		
-		
 
 		structuredDataFields.put("17", "17");
 		structuredDataFields.put("46", "46");
@@ -300,8 +274,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFields.put("98", "constructField98");
 		createFields.put("100", "constructField100");
 		createFields.put("123", "constructPosDataCode");
-		
-		
+
 		copyFieldsResponse.put("3", "3");
 		copyFieldsResponse.put("4", "4");
 		copyFieldsResponse.put("7", "7");
@@ -318,15 +291,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		copyFieldsResponse.put("48", "48");
 		copyFieldsResponse.put("49", "49");
 		copyFieldsResponse.put("103", "103");
-		
-		
+
 		transformFieldsMultipleCasesResponse.put("3", "3");
 		transformFieldsMultipleCasesResponse.put("44", "44");
 		transformFieldsMultipleCasesResponse.put("48", "48");
 		transformFieldsMultipleCasesResponse.put("63", "63");
 		transformFieldsMultipleCasesResponse.put("102", "102");
 		transformFieldsMultipleCasesResponse.put("103", "103");
-		
+
 		transformFieldsResponse.put("3", "N/A");
 		transformFieldsResponse.put("3-210110", "transformField3ForDepositATM");
 		transformFieldsResponse.put("3-210120", "transformField3ForDepositATM");
@@ -336,39 +308,39 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		transformFieldsResponse.put("3-510100", "transformField3ForCreditPaymentATM");
 		transformFieldsResponse.put("3-510140", "transformField3ForCreditPaymentATM");
 		transformFieldsResponse.put("3-510141", "transformField3ForCreditPaymentATM");
-		transformFieldsResponse.put("3-320100_270120","constructProcessingCode");
-		transformFieldsResponse.put("3-320100_270130","constructProcessingCode");
-		transformFieldsResponse.put("3-320000","constructProcessingCode");
-		transformFieldsResponse.put("3-321000","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_011000","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_311000","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_321000","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_381000","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_401000","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_401010","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_401020","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501000","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501030","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501040","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501041","constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501042","constructProcessingCode");
-		transformFieldsResponse.put("3-320100_270110","constructProcessingCode");
-		transformFieldsResponse.put("3-322000","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_012000","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_312000","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_322000","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_382000","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_402000","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_402010","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_402020","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502000","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502030","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502040","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502041","constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502042","constructProcessingCode");
-		transformFieldsResponse.put("3-324000_314000","constructProcessingCode");
-		transformFieldsResponse.put("3-324000_404010","constructProcessingCode");
-		transformFieldsResponse.put("3-324000_404020","constructProcessingCode");
+		transformFieldsResponse.put("3-320100_270120", "constructProcessingCode");
+		transformFieldsResponse.put("3-320100_270130", "constructProcessingCode");
+		transformFieldsResponse.put("3-320000", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_011000", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_311000", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_321000", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_381000", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_401000", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_401010", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_401020", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_501000", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_501030", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_501040", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_501041", "constructProcessingCode");
+		transformFieldsResponse.put("3-321000_501042", "constructProcessingCode");
+		transformFieldsResponse.put("3-320100_270110", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_012000", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_312000", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_322000", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_382000", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_402000", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_402010", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_402020", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_502000", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_502030", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_502040", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_502041", "constructProcessingCode");
+		transformFieldsResponse.put("3-322000_502042", "constructProcessingCode");
+		transformFieldsResponse.put("3-324000_314000", "constructProcessingCode");
+		transformFieldsResponse.put("3-324000_404010", "constructProcessingCode");
+		transformFieldsResponse.put("3-324000_404020", "constructProcessingCode");
 		transformFieldsResponse.put("38-011000", "constructField38DefaultOrCopy");
 		transformFieldsResponse.put("38-012000", "constructField38DefaultOrCopy");
 		transformFieldsResponse.put("38-222222", "constructField38DefaultOrCopy");
@@ -381,208 +353,208 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		transformFieldsResponse.put("40-321000_321000", "constructServiceRestrictionCode");
 		transformFieldsResponse.put("40-322000_322000", "constructServiceRestrictionCode");
 		transformFieldsResponse.put("44", "N/A");
-		transformFieldsResponse.put("44-011000","constructField44");
-		transformFieldsResponse.put("44-012000","constructField44");
-		transformFieldsResponse.put("44-222222","constructField44");
-		transformFieldsResponse.put("44-311000","constructField44");
-		transformFieldsResponse.put("44-312000","constructField44");
-		transformFieldsResponse.put("44-314000","constructField44");
-		transformFieldsResponse.put("44-320100_270100","constructField44");
-		transformFieldsResponse.put("44-320100_270140","constructField44");
-		transformFieldsResponse.put("44-501000","constructField44");
-		transformFieldsResponse.put("44-501030","constructField44");
-		transformFieldsResponse.put("44-501040","constructField44");
-		transformFieldsResponse.put("44-501041","constructField44");
-		transformFieldsResponse.put("44-501042","constructField44");
-		transformFieldsResponse.put("44-502000","constructField44");
-		transformFieldsResponse.put("44-502030","constructField44");
-		transformFieldsResponse.put("44-502040","constructField44");
-		transformFieldsResponse.put("44-502041","constructField44");
-		transformFieldsResponse.put("44-502042","constructField44");
-		transformFieldsResponse.put("44-510100","constructField44");
-		transformFieldsResponse.put("44-510140","constructField44");
-		transformFieldsResponse.put("44-510141","constructField44");
-		transformFieldsResponse.put("44-321000_321000","constuctServiceRspData");
-		transformFieldsResponse.put("44-322000_012000","constuctServiceRspData");
-		transformFieldsResponse.put("44-322000_322000","constuctServiceRspData");
-		transformFieldsResponse.put("44-381000","constuctServiceRspData");
-		transformFieldsResponse.put("44-382000","constuctServiceRspData");
+		transformFieldsResponse.put("44-011000", "constructField44");
+		transformFieldsResponse.put("44-012000", "constructField44");
+		transformFieldsResponse.put("44-222222", "constructField44");
+		transformFieldsResponse.put("44-311000", "constructField44");
+		transformFieldsResponse.put("44-312000", "constructField44");
+		transformFieldsResponse.put("44-314000", "constructField44");
+		transformFieldsResponse.put("44-320100_270100", "constructField44");
+		transformFieldsResponse.put("44-320100_270140", "constructField44");
+		transformFieldsResponse.put("44-501000", "constructField44");
+		transformFieldsResponse.put("44-501030", "constructField44");
+		transformFieldsResponse.put("44-501040", "constructField44");
+		transformFieldsResponse.put("44-501041", "constructField44");
+		transformFieldsResponse.put("44-501042", "constructField44");
+		transformFieldsResponse.put("44-502000", "constructField44");
+		transformFieldsResponse.put("44-502030", "constructField44");
+		transformFieldsResponse.put("44-502040", "constructField44");
+		transformFieldsResponse.put("44-502041", "constructField44");
+		transformFieldsResponse.put("44-502042", "constructField44");
+		transformFieldsResponse.put("44-510100", "constructField44");
+		transformFieldsResponse.put("44-510140", "constructField44");
+		transformFieldsResponse.put("44-510141", "constructField44");
+		transformFieldsResponse.put("44-321000_321000", "constuctServiceRspData");
+		transformFieldsResponse.put("44-322000_012000", "constuctServiceRspData");
+		transformFieldsResponse.put("44-322000_322000", "constuctServiceRspData");
+		transformFieldsResponse.put("44-381000", "constuctServiceRspData");
+		transformFieldsResponse.put("44-382000", "constuctServiceRspData");
 		transformFieldsResponse.put("48", "N/A");
-		transformFieldsResponse.put("48-321000_011000","constructField048InRspCostInquiry");
-		transformFieldsResponse.put("48-321000_381000","constructField048InRspCostInquiry");
-		transformFieldsResponse.put("48-322000_012000","constructField048InRspCostInquiry");
-		transformFieldsResponse.put("48-322000_382000","constructField048InRspCostInquiry");
-		transformFieldsResponse.put("48-011000","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-012000","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-210110","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-210120","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-222222","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270100","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270110","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270120","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270130","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270140","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270141","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-321000_321000","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-322000_322000","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-324000_314000","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-324000_404010","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-324000_404020","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-510100","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-510140","constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-510141","constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-321000_011000", "constructField048InRspCostInquiry");
+		transformFieldsResponse.put("48-321000_381000", "constructField048InRspCostInquiry");
+		transformFieldsResponse.put("48-322000_012000", "constructField048InRspCostInquiry");
+		transformFieldsResponse.put("48-322000_382000", "constructField048InRspCostInquiry");
+		transformFieldsResponse.put("48-011000", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-012000", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-210110", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-210120", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-222222", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-320100_270100", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-320100_270110", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-320100_270120", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-320100_270130", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-320100_270140", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-320100_270141", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-321000_321000", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-322000_322000", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-324000_314000", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-324000_404010", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-324000_404020", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-510100", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-510140", "constructFieldFromStructuredDataP48");
+		transformFieldsResponse.put("48-510141", "constructFieldFromStructuredDataP48");
 		transformFieldsResponse.put("54-011000", "constructField54");
 		transformFieldsResponse.put("54-012000", "constructField54");
 		transformFieldsResponse.put("63", "N/A");
-		transformFieldsResponse.put("63-011000","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-012000","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-222222","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-321000_011000","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-321000_401000","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-321000_501030","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-322000_012000","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-322000_402000","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-322000_502030","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-401000","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-401010","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-401020","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-402000","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-402010","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-402020","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501000","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501030","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501040","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501041","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501042","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-502030","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-502040","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-502041","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-502042","constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-210110","constructResponseCodeField63");
-		transformFieldsResponse.put("63-210120","constructResponseCodeField63");
-		transformFieldsResponse.put("63-314000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-320000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270100","constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270110","constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270120","constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270130","constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270140","constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270141","constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_321000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_401010","constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_401020","constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_501000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_501040","constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_501041","constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_501042","constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_322000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_402010","constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_402020","constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_502000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_502040","constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_502041","constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_502042","constructResponseCodeField63");
-		transformFieldsResponse.put("63-324000_314000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-324000_404010","constructResponseCodeField63");
-		transformFieldsResponse.put("63-324000_404020","constructResponseCodeField63");
-		transformFieldsResponse.put("63-404010","constructResponseCodeField63");
-		transformFieldsResponse.put("63-404020","constructResponseCodeField63");
-		transformFieldsResponse.put("63-502000","constructResponseCodeField63");
-		transformFieldsResponse.put("63-510100","constructResponseCodeField63");
-		transformFieldsResponse.put("63-510140","constructResponseCodeField63");
-		transformFieldsResponse.put("63-510141","constructResponseCodeField63");
+		transformFieldsResponse.put("63-011000", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-012000", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-222222", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-321000_011000", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-321000_401000", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-321000_501030", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-322000_012000", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-322000_402000", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-322000_502030", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-401000", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-401010", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-401020", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-402000", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-402010", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-402020", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-501000", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-501030", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-501040", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-501041", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-501042", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-502030", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-502040", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-502041", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-502042", "constuctCodeResponseInIsc");
+		transformFieldsResponse.put("63-210110", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-210120", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-314000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-320000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-320100_270100", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-320100_270110", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-320100_270120", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-320100_270130", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-320100_270140", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-320100_270141", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-321000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-321000_321000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-321000_401010", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-321000_401020", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-321000_501000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-321000_501040", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-321000_501041", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-321000_501042", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-322000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-322000_322000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-322000_402010", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-322000_402020", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-322000_502000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-322000_502040", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-322000_502041", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-322000_502042", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-324000_314000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-324000_404010", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-324000_404020", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-404010", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-404020", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-502000", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-510100", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-510140", "constructResponseCodeField63");
+		transformFieldsResponse.put("63-510141", "constructResponseCodeField63");
 		transformFieldsResponse.put("100-321000_401010", "constructField100ACH");
 		transformFieldsResponse.put("100-321000_401020", "constructField100ACH");
 		transformFieldsResponse.put("100-322000_402010", "constructField100ACH");
 		transformFieldsResponse.put("100-322000_402020", "constructField100ACH");
 		transformFieldsResponse.put("102", "N/A");
 		transformFieldsResponse.put("102-314000", "constructField102ConsultaCreditoRotativo");
-		transformFieldsResponse.put("102-311000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-312000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-320000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-321000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-321000_311000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-321000_381000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-322000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-322000_312000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-322000_382000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-381000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-382000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-011000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-012000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-222222","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-321000_011000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-321000_321000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-321000_401000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-322000_012000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-322000_322000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-322000_402000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-324000_314000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-324000_404010","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-324000_404020","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-401010","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-401020","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-402010","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-402020","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-404010","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-404020","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501000","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501030","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501040","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501041","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501042","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-502030","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-502040","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-502041","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-502042","constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-321000_401010","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_401020","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501000","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501030","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501040","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501041","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501042","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_402010","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_402020","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502000","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502030","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502040","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502041","constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502042","constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-311000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-312000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-320000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-321000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-321000_311000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-321000_381000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-322000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-322000_312000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-322000_382000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-381000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-382000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("102-011000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-012000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-222222", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-321000_011000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-321000_321000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-321000_401000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-322000_012000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-322000_322000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-322000_402000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-324000_314000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-324000_404010", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-324000_404020", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-401010", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-401020", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-402010", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-402020", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-404010", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-404020", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-501000", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-501030", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-501040", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-501041", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-501042", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-502030", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-502040", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-502041", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-502042", "constructField102DefaultOrCopy");
+		transformFieldsResponse.put("102-321000_401010", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-321000_401020", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-321000_501000", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-321000_501030", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-321000_501040", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-321000_501041", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-321000_501042", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-322000_402010", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-322000_402020", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-322000_502000", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-322000_502030", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-322000_502040", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-322000_502041", "constructField102ConsultaCostoTransferencia");
+		transformFieldsResponse.put("102-322000_502042", "constructField102ConsultaCostoTransferencia");
 		transformFieldsResponse.put("103", "N/A");
-		transformFieldsResponse.put("103-311000","transformField103");
-		transformFieldsResponse.put("103-312000","transformField103");
-		transformFieldsResponse.put("103-314000","transformField103");
-		transformFieldsResponse.put("103-322000_322000","transformField103");
-		transformFieldsResponse.put("103-324000_314000","transformField103");
-		transformFieldsResponse.put("103-381000","transformField103");
-		transformFieldsResponse.put("103-382000","transformField103");
-		transformFieldsResponse.put("103-320000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_011000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_311000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_321000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_381000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-322000_012000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-322000_312000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-322000_382000","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-322000_502030","constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_401010","constructField104Deposito");
-		transformFieldsResponse.put("103-321000_401020","constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501000","constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501030","constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501040","constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501041","constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501042","constructField104Deposito");
-		transformFieldsResponse.put("103-322000_402010","constructField104Deposito");
-		transformFieldsResponse.put("103-322000_402020","constructField104Deposito");
-		transformFieldsResponse.put("103-322000_502000","constructField104Deposito");
-		transformFieldsResponse.put("103-322000_502040","constructField104Deposito");
-		transformFieldsResponse.put("103-322000_502041","constructField104Deposito");
-		transformFieldsResponse.put("103-322000_502042","constructField104Deposito");
-		transformFieldsResponse.put("105-321000_401000","constructField105DefaultOrCopy");
-		transformFieldsResponse.put("105-322000_402000","constructField105DefaultOrCopy");
+		transformFieldsResponse.put("103-311000", "transformField103");
+		transformFieldsResponse.put("103-312000", "transformField103");
+		transformFieldsResponse.put("103-314000", "transformField103");
+		transformFieldsResponse.put("103-322000_322000", "transformField103");
+		transformFieldsResponse.put("103-324000_314000", "transformField103");
+		transformFieldsResponse.put("103-381000", "transformField103");
+		transformFieldsResponse.put("103-382000", "transformField103");
+		transformFieldsResponse.put("103-320000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("103-321000_011000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("103-321000_311000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("103-321000_321000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("103-321000_381000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("103-322000_012000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("103-322000_312000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("103-322000_382000", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("103-322000_502030", "constructField102_103ConsultaCosto");
+		transformFieldsResponse.put("103-321000_401010", "constructField104Deposito");
+		transformFieldsResponse.put("103-321000_401020", "constructField104Deposito");
+		transformFieldsResponse.put("103-321000_501000", "constructField104Deposito");
+		transformFieldsResponse.put("103-321000_501030", "constructField104Deposito");
+		transformFieldsResponse.put("103-321000_501040", "constructField104Deposito");
+		transformFieldsResponse.put("103-321000_501041", "constructField104Deposito");
+		transformFieldsResponse.put("103-321000_501042", "constructField104Deposito");
+		transformFieldsResponse.put("103-322000_402010", "constructField104Deposito");
+		transformFieldsResponse.put("103-322000_402020", "constructField104Deposito");
+		transformFieldsResponse.put("103-322000_502000", "constructField104Deposito");
+		transformFieldsResponse.put("103-322000_502040", "constructField104Deposito");
+		transformFieldsResponse.put("103-322000_502041", "constructField104Deposito");
+		transformFieldsResponse.put("103-322000_502042", "constructField104Deposito");
+		transformFieldsResponse.put("105-321000_401000", "constructField105DefaultOrCopy");
+		transformFieldsResponse.put("105-322000_402000", "constructField105DefaultOrCopy");
 		transformFieldsResponse.put("126-011000", "constructField126IsoTranslate");
 		transformFieldsResponse.put("126-012000", "constructField126IsoTranslate");
 		transformFieldsResponse.put("126-320100_270100", "constructField126IsoTranslate");
@@ -595,11 +567,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		transformFieldsResponse.put("126-510140", "constructField126IsoTranslate");
 		transformFieldsResponse.put("126-510141", "constructField126IsoTranslate");
 		transformFieldsResponse.put("128-401010", "constructField128");
-	
-		
-		
-		
-		
+
 		createFieldsResponse.put("17-321000_321000", "constructDateCapture");
 		createFieldsResponse.put("17-321000_401010", "constructDateCapture");
 		createFieldsResponse.put("17-321000_401020", "constructDateCapture");
@@ -910,8 +878,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFieldsResponse.put("105-321000_401000", "constructField105DefaultOrCopy");
 		createFieldsResponse.put("105-322000_402000", "constructField105DefaultOrCopy");
 		createFieldsResponse.put("128-401010", "constructField128");
-		
-		
+
 		deleteFieldsResponse.put("011000", "104-49-52");
 		deleteFieldsResponse.put("012000", "104-49-52");
 		deleteFieldsResponse.put("401000", "15-40-44");
@@ -921,8 +888,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		deleteFieldsResponse.put("501041", "15");
 		deleteFieldsResponse.put("401010", "15-22-52");
 		deleteFieldsResponse.put("501030", "15-22-44-52-105");
-		
-		
+
 		copyFieldsResponseRev.put("3", "3");
 		copyFieldsResponseRev.put("4", "4");
 		copyFieldsResponseRev.put("7", "7");
@@ -935,7 +901,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		copyFieldsResponseRev.put("37", "37");
 		copyFieldsResponseRev.put("38", "38");
 		copyFieldsResponseRev.put("39", "39");
-		//copyFieldsResponseRev.put("41", "41");
+		// copyFieldsResponseRev.put("41", "41");
 		copyFieldsResponseRev.put("48", "48");
 		copyFieldsResponseRev.put("49", "49");
 		copyFieldsResponseRev.put("54", "54");
@@ -943,7 +909,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		copyFieldsResponseRev.put("95", "95");
 		copyFieldsResponseRev.put("102", "102");
 		copyFieldsResponseRev.put("103", "103");
-		
+
 //		createFieldsResponseRev.put("48-401000", "constructFieldFromTimedHashTable");
 //		createFieldsResponseRev.put("48-402000", "constructFieldFromTimedHashTable");
 //		createFieldsResponseRev.put("54-401000", "constructDefaultField54");
@@ -955,7 +921,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		createFieldsResponseRev.put("112-502043", "constructField112");
 		createFieldsResponseRev.put("17-401010", "constructField17");
 		createFieldsResponseRev.put("104-401010", "constructDefaultField104");
-		
+
 		transformFieldsResponseRev.put("3-510100", "transformField3ForCreditPaymentATM");
 		transformFieldsResponseRev.put("3-510140", "transformField3ForCreditPaymentATM");
 		transformFieldsResponseRev.put("3-510100", "transformField3ForDepositATM");
@@ -977,28 +943,24 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		transformFieldsResponseRev.put("95-011000", "constructReplacementAmountsZero");
 		transformFieldsResponseRev.put("95-501000", "constructReplacementAmountsZero");
 		transformFieldsResponseRev.put("95-502000", "constructReplacementAmountsZero");
-		
-		//deleteFieldsResponseRev.put("17", "17");
-		//deleteFieldsResponseRev.put("102", "102");
-		//deleteFieldsResponseRev.put("103", "103");
-		//deleteFieldsResponseRev.put("104", "104");
-		
-		
+
+		// deleteFieldsResponseRev.put("17", "17");
+		// deleteFieldsResponseRev.put("102", "102");
+		// deleteFieldsResponseRev.put("103", "103");
+		// deleteFieldsResponseRev.put("104", "104");
+
 		deleteFieldsResponseRev.put("401000", "100-61-60");
 		deleteFieldsResponseRev.put("402000", "100-61-60");
 		deleteFieldsResponseRev.put("401010", "22-61-95");
 		deleteFieldsResponseRev.put("401020", "61");
 		deleteFieldsResponseRev.put("402010", "61");
 		deleteFieldsResponseRev.put("402020", "61");
-				
-		
-		
+
 		createFieldsResponseAdv.put("17", "constructOriginalFieldMsg");
 		createFieldsResponseAdv.put("38", "constructAuthorizationIdResponse");
 		createFieldsResponseAdv.put("48", "constructOriginalFieldMsg");
 		createFieldsResponseAdv.put("100", "construct0210ErrorFields");
-		
-		
+
 		copyFieldsResponseAdv.put("3", "3");
 		copyFieldsResponseAdv.put("4", "4");
 		copyFieldsResponseAdv.put("7", "7");
@@ -1015,26 +977,20 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		copyFieldsResponseAdv.put("49", "49");
 		copyFieldsResponseAdv.put("90", "90");
 		copyFieldsResponseAdv.put("102", "102");
-		
-		
+
 		deleteFieldsResponseAdv.put("28", "28");
 		deleteFieldsResponseAdv.put("30", "30");
-		
-		
-
-		
 
 		getLogger().logLine("#=== Enter to [Init] Method Interchange " + interchange.getName() + " ===#");
 
-		//String[] userParams = Pack.splitParams(interchange.getUserParameter());
+		// String[] userParams = Pack.splitParams(interchange.getUserParameter());
 //		acquirersNetwork = postilion.realtime.genericinterface.translate.database.DBHandler.getAcquirerDesc();
 		this.nameInterface = interchange.getName();
 
 		getParameters();
 		udpClient = new Client(ipUdpServer, portUdpServer);
 
-
-		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId,udpClient,
+		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId, udpClient,
 				nameInterface);
 
 	}
@@ -1054,7 +1010,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			String cfgKwaName = userParameters[Constants.Indexes.KWA_NAME];
 			sSignOn = userParameters[Constants.Indexes.SEND_SIGN_ON];
 			issuerId = userParameters[Constants.Indexes.ISSUERID];
-
 
 			if (cfgRetentionPeriod != null) {
 				try {
@@ -1096,8 +1051,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING);
 			}
 
-		
-
 		} catch (Exception e) {
 			EventRecorder.recordEvent(new InvalidMessage(
 					new String[] { Constants.Config.NAME, "Method: [validateParameters]", e.getMessage() }));
@@ -1105,83 +1058,80 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			getLogger().logLine("Exception in validateParameters: " + e.getMessage());
 		}
 	}
-	
+
 	public void getParameters() {
-		
-		
-		try
-		{
-		JSONParser parser=new JSONParser();
-		
-		org.json.simple.JSONObject jsonObject=(org.json.simple.JSONObject) parser.parse(new InputStreamReader(getClass().getResourceAsStream("parameters.json")));
-		
-		
-		
-		String cfgRetentionPeriod = jsonObject.get("cfgRetentionPeriod").toString();
-		String cfgValidateMAC = jsonObject.get("cfgValidateMAC").toString();
-		String cfgKwaName = jsonObject.get("cfgKwaName").toString();
-		sSignOn = jsonObject.get("sSignOn").toString();
-		responseCodesVersion=jsonObject.get("responseCodesVersion").toString();
 
-		issuerId = jsonObject.get("issuerId").toString();
-		String cfgIpUdpServer = jsonObject.get("cfgIpUdpServer").toString();
-		String cfgPortUdpServer = jsonObject.get("cfgPortUdpServer").toString();
-		boolean create0220ToTM = (boolean)jsonObject.get("create0220ToTM");
-		
-		
-		if (cfgRetentionPeriod != null) {
-			try {
-				retentionPeriod = Long.parseLong(cfgRetentionPeriod);
-			} catch (NumberFormatException e) {
+		try {
+			JSONParser parser = new JSONParser();
+
+			org.json.simple.JSONObject jsonObject = (org.json.simple.JSONObject) parser
+					.parse(new FileReader("D:\\Apl\\postilion\\genericinterfacetest\\parameter.json"));
+
+			String cfgRetentionPeriod = jsonObject.get("cfgRetentionPeriod").toString();
+			String cfgValidateMAC = jsonObject.get("cfgValidateMAC").toString();
+			String cfgKwaName = jsonObject.get("cfgKwaName").toString();
+			sSignOn = jsonObject.get("sSignOn").toString();
+			responseCodesVersion = jsonObject.get("responseCodesVersion").toString();
+
+			issuerId = jsonObject.get("issuerId").toString();
+			String cfgIpUdpServer = jsonObject.get("cfgIpUdpServer").toString();
+			String cfgPortUdpServer = jsonObject.get("cfgPortUdpServer").toString();
+			boolean create0220ToTM = (boolean) jsonObject.get("create0220ToTM");
+			String cfgIpCryptoValidation = jsonObject.get("cfgIpCryptoValidation").toString();
+			String cfgPortCryptoValidation = jsonObject.get("cfgPortCryptoValidation").toString();
+
+			if (cfgRetentionPeriod != null) {
+				try {
+					retentionPeriod = Long.parseLong(cfgRetentionPeriod);
+				} catch (NumberFormatException e) {
+					EventRecorder.recordEvent(
+							new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, cfgRetentionPeriod));
+					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, cfgRetentionPeriod);
+
+				}
+				sourceTranToTmHashtable = new TimedHashtable(retentionPeriod);
+				sourceTranToTmHashtableB24 = new TimedHashtable(retentionPeriod);
+			} else {
 				EventRecorder.recordEvent(
-						new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, cfgRetentionPeriod));
-				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, cfgRetentionPeriod);
-
+						new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING));
+				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING);
 			}
-			sourceTranToTmHashtable = new TimedHashtable(retentionPeriod);
-			sourceTranToTmHashtableB24 = new TimedHashtable(retentionPeriod);
-		} else {
-			EventRecorder.recordEvent(
-					new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING));
-			throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING);
-		}
-		if (cfgValidateMAC != null) {
-			boolean validateMac = cfgValidateMAC.equals(General.TRUE);
-			if (cfgKwaName != null) {
-				if (validateMac) {
-					try {
-						CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
-						kwa = crypcfgman.getKwa(cfgKwaName);
-					} catch (XCrypto e) {
-						EventRecorder.recordEvent(
-								new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName));
-						throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName);
+			if (cfgValidateMAC != null) {
+				boolean validateMac = cfgValidateMAC.equals(General.TRUE);
+				if (cfgKwaName != null) {
+					if (validateMac) {
+						try {
+							CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
+							kwa = crypcfgman.getKwa(cfgKwaName);
+						} catch (XCrypto e) {
+							EventRecorder.recordEvent(
+									new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName));
+							throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName);
+						}
 					}
+				} else {
+					EventRecorder.recordEvent(
+							new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING));
+					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING);
 				}
 			} else {
 				EventRecorder.recordEvent(
-						new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING));
-				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING);
+						new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING));
+				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING);
 			}
-		} else {
-			EventRecorder.recordEvent(
-					new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING));
-			throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING);
-		}
-		
-		this.ipUdpServer = validateIpUdpServerParameter(cfgIpUdpServer);
-		this.portUdpServer = validatePortUdpServerParameter(cfgPortUdpServer);
-		this.create0220ToTM=create0220ToTM;
-		
-		}
-		catch(Exception e)
-		{
+
+			this.ipUdpServer = validateIpUdpServerParameter(cfgIpUdpServer);
+			this.portUdpServer = validatePortUdpServerParameter(cfgPortUdpServer);
+			this.create0220ToTM = create0220ToTM;
+			this.ipCryptoValidation = validateIpUdpServerParameter(cfgIpCryptoValidation);
+			this.portCryptoValidation = Integer.valueOf(validatePortUdpServerParameter(cfgPortCryptoValidation));
+		} catch (Exception e) {
 			EventRecorder.recordEvent(
 					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
 							"getParameters:", Utils.getStringMessageException(e), "Unknown" }));
 			EventRecorder.recordEvent(e);
 		}
-	
+
 	}
 
 	/************************************************************************************
@@ -1206,7 +1156,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	/**
 	 * 
 	 * Validate parameter for connection to udp server
@@ -1288,14 +1238,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			}
 
 			getLogger().logLine("**MENSAJE**\n" + msg);
-			exceptionMessage=Transform.fromBinToHex(Transform.getString(data));
+			exceptionMessage = Transform.fromBinToHex(Transform.getString(data));
 			return msg;
 
 		} catch (Exception e) {
-			
-			exceptionMessage=Transform.fromBinToHex(Transform.getString(data));
-			udpClient.sendData(
-					Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "LOG", nameInterface));
+
+			exceptionMessage = Transform.fromBinToHex(Transform.getString(data));
+			udpClient.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "LOG",
+					nameInterface));
 
 			EventRecorder.recordEvent(
 					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
@@ -1317,8 +1267,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		default_header.putField(Header.Field.RESPONDER_CODE, Header.ResponderCode.CERO);
 	}
 
-
-
 	/**
 	 * Method to call with remote disconnects from interface Sets the signed_on flag
 	 * to false
@@ -1333,8 +1281,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		this.signed_on = false;
 		return new Action();
 	}
-
-	
 
 	/**
 	 * Clase para reportardo el error en el mensaje 0800.
@@ -1521,10 +1467,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		} else if (msg instanceof Base24Ath) {
 
 			Base24Ath msgFromRemote = (Base24Ath) msg;
-			
-			putRecordIntoSourceToTmHashtableB24(
-					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);	
-			
+
+			putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);
+
 			Base24Ath msgFromRemoteT = new Base24Ath(kwa);
 			Iso8583Post msgToTm = new Iso8583Post();
 			Base24Ath msgToRemote = new Base24Ath(kwa);
@@ -1539,7 +1484,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR) {
 					action = new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromRemote, errMac), null, null);
 				} else {
-					
+
 					Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
 							General.VOIDSTRING, new HashMap<String, String>(), params) {
 
@@ -1552,39 +1497,35 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					if (!msg.isFieldSet(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID)) {
 						msg.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, Constants.General.DEFAULT_P41);
 					}
-					
-					objectValidations = objectValidations.businessValidation(msgFromRemote,
-							objectValidations);// PONER CUIDADO***********************
+
+					objectValidations = objectValidations.businessValidation(msgFromRemote, objectValidations);// PONER
+																												// CUIDADO***********************
 					if (!objectValidations.getValidationResult()) {
-						udpClient.sendData(
-								Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-										"no paso las validaciones de negocio", "LOG", nameInterface));
+						udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+								"no paso las validaciones de negocio", "LOG", nameInterface));
 						action.putMsgToTranmgr(translator.construct0220ToTm(msg, interchange.getName()));
 						msgToRemote = translator.constructBase24(msgFromRemote, objectValidations);
-						udpClient.sendData(Client.getMsgKeyValue(
-								msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-								Transform.fromBinToHex(Transform.getString(msgToRemote.toMsg(false))),
-								"B24", nameInterface));
+						udpClient.sendData(
+								Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+										Transform.fromBinToHex(Transform.getString(msgToRemote.toMsg(false))), "B24",
+										nameInterface));
 						action.putMsgToRemote(msgToRemote);
-					}else {
-						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,objectValidations.getInforCollectedForStructData());
-		
-						this.getLogger().logLine("MENSAJEIso8583Post:"+Isomsg.toString());
-						
+					} else {
+						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
+								objectValidations.getInforCollectedForStructData());
+
+						this.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+
 						action.putMsgToTranmgr(Isomsg);
 
-						putRecordIntoSourceToTmHashtable(
-								Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+						putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
 					}
-					
-					 
-		
 
 				}
 			} catch (Exception e) {
-				
-				//Iso8583Post msg220=translator.construct0220ToTm(msg, nameInterface);
-				//action.putMsgToTranmgr(msg220);
+
+				// Iso8583Post msg220=translator.construct0220ToTm(msg, nameInterface);
+				// action.putMsgToTranmgr(msg220);
 
 				e.printStackTrace();
 				udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
@@ -1595,16 +1536,15 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
 
 				EventRecorder.recordEvent(e);
-				
+
 				udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in message: " + exceptionMessage,
-						"LOG", nameInterface));
+						"Exception in message: " + exceptionMessage, "LOG", nameInterface));
 
 			}
 		}
 		return action;
 	}
-	
+
 	/**************************************************************************************
 	 * Processes a Transaction Request Response (0210) from a remote interchange.
 	 * Drivers capable of handling this message should implement this method.
@@ -1633,20 +1573,17 @@ public class GenericInterface extends AInterchangeDriver8583 {
 											+ Transform.fromBinToHex(Transform.getString(msg.toMsg())),
 									"ISO", nameInterface));
 
-
 		try {
 
-			
-				MessageTranslator translator = new MessageTranslator(params);
-				
-				Base24Ath msgToRemote2=translator.constructBase24((Iso8583Post) msg);
-				udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
-				this.getLogger().logLine("210CONSTRUCTISO8583:"+msgToRemote2);
-				msgToRemote2.putField(128, "FFFFFFFF00000000");
+			MessageTranslator translator = new MessageTranslator(params);
 
-				action.putMsgToRemote(msgToRemote2);
-			
+			Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
+			udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
+			this.getLogger().logLine("210CONSTRUCTISO8583:" + msgToRemote2);
+			msgToRemote2.putField(128, "FFFFFFFF00000000");
+
+			action.putMsgToRemote(msgToRemote2);
 
 		} catch (Exception e) {
 
@@ -1662,96 +1599,95 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	@Override
 
 	public Action processTranReqFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
 			throws Exception {
-		
-	
+
 		msg.clearField(28);
 		msg.clearField(30);
 		putRecordIntoSourceToTmHashtable(
-				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msg);
-		
+				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
+				msg);
+
 		MessageTranslator translator = new MessageTranslator(params);
 		Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
-		
 
 		Action action = new Action();
-		
+
 		action.putMsgToRemote(msgToRemote);
 		return action;
 	}
-	
+
 	@Override
 	public Action processAcquirerRevAdvFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
 			throws Exception {
 		MessageTranslator translator = new MessageTranslator(params);
 		Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
-		
+
 		putRecordIntoSourceToTmHashtable(
-				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msg);
+				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
+				msg);
 		Action action = new Action();
-		
+
 		action.putMsgToRemote(msgToRemote);
 		return action;
-		
+
 	}
-	
-	
-	
+
 	@Override
 	public Action processTranAdvFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
 			throws Exception {
 		MessageTranslator translator = new MessageTranslator(params);
 		Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
-		
+
 		putRecordIntoSourceToTmHashtable(
-				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msg);
+				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
+				msg);
 		Action action = new Action();
-		
+
 		action.putMsgToRemote(msgToRemote);
 		return action;
 	}
-	
-	
 
 	@Override
 	public Action processTranAdvRspFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msgFromRemote)
 			throws Exception {
 		Iso8583Post originalMsg = (Iso8583Post) sourceTranToTmHashtable
-				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
-		
+				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+						+ msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+
 		originalMsg.putMsgType(msgFromRemote.getMsgType());
 		originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
 		originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
-		
+
 		Action action = new Action();
 		action.putMsgToTranmgr(originalMsg);
-		
+
 		return action;
 	}
 
 	@Override
 	public Action processTranReqRspFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msgFromRemote)
 			throws Exception {
-		
+
 		Iso8583Post originalMsg = (Iso8583Post) sourceTranToTmHashtable
-				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
-		
+				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+						+ msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+
 		originalMsg.putMsgType(msgFromRemote.getMsgType());
 		originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
 		originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
-		
+
 		Action action = new Action();
 		action.putMsgToTranmgr(originalMsg);
-		
+
 		return action;
 
 		// return super.processTranReqRspFromInterchange(interchange, msg);
 	}
-	
+
 	/**************************************************************************************
 	 * Processes a Transaction Advice Response (0230) from Transaction Manager.
 	 * Drivers capable of handling this message should implement this method.
@@ -1767,11 +1703,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR));
 			if (originalMsg != null) {
 				if (originalMsg.getMessageType().equals(Iso8583.MsgType.toString(MsgType._0220_TRAN_ADV))) {
-					
-	
-					Base24Ath msgToRemote2=translator.constructBase24(msg);
-	
 
+					Base24Ath msgToRemote2 = translator.constructBase24(msg);
 
 					action.putMsgToRemote(msgToRemote2);
 				}
@@ -1783,18 +1716,17 @@ public class GenericInterface extends AInterchangeDriver8583 {
 //					
 //					action.putMsgToRemote(originalMsg);
 //				}
-				else if(originalMsg.getMessageType().equals(Iso8583.MsgType.toString(MsgType._0420_ACQUIRER_REV_ADV)))
-				{
+				else if (originalMsg.getMessageType()
+						.equals(Iso8583.MsgType.toString(MsgType._0420_ACQUIRER_REV_ADV))) {
 					originalMsg.putMsgType(MsgType._0430_ACQUIRER_REV_ADV_RSP);
 					originalMsg.putField(Iso8583.Bit._039_RSP_CODE, "06");
 					originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, "000000");
-					
+
 					action.putMsgToRemote(originalMsg);
 				}
 			}
 		} catch (Exception e) {
-			
-			
+
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"ERRISO30" + Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ISO", nameInterface));
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
@@ -1806,7 +1738,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	/**************************************************************************************
 	 * Processes an Acquire Reversal Advice (0420/0421) from a remote interchange.
 	 * Drivers capable of handling this message should implement this method.
@@ -1820,20 +1752,19 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
 		Iso8583Post msgToTm = new Iso8583Post();
-		putRecordIntoSourceToTmHashtableB24(
-				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);	
+		putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);
 		Base24Ath msgToRemote = new Base24Ath(kwa);
 		MessageTranslator translator = new MessageTranslator(params);
 		try {
 			Utils tool = new Utils(params);
-			
+
 			int errMac = msgFromRemote.failedMAC();
 			if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR) {
 				action = new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromRemote, errMac), null, null);
 			} else {
 
-				Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
-						General.VOIDSTRING, new HashMap<String, String>(), params) {
+				Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
+						new HashMap<String, String>(), params) {
 
 					@Override
 					public void validations(Base24Ath msg, Super objectValidations) {
@@ -1841,27 +1772,19 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					}
 				};
 
-				 Iso8583Post Isomsg =
-				 translator.constructIso8583(msgFromRemote,objectValidations.getInforCollectedForStructData());
-				 
-				
-				
-				this.getLogger().logLine("MENSAJEIso8583Post:"+Isomsg.toString());
-				
+				Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
+						objectValidations.getInforCollectedForStructData());
+
+				this.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+
 				action.putMsgToTranmgr(Isomsg);
 
-				putRecordIntoSourceToTmHashtable(
-						Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
-				
-				
-				
-				
-				
+				putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
 
 			}
 		} catch (Exception e) {
-			
-			Iso8583Post msg220=translator.construct0220ToTm(msg, nameInterface);
+
+			Iso8583Post msg220 = translator.construct0220ToTm(msg, nameInterface);
 			action.putMsgToTranmgr(msg220);
 
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
@@ -1871,11 +1794,12 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
 			EventRecorder.recordEvent(e);
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: processAcquirerRevAdvFromInterchange " + e.getMessage(), "LOG", nameInterface));
+					"Exception in Method: processAcquirerRevAdvFromInterchange " + e.getMessage(), "LOG",
+					nameInterface));
 		}
 		return action;
 	}
-	
+
 	/**************************************************************************************
 	 * Processes an Acquire Reversal Advice Response (0430) from Transaction
 	 * Manager. Drivers capable of handling this message should implement this
@@ -1888,18 +1812,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		try {
 
 			MessageTranslator translator = new MessageTranslator(params);
-			
-			
 
-			
-			Base24Ath msgToRemote2=translator.constructBase24((Iso8583Post) msg);
+			Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
 			udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
-			this.getLogger().logLine("430CONSTRUCTISO8583:"+msgToRemote2);
+			this.getLogger().logLine("430CONSTRUCTISO8583:" + msgToRemote2);
 			msgToRemote2.putField(128, "FFFFFFFF00000000");
 
 			action.putMsgToRemote(msgToRemote2);
-			
 
 		} catch (Exception e) {
 
@@ -1912,23 +1832,25 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	@Override
 	public Action processAcquirerRevAdvRspFromInterchange(AInterchangeDriverEnvironment interchange,
 			Iso8583 msgFromRemote) throws Exception {
 		Iso8583Post originalMsg = (Iso8583Post) sourceTranToTmHashtable
-				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
-		
+				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+						+ msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+
 		originalMsg.putMsgType(msgFromRemote.getMsgType());
 		originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
 		originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
-		
+
 		Action action = new Action();
 		action.putMsgToTranmgr(originalMsg);
-		
+
 		return action;
 
 	}
+
 	/**
 	 * Processes a Transaction Advice (0220/0221) from a remote interchange. Drivers
 	 * capable of handling this message should implement this method. Otherwise,
@@ -1946,15 +1868,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Base24Ath msgToRemote = new Base24Ath(kwa);
 		MessageTranslator translator = new MessageTranslator(params);
 		try {
-			
+
 			int errMac = msgFromRemote.failedMAC();
 			if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR) {
 				action = new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromRemote, errMac), null, null);
 			} else {
 
-				
-				Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
-						General.VOIDSTRING, new HashMap<String, String>(), params) {
+				Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
+						new HashMap<String, String>(), params) {
 
 					@Override
 					public void validations(Base24Ath msg, Super objectValidations) {
@@ -1962,26 +1883,20 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					}
 				};
 
-				 Iso8583Post Isomsg =
-				 translator.constructIso8583(msgFromRemote, objectValidations.getInforCollectedForStructData());
-				 
-			
-				
-				this.getLogger().logLine("MENSAJEIso8583Post:"+Isomsg.toString());
-				
+				Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
+						objectValidations.getInforCollectedForStructData());
+
+				this.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+
 				action.putMsgToTranmgr(Isomsg);
 
-				putRecordIntoSourceToTmHashtable(
-						Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
-				
-				
-				}
+				putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
 
-			
+			}
 
 		} catch (Exception e) {
-			
-			Iso8583Post msg220=translator.construct0220ToTm(msg, nameInterface);
+
+			Iso8583Post msg220 = translator.construct0220ToTm(msg, nameInterface);
 			action.putMsgToTranmgr(msg220);
 
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
@@ -1994,9 +1909,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		return action;
 	}
 
-	
-	
-
 	public static String hexToAscci(String hexString) {
 		StringBuilder output = new StringBuilder();
 		for (int i = 0; i < hexString.length(); i += 2) {
@@ -2005,8 +1917,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return output.toString();
 	}
-
-	
 
 	/**************************************************************************************
 	 * Hace un echo message del mensaje recibido de ATH. En el header se devuelve el
@@ -2062,7 +1972,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public static void setLogger(Logger logger) {
 		GenericInterface.logger = logger;
 	}
-	
+
 	/**************************************************************************************
 	 * Processes a Network Management Request (0800/0801) from a remote interchange.
 	 * Drivers capable of handling this message should implement this method.
@@ -2102,7 +2012,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	/**
 	 * Construye un mensaje de respuesta de una Solicitud de Mensaje Administrativo.
 	 * 
@@ -2125,15 +2035,15 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			msgToRemote = constructNwrkMngMsgRspToRemote(msg, msgToRemote);
 
 			if (!msg.isFieldSet(Base24Ath.Bit.CRYPTO_SERVICE_MSG)) {
-				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
-						Base24Ath.RspCode._17_CUSTOMER_CANCEL, null));
+				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote,
+						Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC, Base24Ath.RspCode._17_CUSTOMER_CANCEL, null));
 				reportEvent(EventId.MISSING_FIELD053_SECURITY_INFO, interchange, null);
 				return action;
 			}
 			String cryptoServiceMsg = msg.getField(Base24Ath.Bit.CRYPTO_SERVICE_MSG);
 			if (!msg.isFieldSet(Iso8583.Bit._053_SECURITY_INFO)) {
-				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
-						Base24Ath.RspCode._21_NO_ACTION_TAKEN, null));
+				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote,
+						Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC, Base24Ath.RspCode._21_NO_ACTION_TAKEN, null));
 				reportEvent(EventId.MISSING_FIELD053_SECURITY_INFO, interchange, null);
 				return action;
 			}
@@ -2156,7 +2066,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	/**
 	 * Hace un echo message del mensaje recibido de ATH. En el header se devuelve el
 	 * tipo de la transacciÃ³n anteponiendole un '9' y el STATUS con el cÃ³digo
@@ -2200,8 +2110,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		return rsp;
 	}
-	
-	
+
 	public Action processKeyLoadKeyReqFromInterchangeToSourceNode(String cryptoServiceMsg, Base24Ath msgToRemote,
 			AInterchangeDriverEnvironment interchange, Base24Ath msg) throws XPostilion {
 
@@ -2262,8 +2171,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 												interchange.getSourceNodeKwp().getContents()));
 					} catch (Exception e) {
 
-						action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_RSM_SRC,
-								Iso8583.RspCode._06_ERROR, null));
+						action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote,
+								Constants.ErrorTypeCsm.INT_CSM_RSM_SRC, Iso8583.RspCode._06_ERROR, null));
 
 						EventRecorder.recordEvent(new TryCatchException(
 								new String[] { this.nameInterface, GenericInterface.class.getName(),
@@ -2297,8 +2206,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				return action;
 			} else // Si los digitos de chequeo no coinciden
 			{
-				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
-						Base24Ath.RspCode._12_BAD_CHECK_DIGITS, null));
+				action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote,
+						Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC, Base24Ath.RspCode._12_BAD_CHECK_DIGITS, null));
 				reportEvent(EventId.INVALID_SOURCE_KEY_LOADED, interchange, null);
 				return action;
 			}
@@ -2319,7 +2228,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			return action;
 		}
 	}
-	
+
 	/**
 	 * Compara el tamaÃ±o de la llave actual con el tamaÃ±o de la llave que
 	 * estÃ¡ entrando.
@@ -2355,7 +2264,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Construye el eco de un mensaje 800 de intercambio de llave de PIN, retornando
 	 * el indicador del campo del Mensaje Criptografico (123)
@@ -2393,7 +2302,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		rsp.putField(Iso8583.Bit._039_RSP_CODE, rspCode);
 		return rsp;
 	}
-	
+
 	/**
 	 * Construye un mensaje de respuesta hacia Ath cuando se recibe una solicitud de
 	 * intercambio de llaves. Este método es llamado por POSTILION sólo si se
@@ -2443,7 +2352,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	/**************************************************************************************
 	 * Construye un mensaje de petición de intercambio de llave (0800).
 	 *
@@ -2485,7 +2394,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return msgToRemote;
 	}
-	
+
 	/**
 	 * Method to process an echo test request received from remote
 	 * 
@@ -2510,7 +2419,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	/**
 	 * Method to process a sign off request received from remote
 	 * 
@@ -2525,7 +2434,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		this.signed_on = false;
 		return new Action(null, msg_to_remote, null, null);
 	}
-	
+
 	@Override
 	public Action processNwrkMngReqFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
 			throws Exception {
@@ -2551,7 +2460,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		return action;
 	}
-	
+
 	/**
 	 * Method to construct an 0800 message to send to the remote entity
 	 * 
@@ -2616,7 +2525,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return msgToRemote;
 	}
-	
+
 	/**
 	 * Method to build header for 0800 messages
 	 * 
@@ -2637,7 +2546,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return network_header;
 	}
-	
+
 	/**
 	 * Processes a Network Management Request Response (0810) from a remote
 	 * interchange. Drivers capable of handling this message should implement this
@@ -2703,7 +2612,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	/**
 	 * Procesa la respuesta de solicitud de intercambio de Llaves "161".
 	 * 
@@ -2733,7 +2642,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	/**
 	 * Procesa un mensaje de respuesta sign_on de la Interchange.
 	 * 
@@ -2758,7 +2667,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		return action;
 	}
-	
+
 	@Override
 	public Action processNwrkMngReqRspFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
 			throws Exception {
@@ -2766,7 +2675,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Action action = new Action();
 		return action;
 	}
-	
+
 	/**
 	 * Construye un eco del mensaje que llega.
 	 * 
@@ -2792,7 +2701,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		msgToRemote.copyFieldFrom(Base24Ath.Bit.CRYPTO_SERVICE_MSG, msg);
 		return msgToRemote;
 	}
-	
+
 	/**************************************************************************************
 	 * Construye el header del mensaje hacia ATH para un mensaje administrativo
 	 * (0800).
@@ -2814,7 +2723,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return networkHeader;
 	}
-	
+
 	/**************************************************************************************
 	 * Construye un mensaje de intercambio 0800. Campo 70 = 162.
 	 *
@@ -2842,7 +2751,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return msgToRemote;
 	}
-	
+
 	/**************************************************************************************
 	 * Construye un eco del mensaje que llega.
 	 *
@@ -2870,7 +2779,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return msgToRemote;
 	}
-	
+
 	/**
 	 * Method to process an sign request received from remote
 	 * 
@@ -2897,4 +2806,25 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		return action;
 	}
 
+	@Override
+	public Action processAcquirerFileUpdateAdvFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
+			throws Exception {
+		Action action = new Action();
+		FactoryCommonRules factory = new FactoryCommonRules(params, "10.86.82.119", 7000);
+		Object response[] = factory.commandProcess(new Base24Ath(kwa), msg);
+		action.putMsgToTranmgr((Iso8583Post) response[1]);
+		return action;
+	}
+
+	@Override
+	public Action processAcquirerFileUpdateAdvFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
+			throws Exception {
+		Action action = new Action();
+		FactoryCommonRules factory = new FactoryCommonRules(params, "10.86.82.119", 7000);
+		Object response[] = factory.commandProcess(new Base24Ath(kwa), (Iso8583Post) msg);
+		action.putMsgToTranmgr((Iso8583Post) response[1]);
+		return action;
+	}
+
+	
 }
