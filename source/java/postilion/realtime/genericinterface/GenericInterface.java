@@ -1242,7 +1242,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			return msg;
 
 		} catch (Exception e) {
-
+			GenericInterface.getLogger().logLine(Utils.getStringMessageException(e));
 			exceptionMessage = Transform.fromBinToHex(Transform.getString(data));
 			udpClient.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "LOG",
 					nameInterface));
