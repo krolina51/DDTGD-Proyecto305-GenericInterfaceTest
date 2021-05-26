@@ -1065,7 +1065,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			JSONParser parser = new JSONParser();
 
 			org.json.simple.JSONObject jsonObject = (org.json.simple.JSONObject) parser
-					.parse(new FileReader("D:\\Apl\\postilion\\genericinterfacetest\\parameter.json"));
+					.parse(new FileReader("D:\\Apl\\postilion\\genericinterfacetest\\parameters.json"));
 
 			String cfgRetentionPeriod = jsonObject.get("cfgRetentionPeriod").toString();
 			String cfgValidateMAC = jsonObject.get("cfgValidateMAC").toString();
@@ -1077,8 +1077,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			String cfgIpUdpServer = jsonObject.get("cfgIpUdpServer").toString();
 			String cfgPortUdpServer = jsonObject.get("cfgPortUdpServer").toString();
 			boolean create0220ToTM = (boolean) jsonObject.get("create0220ToTM");
-			String cfgIpCryptoValidation = jsonObject.get("cfgIpCryptoValidation").toString();
-			String cfgPortCryptoValidation = jsonObject.get("cfgPortCryptoValidation").toString();
+			String cfgIpCryptoValidation = jsonObject.get("ipCryptoValidation").toString();
+			String cfgPortCryptoValidation = jsonObject.get("portCryptoValidation").toString();
 
 			if (cfgRetentionPeriod != null) {
 				try {
@@ -2805,24 +2805,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-
-	@Override
-	public Action processAcquirerFileUpdateAdvFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
-			throws Exception {
-		Action action = new Action();
-		FactoryCommonRules factory = new FactoryCommonRules(params, "10.86.82.119", 7000);
-		Object response[] = factory.commandProcess(new Base24Ath(kwa), msg);
-		action.putMsgToTranmgr((Iso8583Post) response[1]);
-		return action;
-	}
-
+	
 	@Override
 	public Action processAcquirerFileUpdateAdvFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
 			throws Exception {
 		Action action = new Action();
 		FactoryCommonRules factory = new FactoryCommonRules(params, "10.86.82.119", 7000);
 		Object response[] = factory.commandProcess(new Base24Ath(kwa), (Iso8583Post) msg);
-		action.putMsgToTranmgr((Iso8583Post) response[1]);
+		action.putMsgToRemote((Iso8583Post) response[1]);
 		return action;
 	}
 
