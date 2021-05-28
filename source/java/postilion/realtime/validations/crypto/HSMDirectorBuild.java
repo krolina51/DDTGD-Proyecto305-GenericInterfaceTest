@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 
+import postilion.realtime.genericinterface.GenericInterface;
+import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.sdk.crypto.CryptoCfgManager;
 import postilion.realtime.sdk.crypto.CryptoManager;
 import postilion.realtime.sdk.crypto.ICryptoConnection;
@@ -39,6 +41,7 @@ public class HSMDirectorBuild {
 
 	public String sendCommand(String commandHSM, String ip, int puerto) {
 		String data = null;
+		GenericInterface.getLogger().logLine("sendCommand");
 		try {
 			data = processMessage(commandHSM);
 			if (data == null || errorHsm.equals(data)) {
@@ -48,25 +51,25 @@ public class HSMDirectorBuild {
 				System.out.println("Reconexion socket <<<" + ip + ":" + puerto + ">>>");
 			}
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			GenericInterface.getLogger().logLine("Exception "+Utils.getStringMessageException(e));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			GenericInterface.getLogger().logLine("Exception "+Utils.getStringMessageException(e));
 		}
 
 		return data;
 	}
 
 	public String processMessage(String msgIn) {
+		GenericInterface.getLogger().logLine("processMessage");
 		try {
+			GenericInterface.getLogger().logLine("socket "+socket);
 			if (socket != null) {
 				in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 				out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 				String response = "";
 				command = msgIn;
 				// socket.shutdownInput();
-				System.out.println("envia " + command);
+				GenericInterface.getLogger().logLine("envia " + command);
 				out.writeShort(command.getBytes().length);
 				out.write(command.getBytes());
 				out.flush();
@@ -75,18 +78,19 @@ public class HSMDirectorBuild {
 					byte[] fr = new byte[255];
 					in.read(fr);
 					response = new String(fr);
-					System.out.println("salida hsm " + response);
+					GenericInterface.getLogger().logLine("salida hsm " + response);
+					
 				} catch (SocketException e) {
-					System.out.println("Error en la conexion con el socket");
+					GenericInterface.getLogger().logLine("Error en la conexion con el socket");
 				} catch (Exception e) {
-					// TODO: handle exception
+					GenericInterface.getLogger().logLine("Exception "+Utils.getStringMessageException(e));
 					e.printStackTrace();
 				}
-
+				GenericInterface.getLogger().logLine("response "+response);
 				return response;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			GenericInterface.getLogger().logLine("Exception "+Utils.getStringMessageException(e));
 		}
 		return errorHsm; // No hay Conexion con la HSM
 	}

@@ -12,6 +12,7 @@ import javax.xml.bind.DatatypeConverter;
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.Parameters;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
+import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.sdk.crypto.CryptoCfgManager;
 import postilion.realtime.sdk.crypto.CryptoManager;
 import postilion.realtime.sdk.crypto.DesKvc;
@@ -53,6 +54,7 @@ public class FactoryCommonRules {
 		this.params = params;
 		this.ip = ip;
 		this.port = port;
+		GenericInterface.getLogger().logLine("Constructor --- ip "+ip+" port "+port);
 	}
 
 	/**
@@ -231,6 +233,7 @@ public class FactoryCommonRules {
 	public Object[] commandProcess(Base24Ath MsgIn, Iso8583Post MsgOld) throws XPostilion {
 		Object r[] = { "", null };
 		String resultado = "";
+		GenericInterface.getLogger().logLine("commandProcess");
 //		String rutaLog = messageConverterFramework.runtime_params[4];
 //		String nombreLog = this.getClass().getSimpleName().toString() + _EXT;
 //		String permisoLog = messageConverterFramework.runtime_params[6];
@@ -247,6 +250,7 @@ public class FactoryCommonRules {
 				// Obtiene el valor del tipo de comando a procesar
 				std_data = MsgOld.getStructuredData();
 				accion = std_data.get("_PROCESS_TYPE");
+				GenericInterface.getLogger().logLine("accion == _PROCESS_TYPE: "+accion);
 			} catch (Exception e) {
 				// Genera mensaje de respuest si ocurre alguna excepcion con el structureddata
 				MsgOld.setMessageType(MsgOld.getResponseMessageType());
@@ -424,7 +428,7 @@ public class FactoryCommonRules {
 			} else {
 				respuesta = Iso8583Post.RspCode._12_INVALID_TRAN;
 				System.out.println("Respuesta no corresponde con la solicitud");
-				new HSMDirectorBuild().resetConecction("", 1);
+				new HSMDirectorBuild().resetConecction(this.ip, this.port);
 				return respuesta;
 			}
 		}
@@ -437,7 +441,7 @@ public class FactoryCommonRules {
 		// Extrae el offset, sino lo encuentra declina con codigo 25 para autra
 		String offset = "";
 		try {
-			offset = executeQuery(EncPan, "BBFAVIRTUAL");
+			offset = executeQuery(EncPan, "BBogota");
 			if ("".equals(offset) || offset == null) {
 				GenericInterface.getLogger().logLine("PVV Offset no encontrado ");
 				respuesta = GeneralConstant._ESTNOPERMITETX;
@@ -445,7 +449,9 @@ public class FactoryCommonRules {
 
 				commandHSM = "<32#2#3" + pb_new + "#" + key1 + "#0123456789012345#" + offset + "#" + Pan.substring(4)
 						+ "#F#4#" + key2 + "#F#" + Pan.substring(3, Pan.length() - 1) + "#^" + campo112 + "#>";
-				String resultado = new HSMDirectorBuild().sendCommand(commandHSM, this.ip, this.port);
+				HSMDirectorBuild hsmComm = new HSMDirectorBuild();
+				hsmComm.openConnectHSM(ip, port);
+				String resultado = hsmComm.sendCommand(commandHSM, this.ip, this.port);
 				if (resultado == null || _ERROR_HSM.equals(resultado) || "".equals(resultado)) {
 					respuesta = Iso8583Post.RspCode._91_ISSUER_OR_SWITCH_INOPERATIVE;
 				} else {
@@ -465,7 +471,7 @@ public class FactoryCommonRules {
 				}
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			GenericInterface.getLogger().logLine("<<<SQLException>> "+Utils.getStringMessageException(e));
 		}
 		GenericInterface.getLogger().logLine("<<<Fin Comando 32 Verificacion de Pin 01>>>");
 
@@ -546,7 +552,9 @@ public class FactoryCommonRules {
 
 		String commandHSM = "<37#2#3##" + key1 + "#0123456789012345#" + offset + "#" + Pan.substring(4) + "#F#4#" + key2
 				+ pb_new + "#F#" + Pan.substring(3, Pan.length() - 1) + "#^" + campo112 + "#>";
-		String resultado = new HSMDirectorBuild().sendCommand(commandHSM, this.ip, this.port);
+		HSMDirectorBuild hsmComm = new HSMDirectorBuild();
+		hsmComm.openConnectHSM(ip, port);
+		String resultado = hsmComm.sendCommand(commandHSM, this.ip, this.port);
 
 		if (resultado == null || _ERROR_HSM.equals(resultado) || "".equals(resultado)) {
 			respuesta = Iso8583Post.RspCode._91_ISSUER_OR_SWITCH_INOPERATIVE;
@@ -662,7 +670,9 @@ public class FactoryCommonRules {
 										String commandHSM = "<37#2#3" + pb_old + "#" + key1 + "#0123456789012345#"
 												+ offset + "#" + Pan.substring(4) + "#F#4#" + key2 + pb_new + "#F#"
 												+ Pan.substring(3, Pan.length() - 1) + "#^" + campo112 + "#>";
-										String resultado = new HSMDirectorBuild().sendCommand(commandHSM, this.ip, this.port);
+										HSMDirectorBuild hsmComm = new HSMDirectorBuild();
+										hsmComm.openConnectHSM(ip, port);
+										String resultado = hsmComm.sendCommand(commandHSM, this.ip, this.port);
 
 										respuesta = GeneralConstant._CLAVEINVALIDA;
 										if (resultado == null || _ERROR_HSM.equals(resultado) || "".equals(resultado)) {
@@ -719,6 +729,7 @@ public class FactoryCommonRules {
 	}
 
 	public String traslatePin(Base24Ath MsgIn, Iso8583Post MsgOld) throws XPostilion {
+		GenericInterface.getLogger().logLine("traslatePin");
 		String respuesta = "";
 		DesKwa current_in_pbk = null;
 		String key1 = "";
@@ -743,15 +754,19 @@ public class FactoryCommonRules {
 			// se configuro en la HSM
 			current_in_pbk = crypcfgman.getKwa(node + "_" + canal + "_PBK");
 			key1 = current_in_pbk.getContents().getAdditionalData();
+			GenericInterface.getLogger().logLine("Criptogramas cargados correctamente");
 		} catch (Exception e) {
 			e.printStackTrace();
+			GenericInterface.getLogger().logLine("Criptogramas no fueron cargados " + e.getMessage());
 			return respuesta = Iso8583Post.RspCode._69_ADVICE_RECEIVED_TOO_LATE;
 		}
 		String commandHSM = "<" + AtallaMsg.Command._33_TRANSLATE_PIN + "#13#" + key1 + "#" + key1 + "#" + pb + "#F"
 				+ "#" + tipDoc + padded + "#^" + campo_11 + "#>";
 		// String
 		// commandHSM="<"+AtallaMsg.Command._33_TRANSLATE_PIN+"#13#"+key1+"#"+key1+"#"+pb+"#F"+"#"+tipDoc+padded+"#>";
-		respuesta = new HSMDirectorBuild().sendCommand(commandHSM, this.ip, this.port);
+		HSMDirectorBuild hsmComm = new HSMDirectorBuild();
+		hsmComm.openConnectHSM(ip, port);
+		respuesta = hsmComm.sendCommand(commandHSM, this.ip, this.port);
 		return respuesta;
 	}
 
@@ -797,10 +812,10 @@ public class FactoryCommonRules {
 				HSMDirectorBuild hsmConn = new HSMDirectorBuild();
 				if (hsmConn.getSocket() == null) {
 					System.out.println("Conexion nula para calculo calc_CVV");
-					new HSMDirectorBuild().openConnectHSM(ip, Integer.parseInt(puerto));
+					hsmConn.openConnectHSM(ip, Integer.parseInt(puerto));
 				}
 
-				String resultado = new HSMDirectorBuild().sendCommand(commandHSM, "", 1);
+				String resultado = hsmConn.sendCommand(commandHSM, "", 1);
 				String cvv = "";
 				int k = resultado.trim().indexOf("CX00");
 
