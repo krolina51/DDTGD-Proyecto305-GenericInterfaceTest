@@ -36,8 +36,7 @@ public class FactoryCommonRules {
 	private static final String _TRASLATE_PIN = "06";
 	private static final String _ERROR_HSM = "00000000ER99";
 	private Parameters params;
-	private String ip =  "10.86.82.119";
-	private int port = 7000;
+	HSMDirectorBuild hsmComm;
 
 	public CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
 	private static postilion.realtime.sdk.ipc.SecurityManager SEC_MANAGER;
@@ -52,9 +51,10 @@ public class FactoryCommonRules {
 
 	public FactoryCommonRules(Parameters params) {
 		this.params = params;
-		this.ip = this.params.getIpCryptoValidation();
-		this.port = this.params.getPortCryptoValidation();
-		GenericInterface.getLogger().logLine("Constructor --- ip "+ip+" port "+port);
+		this.hsmComm = new HSMDirectorBuild();
+		this.hsmComm.openConnectHSM(this.params.getIpCryptoValidation(), this.params.getPortCryptoValidation());
+		GenericInterface.getLogger().logLine("Constructor --- ip " + this.params.getIpCryptoValidation() + " port "
+				+ this.params.getPortCryptoValidation());
 	}
 
 	/**
@@ -81,7 +81,6 @@ public class FactoryCommonRules {
 		return r;
 	}
 
-	
 	public Object desencryptPan(Base24Ath MsgIn, Iso8583Post MsgOld) throws XPostilion {
 
 		int msg_type = MsgOld.getMsgType();
@@ -250,7 +249,7 @@ public class FactoryCommonRules {
 				// Obtiene el valor del tipo de comando a procesar
 				std_data = MsgOld.getStructuredData();
 				accion = std_data.get("_PROCESS_TYPE");
-				GenericInterface.getLogger().logLine("accion == _PROCESS_TYPE: "+accion);
+				GenericInterface.getLogger().logLine("accion == _PROCESS_TYPE: " + accion);
 			} catch (Exception e) {
 				// Genera mensaje de respuest si ocurre alguna excepcion con el structureddata
 				MsgOld.setMessageType(MsgOld.getResponseMessageType());
@@ -428,7 +427,8 @@ public class FactoryCommonRules {
 			} else {
 				respuesta = Iso8583Post.RspCode._12_INVALID_TRAN;
 				System.out.println("Respuesta no corresponde con la solicitud");
-				new HSMDirectorBuild().resetConecction(this.ip, this.port);
+				this.hsmComm.resetConecction(this.params.getIpCryptoValidation(),
+						this.params.getPortCryptoValidation());
 				return respuesta;
 			}
 		}
@@ -449,9 +449,8 @@ public class FactoryCommonRules {
 
 				commandHSM = "<32#2#3" + pb_new + "#" + key1 + "#0123456789012345#" + offset + "#" + Pan.substring(4)
 						+ "#F#4#" + key2 + "#F#" + Pan.substring(3, Pan.length() - 1) + "#^" + campo112 + "#>";
-				HSMDirectorBuild hsmComm = new HSMDirectorBuild();
-				hsmComm.openConnectHSM(ip, port);
-				String resultado = hsmComm.sendCommand(commandHSM, this.ip, this.port);
+				String resultado = hsmComm.sendCommand(commandHSM, this.params.getIpCryptoValidation(),
+						this.params.getPortCryptoValidation());
 				if (resultado == null || _ERROR_HSM.equals(resultado) || "".equals(resultado)) {
 					respuesta = Iso8583Post.RspCode._91_ISSUER_OR_SWITCH_INOPERATIVE;
 				} else {
@@ -471,7 +470,7 @@ public class FactoryCommonRules {
 				}
 			}
 		} catch (SQLException e) {
-			GenericInterface.getLogger().logLine("<<<SQLException>> "+Utils.getStringMessageException(e));
+			GenericInterface.getLogger().logLine("<<<SQLException>> " + Utils.getStringMessageException(e));
 		}
 		GenericInterface.getLogger().logLine("<<<Fin Comando 32 Verificacion de Pin 01>>>");
 
@@ -553,8 +552,9 @@ public class FactoryCommonRules {
 		String commandHSM = "<37#2#3##" + key1 + "#0123456789012345#" + offset + "#" + Pan.substring(4) + "#F#4#" + key2
 				+ pb_new + "#F#" + Pan.substring(3, Pan.length() - 1) + "#^" + campo112 + "#>";
 		HSMDirectorBuild hsmComm = new HSMDirectorBuild();
-		hsmComm.openConnectHSM(ip, port);
-		String resultado = hsmComm.sendCommand(commandHSM, this.ip, this.port);
+		hsmComm.openConnectHSM(this.params.getIpCryptoValidation(), this.params.getPortCryptoValidation());
+		String resultado = hsmComm.sendCommand(commandHSM, this.params.getIpCryptoValidation(),
+				this.params.getPortCryptoValidation());
 
 		if (resultado == null || _ERROR_HSM.equals(resultado) || "".equals(resultado)) {
 			respuesta = Iso8583Post.RspCode._91_ISSUER_OR_SWITCH_INOPERATIVE;
@@ -603,7 +603,6 @@ public class FactoryCommonRules {
 		String canal = sd.get("_CHANNEL");
 		String campo11 = "";
 		String campo112 = "";
-		HSMDirectorBuild hsmComm = new HSMDirectorBuild();
 
 		// Valores que se asigna para los criptogramas
 		String key1 = "";
@@ -671,8 +670,9 @@ public class FactoryCommonRules {
 										String commandHSM = "<37#2#3" + pb_old + "#" + key1 + "#0123456789012345#"
 												+ offset + "#" + Pan.substring(4) + "#F#4#" + key2 + pb_new + "#F#"
 												+ Pan.substring(3, Pan.length() - 1) + "#^" + campo112 + "#>";
-										hsmComm.openConnectHSM(ip, port);
-										String resultado = hsmComm.sendCommand(commandHSM, this.ip, this.port);
+										String resultado = this.hsmComm.sendCommand(commandHSM,
+												this.params.getIpCryptoValidation(),
+												this.params.getPortCryptoValidation());
 
 										respuesta = GeneralConstant._CLAVEINVALIDA;
 										if (resultado == null || _ERROR_HSM.equals(resultado) || "".equals(resultado)) {
@@ -708,7 +708,8 @@ public class FactoryCommonRules {
 						} else {
 							respuesta = Iso8583Post.RspCode._12_INVALID_TRAN;
 							System.out.println("Respuesta no corresponde con la solicitud");
-							new HSMDirectorBuild().resetConecction(this.ip, this.port);
+							this.hsmComm.resetConecction(this.params.getIpCryptoValidation(),
+									this.params.getPortCryptoValidation());
 							return respuesta;
 						}
 					}
@@ -720,7 +721,8 @@ public class FactoryCommonRules {
 			} else {
 				respuesta = Iso8583Post.RspCode._12_INVALID_TRAN;
 				System.out.println("Respuesta no corresponde con la solicitud");
-				hsmComm.resetConecction("", 1);
+				this.hsmComm.resetConecction(this.params.getIpCryptoValidation(),
+						this.params.getPortCryptoValidation());
 				return respuesta;
 			}
 		}
@@ -764,9 +766,9 @@ public class FactoryCommonRules {
 				+ "#" + tipDoc + padded + "#^" + campo_11 + "#>";
 		// String
 		// commandHSM="<"+AtallaMsg.Command._33_TRANSLATE_PIN+"#13#"+key1+"#"+key1+"#"+pb+"#F"+"#"+tipDoc+padded+"#>";
-		HSMDirectorBuild hsmComm = new HSMDirectorBuild();
-		hsmComm.openConnectHSM(ip, port);
-		respuesta = hsmComm.sendCommand(commandHSM, this.ip, this.port);
+
+		respuesta = this.hsmComm.sendCommand(commandHSM, this.params.getIpCryptoValidation(),
+				this.params.getPortCryptoValidation());
 		return respuesta;
 	}
 
