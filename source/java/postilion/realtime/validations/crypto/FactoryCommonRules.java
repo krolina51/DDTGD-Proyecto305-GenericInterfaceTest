@@ -205,7 +205,7 @@ public class FactoryCommonRules {
 			String key = "";
 			String Offset = "";
 			stmt = cn.prepareStatement("SELECT concat(issuer_nr,'_',curr_table_cards)n "
-					+ " from postcard.[dbo].[pc_issuers] (NOLOCK) " + " where issuer_name='" + Perfil + "';");
+					+ " from postcard.[dbo].[pc_issuers] (NOLOCK) " + " where issuer_nr='" + Perfil + "';");
 			rs = stmt.executeQuery();
 			while (rs.next() != false) {
 				key = rs.getString(1);
@@ -441,7 +441,7 @@ public class FactoryCommonRules {
 		// Extrae el offset, sino lo encuentra declina con codigo 25 para autra
 		String offset = "";
 		try {
-			offset = executeQuery(EncPan, "BBogota");
+			offset = executeQuery(EncPan, this.params.getIssuerId());
 			if ("".equals(offset) || offset == null) {
 				GenericInterface.getLogger().logLine("PVV Offset no encontrado ");
 				respuesta = GeneralConstant._ESTNOPERMITETX;
@@ -661,7 +661,7 @@ public class FactoryCommonRules {
 										.logLine("Comando 33 cambio de PIN, Se genero exitoso PIN_B64_OLD ");
 								// Extrae el offset
 								try {
-									offset = executeQuery(EncPan, "BBogota");
+									offset = executeQuery(EncPan, this.params.getIssuerId());
 									if ("".equals(offset) || offset == null) {
 										GenericInterface.getLogger().logLine("PVV Offset no encontrado ");
 										respuesta = GeneralConstant._ESTNOPERMITETX;
