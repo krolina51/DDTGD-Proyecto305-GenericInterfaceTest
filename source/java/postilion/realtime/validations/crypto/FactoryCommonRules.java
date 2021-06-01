@@ -50,10 +50,10 @@ public class FactoryCommonRules {
 		}
 	}
 
-	public FactoryCommonRules(Parameters params, String ip, int port) {
+	public FactoryCommonRules(Parameters params) {
 		this.params = params;
-		this.ip = ip;
-		this.port = port;
+		this.ip = this.params.getIpCryptoValidation();
+		this.port = this.params.getPortCryptoValidation();
 		GenericInterface.getLogger().logLine("Constructor --- ip "+ip+" port "+port);
 	}
 
@@ -603,6 +603,7 @@ public class FactoryCommonRules {
 		String canal = sd.get("_CHANNEL");
 		String campo11 = "";
 		String campo112 = "";
+		HSMDirectorBuild hsmComm = new HSMDirectorBuild();
 
 		// Valores que se asigna para los criptogramas
 		String key1 = "";
@@ -661,7 +662,7 @@ public class FactoryCommonRules {
 										.logLine("Comando 33 cambio de PIN, Se genero exitoso PIN_B64_OLD ");
 								// Extrae el offset
 								try {
-									offset = executeQuery(EncPan, "BBFAVIRTUAL");
+									offset = executeQuery(EncPan, "BBogota");
 									if ("".equals(offset) || offset == null) {
 										GenericInterface.getLogger().logLine("PVV Offset no encontrado ");
 										respuesta = GeneralConstant._ESTNOPERMITETX;
@@ -670,7 +671,6 @@ public class FactoryCommonRules {
 										String commandHSM = "<37#2#3" + pb_old + "#" + key1 + "#0123456789012345#"
 												+ offset + "#" + Pan.substring(4) + "#F#4#" + key2 + pb_new + "#F#"
 												+ Pan.substring(3, Pan.length() - 1) + "#^" + campo112 + "#>";
-										HSMDirectorBuild hsmComm = new HSMDirectorBuild();
 										hsmComm.openConnectHSM(ip, port);
 										String resultado = hsmComm.sendCommand(commandHSM, this.ip, this.port);
 
@@ -720,7 +720,7 @@ public class FactoryCommonRules {
 			} else {
 				respuesta = Iso8583Post.RspCode._12_INVALID_TRAN;
 				System.out.println("Respuesta no corresponde con la solicitud");
-				new HSMDirectorBuild().resetConecction("", 1);
+				hsmComm.resetConecction("", 1);
 				return respuesta;
 			}
 		}

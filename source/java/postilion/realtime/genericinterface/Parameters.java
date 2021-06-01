@@ -44,6 +44,8 @@ public class Parameters {
 	private String routingField100 = "";
 	private boolean exeptionValidateExpiryDate = false;
 	private String urlCutWS = null;
+	public String ipCryptoValidation = "10.86.82.119";
+	public int portCryptoValidation = 7000;
 
 	public DesKwa getKwa() {
 		return kwa;
@@ -181,7 +183,6 @@ public class Parameters {
 		this.udpClient = udpClient;
 	}
 
-
 	public String getNameInterface() {
 		return nameInterface;
 	}
@@ -222,16 +223,33 @@ public class Parameters {
 		this.urlCutWS = urlCutWS;
 	}
 
+	public String getIpCryptoValidation() {
+		return ipCryptoValidation;
+	}
+
+	public void setIpCryptoValidation(String ipCryptoValidation) {
+		this.ipCryptoValidation = ipCryptoValidation;
+	}
+
+	public int getPortCryptoValidation() {
+		return portCryptoValidation;
+	}
+
+	public void setPortCryptoValidation(int portCryptoValidation) {
+		this.portCryptoValidation = portCryptoValidation;
+	}
 	public Parameters(DesKwa kwa, TimedHashtable sourceTranToTmHashtable, TimedHashtable sourceTranToTmHashtableB24,
-			String issuerId, Client udpClient,
-			String nameInterface) {
+			String issuerId, Client udpClient, String nameInterface, String ipCryptoValidation,
+			int portCryptoValidation) {
 		this.kwa = kwa;
 		this.sourceTranToTmHashtable = sourceTranToTmHashtable;
 		this.sourceTranToTmHashtableB24 = sourceTranToTmHashtableB24;
 		this.issuerId = issuerId;
 		this.udpClient = udpClient;
 		this.nameInterface = nameInterface;
-		
+		this.ipCryptoValidation = ipCryptoValidation;
+		this.portCryptoValidation = portCryptoValidation;
+
 	}
 
 }

@@ -991,7 +991,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		udpClient = new Client(ipUdpServer, portUdpServer);
 
 		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId, udpClient,
-				nameInterface);
+				nameInterface, ipCryptoValidation, portCryptoValidation);
 
 	}
 
@@ -2810,7 +2810,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public Action processAcquirerFileUpdateAdvFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
 			throws Exception {
 		Action action = new Action();
-		FactoryCommonRules factory = new FactoryCommonRules(params, "10.86.82.119", 7000);
+		FactoryCommonRules factory = new FactoryCommonRules(params);
 		Object response[] = factory.commandProcess(new Base24Ath(kwa), (Iso8583Post) msg);
 		action.putMsgToRemote((Iso8583Post) response[1]);
 		return action;
