@@ -990,9 +990,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		getParameters();
 		udpClient = new Client(ipUdpServer, portUdpServer);
-		FactoryCommonRules factory = new FactoryCommonRules(params);
 		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId, udpClient,
 				nameInterface, ipCryptoValidation, portCryptoValidation);
+		factory = new FactoryCommonRules(params);
 
 	}
 
