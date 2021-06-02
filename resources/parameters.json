@@ -10,5 +10,6 @@
   "responseCodesVersion":"1",
   "bussinessValidation":true,
   "ipCryptoValidation":"10.86.82.119",
-  "portCryptoValidation":7000
+  "portCryptoValidation":7000,
+  "channelIds": ["01","02","03","04","05","56","52","53"]
 }

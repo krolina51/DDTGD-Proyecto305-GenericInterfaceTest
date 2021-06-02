@@ -73,6 +73,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 
 /**
@@ -182,7 +183,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public String responseCodesVersion = null;
 	public String ipCryptoValidation = "10.86.82.119";
 	public int portCryptoValidation = 7000;
-	FactoryCommonRules factory;
+	public FactoryCommonRules factory;
+	public HashMap<String, DesKwa> keys = new HashMap<>();
 
 	public Parameters params;
 
@@ -991,7 +993,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		getParameters();
 		udpClient = new Client(ipUdpServer, portUdpServer);
 		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId, udpClient,
-				nameInterface, ipCryptoValidation, portCryptoValidation);
+				nameInterface, ipCryptoValidation, portCryptoValidation, keys);
 		factory = new FactoryCommonRules(params);
 
 	}
@@ -1060,6 +1062,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void getParameters() {
 
 		try {
@@ -1080,6 +1083,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			boolean create0220ToTM = (boolean) jsonObject.get("create0220ToTM");
 			String cfgIpCryptoValidation = jsonObject.get("ipCryptoValidation").toString();
 			String cfgPortCryptoValidation = jsonObject.get("portCryptoValidation").toString();
+			JSONArray channelsIds = (JSONArray) jsonObject.get("channelIds");
 
 			if (cfgRetentionPeriod != null) {
 				try {
@@ -1126,6 +1130,20 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			this.create0220ToTM = create0220ToTM;
 			this.ipCryptoValidation = validateIpUdpServerParameter(cfgIpCryptoValidation);
 			this.portCryptoValidation = Integer.valueOf(validatePortUdpServerParameter(cfgPortCryptoValidation));
+			if (channelsIds.size() != 0) {
+				CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
+				this.keys.put("VBK", crypcfgman.getKwa(this.nameInterface + "_VBK"));
+				channelsIds.stream().forEach(s -> {
+					try {
+						GenericInterface.getLogger().logLine("Looking pbk " + this.nameInterface + "_" + s.toString() + "_PBK");
+						this.keys.put(s.toString(), crypcfgman.getKwa(this.nameInterface + "_" + s.toString() + "_PBK"));
+					} catch (XCrypto e) {
+						GenericInterface.getLogger().logLine(Utils.getStringMessageException(e));
+						EventRecorder.recordEvent(
+								new XNodeParameterValueInvalid(this.nameInterface + "_" + s.toString() + "_PBK", "Not present"));
+					}
+				});
+			}
 		} catch (Exception e) {
 			EventRecorder.recordEvent(
 					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
@@ -1471,12 +1489,12 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);
 
-			Base24Ath msgFromRemoteT = new Base24Ath(kwa);
-			Iso8583Post msgToTm = new Iso8583Post();
+//			Base24Ath msgFromRemoteT = new Base24Ath(kwa);
+//			Iso8583Post msgToTm = new Iso8583Post();
 			Base24Ath msgToRemote = new Base24Ath(kwa);
 			MessageTranslator translator = new MessageTranslator(params);
 
-			Utils tool = new Utils(params);
+//			Utils tool = new Utils(params);
 			try {
 
 				// Validación MAC
@@ -1515,7 +1533,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
 								objectValidations.getInforCollectedForStructData());
 
-						this.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+						GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
 
 						action.putMsgToTranmgr(Isomsg);
 
@@ -1581,7 +1599,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
 			udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
-			this.getLogger().logLine("210CONSTRUCTISO8583:" + msgToRemote2);
+			GenericInterface.getLogger().logLine("210CONSTRUCTISO8583:" + msgToRemote2);
 			msgToRemote2.putField(128, "FFFFFFFF00000000");
 
 			action.putMsgToRemote(msgToRemote2);
@@ -1752,12 +1770,12 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Base24Ath msgFromRemote = (Base24Ath) msg;
 		udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
-		Iso8583Post msgToTm = new Iso8583Post();
+//		Iso8583Post msgToTm = new Iso8583Post();
 		putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);
-		Base24Ath msgToRemote = new Base24Ath(kwa);
+//		Base24Ath msgToRemote = new Base24Ath(kwa);
 		MessageTranslator translator = new MessageTranslator(params);
 		try {
-			Utils tool = new Utils(params);
+//			Utils tool = new Utils(params);
 
 			int errMac = msgFromRemote.failedMAC();
 			if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR) {
@@ -1776,7 +1794,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
 						objectValidations.getInforCollectedForStructData());
 
-				this.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+				GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
 
 				action.putMsgToTranmgr(Isomsg);
 
@@ -1817,7 +1835,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
 			udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
-			this.getLogger().logLine("430CONSTRUCTISO8583:" + msgToRemote2);
+			GenericInterface.getLogger().logLine("430CONSTRUCTISO8583:" + msgToRemote2);
 			msgToRemote2.putField(128, "FFFFFFFF00000000");
 
 			action.putMsgToRemote(msgToRemote2);
@@ -1865,8 +1883,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Base24Ath msgFromRemote = (Base24Ath) msg;
 		udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
-		Iso8583Post msgToTm = new Iso8583Post();
-		Base24Ath msgToRemote = new Base24Ath(kwa);
+//		Iso8583Post msgToTm = new Iso8583Post();
+//		Base24Ath msgToRemote = new Base24Ath(kwa);
 		MessageTranslator translator = new MessageTranslator(params);
 		try {
 
@@ -1887,7 +1905,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
 						objectValidations.getInforCollectedForStructData());
 
-				this.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+				GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
 
 				action.putMsgToTranmgr(Isomsg);
 
@@ -2806,7 +2824,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return action;
 	}
-	
+
 	@Override
 	public Action processAcquirerFileUpdateAdvFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
 			throws Exception {
@@ -2816,5 +2834,4 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		return action;
 	}
 
-	
 }

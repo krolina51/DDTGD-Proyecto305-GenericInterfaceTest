@@ -44,8 +44,9 @@ public class Parameters {
 	private String routingField100 = "";
 	private boolean exeptionValidateExpiryDate = false;
 	private String urlCutWS = null;
-	public String ipCryptoValidation = "10.86.82.119";
-	public int portCryptoValidation = 7000;
+	private String ipCryptoValidation = "10.86.82.119";
+	private int portCryptoValidation = 7000;
+	private HashMap<String, DesKwa> keys = new HashMap<>();
 
 	public DesKwa getKwa() {
 		return kwa;
@@ -238,9 +239,17 @@ public class Parameters {
 	public void setPortCryptoValidation(int portCryptoValidation) {
 		this.portCryptoValidation = portCryptoValidation;
 	}
+	public HashMap<String, DesKwa> getKeys() {
+		return keys;
+	}
+
+	public void setKeys(HashMap<String, DesKwa> keys) {
+		this.keys = keys;
+	}
+
 	public Parameters(DesKwa kwa, TimedHashtable sourceTranToTmHashtable, TimedHashtable sourceTranToTmHashtableB24,
 			String issuerId, Client udpClient, String nameInterface, String ipCryptoValidation,
-			int portCryptoValidation) {
+			int portCryptoValidation, HashMap<String, DesKwa> keys) {
 		this.kwa = kwa;
 		this.sourceTranToTmHashtable = sourceTranToTmHashtable;
 		this.sourceTranToTmHashtableB24 = sourceTranToTmHashtableB24;
@@ -249,7 +258,7 @@ public class Parameters {
 		this.nameInterface = nameInterface;
 		this.ipCryptoValidation = ipCryptoValidation;
 		this.portCryptoValidation = portCryptoValidation;
-
+		this.keys = keys;
 	}
 
 }

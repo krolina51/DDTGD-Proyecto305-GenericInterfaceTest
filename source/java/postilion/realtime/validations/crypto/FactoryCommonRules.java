@@ -13,9 +13,6 @@ import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.Parameters;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.util.Utils;
-import postilion.realtime.sdk.crypto.CryptoCfgManager;
-import postilion.realtime.sdk.crypto.CryptoManager;
-import postilion.realtime.sdk.crypto.DesKvc;
 import postilion.realtime.sdk.crypto.DesKwa;
 import postilion.realtime.sdk.crypto.impl.atalla.AtallaMsg;
 import postilion.realtime.sdk.jdbc.JdbcManager;
@@ -38,7 +35,7 @@ public class FactoryCommonRules {
 	private Parameters params;
 	HSMDirectorBuild hsmComm;
 
-	public CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
+//	public CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
 	private static postilion.realtime.sdk.ipc.SecurityManager SEC_MANAGER;
 
 	static {
@@ -97,7 +94,7 @@ public class FactoryCommonRules {
 				stData = MsgOld.getStructuredData();
 				r[0] = "CFG_WS_02";
 				DesKwa current_in_card = null;
-				String node = params.getNameInterface();
+//				String node = params.getNameInterface();
 				MsgOld.putMsgType(Iso8583.MsgType._0610_ADMIN_REQ_RSP);
 				MsgOld.putField(Iso8583.Bit._039_RSP_CODE, Iso8583.RspCode._00_SUCCESSFUL);
 				// postilion.realtime.sdk.ipc.SecurityManager SEC_MANAGER; // Performance -
@@ -116,7 +113,7 @@ public class FactoryCommonRules {
 
 					if (tranType.equals("920000")) { // Para procesar el PINBLOCK
 						String pin_clear = MsgOld.getField(Iso8583.Bit._052_PIN_DATA);
-						current_in_card = crypcfgman.getKwa(node + "_CARD");
+//						current_in_card = crypcfgman.getKwa(node + "_CARD");
 						String pin_block = calcPinBlock(pin_clear, current_in_card);
 
 						MsgOld.putField(Iso8583.Bit._052_PIN_DATA, Convert.fromHexToBin(pin_block));
@@ -389,15 +386,15 @@ public class FactoryCommonRules {
 		String campo112 = "";
 
 		// Obtiene el nombre de la interchange para buscar el valor de la llaves
-		String node = params.getNameInterface();
+//		String node = params.getNameInterface();
 		campo11 = MsgOld.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR) + ""
 				+ AtallaMsg.Command._33_TRANSLATE_PIN;
 		campo112 = MsgOld.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR) + "" + AtallaMsg.Command._32_VERIFY_PIN;
 
 		try {
 			// Obtiene los nombre de los criptogramas por cada canal
-			current_in_pbk = crypcfgman.getKwa(node + "_" + canal + "_PBK");
-			current_in_vbk = crypcfgman.getKwa(node + "_VBK");
+			current_in_pbk = params.getKeys().get(canal);
+			current_in_vbk = params.getKeys().get("VBK");
 
 			// Asigna los valores de los criptogramas
 			key1 = current_in_pbk.getContents().getAdditionalData();
@@ -507,15 +504,15 @@ public class FactoryCommonRules {
 		String Pan = MsgOld.getField(Iso8583Post.Bit._002_PAN);
 
 		// Obtiene el nombre de la interchange para buscar el valor de la llaves
-		String node = params.getNameInterface();
+//		String node = params.getNameInterface();
 		campo11 = MsgOld.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR) + ""
 				+ AtallaMsg.Command._33_TRANSLATE_PIN;
 		campo112 = MsgOld.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR) + "" + AtallaMsg.Command._37_PIN_CHANGE;
 
 		try {
 			// Obtiene los nombre de los criptogramas por cada canal
-			current_in_pbk = crypcfgman.getKwa(node + "_" + canal + "_PBK");
-			current_in_vbk = crypcfgman.getKwa(node + "_VBK");
+			current_in_pbk = params.getKeys().get(canal);
+			current_in_vbk = params.getKeys().get("VBK");
 			// Asigna los valores de los criptogramas
 			key1 = current_in_pbk.getContents().getAdditionalData();
 			key2 = current_in_vbk.getContents().getAdditionalData();
@@ -544,16 +541,15 @@ public class FactoryCommonRules {
 			} else {
 				respuesta = Iso8583Post.RspCode._12_INVALID_TRAN;
 				System.out.println("Respuesta no corresponde con la solicitud");
-				new HSMDirectorBuild().resetConecction("", 1);
+				this.hsmComm.resetConecction(this.params.getIpCryptoValidation(),
+						this.params.getPortCryptoValidation());
 				return respuesta;
 			}
 		}
 
 		String commandHSM = "<37#2#3##" + key1 + "#0123456789012345#" + offset + "#" + Pan.substring(4) + "#F#4#" + key2
 				+ pb_new + "#F#" + Pan.substring(3, Pan.length() - 1) + "#^" + campo112 + "#>";
-		HSMDirectorBuild hsmComm = new HSMDirectorBuild();
-		hsmComm.openConnectHSM(this.params.getIpCryptoValidation(), this.params.getPortCryptoValidation());
-		String resultado = hsmComm.sendCommand(commandHSM, this.params.getIpCryptoValidation(),
+		String resultado = this.hsmComm.sendCommand(commandHSM, this.params.getIpCryptoValidation(),
 				this.params.getPortCryptoValidation());
 
 		if (resultado == null || _ERROR_HSM.equals(resultado) || "".equals(resultado)) {
@@ -612,15 +608,15 @@ public class FactoryCommonRules {
 
 		// Obtiene el nombre de la interchange para buscar el valor de la llaves
 		// (criptogramas)
-		String node = params.getNameInterface();
+//		String node = params.getNameInterface();
 		campo11 = MsgOld.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR) + ""
 				+ AtallaMsg.Command._33_TRANSLATE_PIN;
 		campo112 = MsgOld.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR) + "" + AtallaMsg.Command._37_PIN_CHANGE;
 
 		try {
 			// Obtiene los nombre de los criptogramas por cada canal
-			current_in_pbk = crypcfgman.getKwa(node + "_" + canal + "_PBK");
-			current_in_vbk = crypcfgman.getKwa(node + "_VBK");
+			current_in_pbk = params.getKeys().get(canal);
+			current_in_vbk = params.getKeys().get("VBK");
 
 			// Asigna los valores de los criptogramas
 			key1 = current_in_pbk.getContents().getAdditionalData();
@@ -685,7 +681,7 @@ public class FactoryCommonRules {
 													String of_k = resultado.substring(ll_i + 1, ll_f);
 													respuesta = Iso8583Post.RspCode._00_SUCCESSFUL + "," + of_k;
 													GenericInterface.getLogger().logLine(
-															"Comando 37 cambio de PIN, rechazado se genero correctamente");
+															"Comando 37 cambio de PIN, exitoso se genero correctamente");
 												} else {
 													GenericInterface.getLogger().logLine(
 															"Comando 37 cambio de PIN, rechazado no se genero correctamente");
@@ -741,7 +737,7 @@ public class FactoryCommonRules {
 		String numDoc = sd.get("_NUMDOC");
 		String pb = base64Encoder(sd.get("_PIN_B64"), "D");
 		String padded = "0000000000".substring(numDoc.length()) + numDoc;
-		String node = params.getNameInterface();
+//		String node = params.getNameInterface();
 		String campo_11 = MsgOld.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR) + ""
 				+ AtallaMsg.Command._33_TRANSLATE_PIN;
 
@@ -754,7 +750,7 @@ public class FactoryCommonRules {
 		try {
 			// Obtiene la llave origen y destino, esta informacion la trae de la llave que
 			// se configuro en la HSM
-			current_in_pbk = crypcfgman.getKwa(node + "_" + canal + "_PBK");
+			current_in_pbk = params.getKeys().get(canal);
 			key1 = current_in_pbk.getContents().getAdditionalData();
 			GenericInterface.getLogger().logLine("Criptogramas cargados correctamente");
 		} catch (Exception e) {
@@ -787,7 +783,7 @@ public class FactoryCommonRules {
 	public Object calc_CVV(Base24Ath MsgIn, Iso8583Post MsgOld, String puerto, String ip) throws XPostilion {
 		// Datos conexion caja criptografica
 		final String _COMMANDHSM = "00000000CW";
-		final String _LLAVEHSM = "MEGABANCO_CVV";
+//		final String _LLAVEHSM = "MEGABANCO_CVV";
 		final String _CODIGOSERVICIO = "999";
 		final String _SEPARADOR = ";";
 
@@ -795,14 +791,14 @@ public class FactoryCommonRules {
 		Object r[] = { null, null };
 
 		// LLave del criptograma
-		DesKvc current_in_pbk = null;
+//		DesKvc current_in_pbk = null;
 		String key1 = "";
 		try {
 			// Valida el calculo del cvv solo para mensaje 0200
 			if (MsgOld.getMsgType() == Iso8583Post.MsgType._0200_TRAN_REQ) {
 				// Se trae la llave para el calculo
-				current_in_pbk = crypcfgman.getKvc(_LLAVEHSM);
-				key1 = current_in_pbk.getContents().getValueUnderKsk();
+//				current_in_pbk = crypcfgman.getKvc(_LLAVEHSM);
+//				key1 = current_in_pbk.getContents().getValueUnderKsk();
 				// Obtiene el pan de la transaccion
 				String pan = MsgOld.getField(Iso8583Post.Bit._002_PAN);
 				// Obtiene la fecha de expiracion

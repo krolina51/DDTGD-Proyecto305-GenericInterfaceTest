@@ -96,7 +96,7 @@ public class Constants {
 	public static class Config {
 		public static final int NR_OF_PARAMETERS_EXPECTED = 5;
 		public static final String NAME = "GenericInterface";
-		public static final String URL_LOG = "D:\\temp\\log\\GenericInterface.txt";
+		public static final String URL_LOG = "D:\\Temp\\log\\GenericInterfaceTest.txt";
 		public static final int STARTBITMAPPRIMARY = 16; // Indicates the position where the primary bitmap starts
 		public static final int ENDBITMAPPRIMARY = 32; // Indicates the position where the primary bitmap ends
 		public static final int STARTBITMAPSECONDARY = 32; // Indicates the position where the secondary bitmap starts
