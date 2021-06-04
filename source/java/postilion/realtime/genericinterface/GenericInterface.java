@@ -74,6 +74,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 /**
@@ -1068,22 +1069,23 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		try {
 			JSONParser parser = new JSONParser();
 
-			org.json.simple.JSONObject jsonObject = (org.json.simple.JSONObject) parser
+			org.json.simple.JSONObject jsonObjects = (org.json.simple.JSONObject) parser
 					.parse(new FileReader("D:\\Apl\\postilion\\genericinterfacetest\\parameters.json"));
 
-			String cfgRetentionPeriod = jsonObject.get("cfgRetentionPeriod").toString();
-			String cfgValidateMAC = jsonObject.get("cfgValidateMAC").toString();
-			String cfgKwaName = jsonObject.get("cfgKwaName").toString();
-			sSignOn = jsonObject.get("sSignOn").toString();
-			responseCodesVersion = jsonObject.get("responseCodesVersion").toString();
+			org.json.simple.JSONObject parameters =(JSONObject) jsonObjects.get(this.nameInterface);
+			String cfgRetentionPeriod = parameters.get("cfgRetentionPeriod").toString();
+			String cfgValidateMAC = parameters.get("cfgValidateMAC").toString();
+			String cfgKwaName = parameters.get("cfgKwaName").toString();
+			sSignOn = parameters.get("sSignOn").toString();
+			responseCodesVersion = parameters.get("responseCodesVersion").toString();
 
-			issuerId = jsonObject.get("issuerId").toString();
-			String cfgIpUdpServer = jsonObject.get("cfgIpUdpServer").toString();
-			String cfgPortUdpServer = jsonObject.get("cfgPortUdpServer").toString();
-			boolean create0220ToTM = (boolean) jsonObject.get("create0220ToTM");
-			String cfgIpCryptoValidation = jsonObject.get("ipCryptoValidation").toString();
-			String cfgPortCryptoValidation = jsonObject.get("portCryptoValidation").toString();
-			JSONArray channelsIds = (JSONArray) jsonObject.get("channelIds");
+			issuerId = parameters.get("issuerId").toString();
+			String cfgIpUdpServer = parameters.get("cfgIpUdpServer").toString();
+			String cfgPortUdpServer = parameters.get("cfgPortUdpServer").toString();
+			boolean create0220ToTM = (boolean) parameters.get("create0220ToTM");
+			String cfgIpCryptoValidation = parameters.get("ipCryptoValidation").toString();
+			String cfgPortCryptoValidation = parameters.get("portCryptoValidation").toString();
+			JSONArray channelsIds = (JSONArray) parameters.get("channelIds");
 
 			if (cfgRetentionPeriod != null) {
 				try {
