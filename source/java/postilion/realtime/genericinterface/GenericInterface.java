@@ -8,6 +8,7 @@ import postilion.realtime.sdk.crypto.*;
 import postilion.realtime.sdk.eventrecorder.AContext;
 import postilion.realtime.sdk.eventrecorder.EventRecorder;
 import postilion.realtime.sdk.eventrecorder.contexts.ApplicationContext;
+import postilion.realtime.sdk.eventrecorder.contexts.InterchangeContext;
 import postilion.realtime.library.common.util.constants.General;
 import postilion.realtime.library.common.model.ResponseCode;
 import postilion.realtime.genericinterface.channels.Super;
@@ -1072,7 +1073,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			org.json.simple.JSONObject jsonObjects = (org.json.simple.JSONObject) parser
 					.parse(new FileReader("D:\\Apl\\postilion\\genericinterfacetest\\parameters.json"));
 
-			org.json.simple.JSONObject parameters =(JSONObject) jsonObjects.get(this.nameInterface);
+			org.json.simple.JSONObject parameters = (JSONObject) jsonObjects.get(this.nameInterface);
 			String cfgRetentionPeriod = parameters.get("cfgRetentionPeriod").toString();
 			String cfgValidateMAC = parameters.get("cfgValidateMAC").toString();
 			String cfgKwaName = parameters.get("cfgKwaName").toString();
@@ -1137,12 +1138,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				this.keys.put("VBK", crypcfgman.getKwa(this.nameInterface + "_VBK"));
 				channelsIds.stream().forEach(s -> {
 					try {
-						GenericInterface.getLogger().logLine("Looking pbk " + this.nameInterface + "_" + s.toString() + "_PBK");
-						this.keys.put(s.toString(), crypcfgman.getKwa(this.nameInterface + "_" + s.toString() + "_PBK"));
+						GenericInterface.getLogger()
+								.logLine("Looking pbk " + this.nameInterface + "_" + s.toString() + "_PBK");
+						this.keys.put(s.toString(),
+								crypcfgman.getKwa(this.nameInterface + "_" + s.toString() + "_PBK"));
 					} catch (XCrypto e) {
 						GenericInterface.getLogger().logLine(Utils.getStringMessageException(e));
-						EventRecorder.recordEvent(
-								new XNodeParameterValueInvalid(this.nameInterface + "_" + s.toString() + "_PBK", "Not present"));
+						EventRecorder.recordEvent(new XNodeParameterValueInvalid(
+								this.nameInterface + "_" + s.toString() + "_PBK", "Not present"));
 					}
 				});
 			}
