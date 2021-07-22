@@ -477,21 +477,6 @@ public class Extract {
 
 	}
 
-//**************************MODELOS PAGO DE SERVICIOS****************************************************************	
-
-	private static void tagsAllDataAccountsAccountsClienteCNBForWithdrawalOtp(Super objectValidations) {
-		// TODO Auto-generated method stub
-		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
-				objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_NR"));
-
-//		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "04");// por definir si siempre CTE O ES LA DEL QUE DEBITAN
-		objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_Debitada", "CRE");
-
-		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR",
-				objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_NR"));
-		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE", "CRE");
-
-	}
 
 	public static void tagsModelPspGeneral(Super objectValidations, Base24Ath msg) throws XPostilion {
 		try {
@@ -622,8 +607,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataCarsAccountsClienteCNBWithoutCard(Super objectValidations) {
-		// TODO Auto-generated method stub
-
+		
 		objectValidations.putInforCollectedForStructData("FI_Tarjeta",
 				objectValidations.getInforCollectedForStructData().get("CORRES_CARD_NR").substring(0, 6));
 		objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",
@@ -639,26 +623,7 @@ public class Extract {
 
 	}
 
-	private static void tagsAllDataAccountsWhitoutAccountsClienteCNBForMixedWithdrawalOtp(Super objectValidations,
-			Base24Ath msg) throws XPostilion {
-		// TODO Auto-generated method stub
-
-		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
-				(msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
-						? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7)
-						: "00000000000000000");
-//		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "04");// por definir si siempre CTE O ES LA DEL QUE DEBITAN
-		objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_Debitada", "CRE");
-		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR",
-				(msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
-						? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7)
-						: "00000000000000000");
-		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE", "CRE");
-
-	}
-
 	private static void tagsAllDataAccountsAccountsClienteCNBForMixed(Super objectValidations) {
-		// TODO Auto-generated method stub
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE",
@@ -673,30 +638,9 @@ public class Extract {
 
 	}
 
-	private static void tagsAllDataAccountsWhitoutAccountsByNumberClientCNBMixedWithdrawalOtp(Super objectValidations,
-			Base24Ath msg) throws XPostilion {
-
-		ProcessingCode procCode = getProcCode(msg);
-
-		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
-				(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
-						? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4)
-						: "00000000000000000"));
-		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "CRE");
-
-		// revisar si si es con getToAccount no esta definido bn
-		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
-				(procCode.getToAccount().equals("10")) ? "05" : "04");
-		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_ProductoX1",
-				(procCode.getToAccount().equals("10")) ? "05" : "04");
-
-		objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_DebitadaX1",
-				(procCode.getToAccount().equals("10")) ? "AHO" : "CTE");
-
-	}
 
 	private static void tagsAllDataAccountsAccountsClienteCNBWithoutCard(Super objectValidations) {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
@@ -714,7 +658,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataAccountsAccountsClienteCNBWithoutCardOtpCnb(Super objectValidations) {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
@@ -746,43 +690,8 @@ public class Extract {
 		objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_DebitadaX1", "CTE");
 	}
 
-	private static void tagsAllDataAccountsAccountsByNumberClientCNBMixedWithdrawalOtp(Super objectValidations) {
-
-		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
-				(objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_TYPE").equals("10")) ? "05"
-						: "04");
-
-		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
-				objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_NR"));
-		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "CRE");
-		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_ProductoX1",
-				(objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_TYPE").equals("10")) ? "05"
-						: "04");
-		objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_DebitadaX1",
-				(objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_TYPE").equals("10")) ? "AHO"
-						: "CTE");
-
-	}
-
-	private static void tagsAllDataCarsAccountsClienteCNBWithdrawalOtp(Super objectValidations) {
-		// TODO Auto-generated method stub
-		objectValidations.putInforCollectedForStructData("FI_Tarjeta",
-				objectValidations.getInforCollectedForStructData().get("CLIENT2_CARD_NR").substring(0, 6));
-		objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",
-				objectValidations.getInforCollectedForStructData().get("CLIENT2_CARD_NR"));
-		objectValidations.putInforCollectedForStructData("CARD_CLASS",
-				objectValidations.getInforCollectedForStructData().get("CLIENT2_CARD_CLASS"));
-		objectValidations.putInforCollectedForStructData("ID_CLIENT",
-				objectValidations.getInforCollectedForStructData().get("CUSTOMER2_ID"));
-		objectValidations.putInforCollectedForStructData("Tarjeta_Amparada",
-				objectValidations.getInforCollectedForStructData().get("CLIENT2_CARD_NR"));
-		objectValidations.putInforCollectedForStructData("PAN_Tarjeta",
-				objectValidations.getInforCollectedForStructData().get("CLIENT2_CARD_NR"));
-	}
-
 	private static void tagsAllDataAccountsWhitoutAccountsByNumberClientCNB(Super objectValidations, Base24Ath msg)
 			throws XPostilion {
-		// TODO Auto-generated method stub
 
 		ProcessingCode procCode = getProcCode(msg);
 
@@ -809,7 +718,6 @@ public class Extract {
 
 	private static void tagsAllDataAccountsAccountsByNumberClientCNB(Super objectValidations) {
 
-		// TODO Auto-generated method stub
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_NR"));
 
@@ -864,7 +772,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataCarsWithoutCardBg(Super objectValidations, Base24Ath msg) throws XPostilion {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("CARD_CLASS", "00");
 		objectValidations.putInforCollectedForStructData("CLIENT_CARD_CLASS", "00");
 
@@ -905,7 +813,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataAccountsAccountsClienteCNBForMixedPObligWithoutCard(Super objectValidations) {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "OTR");
@@ -924,8 +832,7 @@ public class Extract {
 
 	private static void tagsAllDataAccountsWhitoutAccountsByNumberClientCNBPOblig(Super objectValidations,
 			Base24Ath msg) throws XPostilion {
-		// TODO Auto-generated method stub
-
+		
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				(msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
 						? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(8)
@@ -944,8 +851,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataAccountsAccountsByNumberClientCNBPoblig(Super objectValidations) {
-		// TODO Auto-generated method stub
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_NR"));
 
@@ -964,8 +870,7 @@ public class Extract {
 
 	private static void tagsAllDataAccountsWhitoutAccountsClienteCNBForMixedPOblig(Super objectValidations,
 			Base24Ath msg) throws XPostilion {
-		// TODO Auto-generated method stub
-
+		
 		ProcessingCode procCode = getProcCode(msg);
 
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
@@ -986,7 +891,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataAccountsAccountsClienteCNBForMixedPOblig(Super objectValidations) {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "OTR");
@@ -1004,7 +909,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataAccountsAccountsClienteCNB(Super objectValidations) {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
@@ -1015,7 +920,7 @@ public class Extract {
 						: "CTE");
 	}
 	private static void tagsAllDataAccountsAccountsClienteCNBOtp(Super objectValidations) {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
@@ -1028,7 +933,7 @@ public class Extract {
 
 	private static void tagsAllDataCarsWithoutAccountsClienteCNB(Super objectValidations, Base24Ath msg)
 			throws XFieldUnableToConstruct {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("FI_Tarjeta", msg.getTrack2Data().getPan());
 		objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", msg.getTrack2Data().getPan());
 		objectValidations.putInforCollectedForStructData("Tarjeta_Amparada", msg.getTrack2Data().getPan());
@@ -1037,7 +942,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataCarsAccountsClienteCNB(Super objectValidations) {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("FI_Tarjeta",
 				objectValidations.getInforCollectedForStructData().get("CLIENT_CARD_NR").substring(0, 6));
 		objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",

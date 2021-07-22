@@ -34,7 +34,6 @@ public class HSMDirectorBuild {
 			openConnectHSM(ip, puerto);
 			System.out.println("Reconexion reset socket <<<" + ip + ":" + puerto + ">>>");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -136,7 +135,6 @@ public class HSMDirectorBuild {
 		try {
 			connection = crypto_cfg_man.getConnectionToHsmService();
 		} catch (XCryptoCommsFailure e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

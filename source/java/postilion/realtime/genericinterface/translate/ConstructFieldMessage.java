@@ -306,7 +306,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 	 * @return Retorna un String que devuelve el campo construido.
 	 * @throws XPostilion
 	 *************************************************************************************/
-	public static String constructField98(Object object, Integer num) throws XPostilion {
+	public String constructField98(Object object, Integer num) throws XPostilion {
 
 		return "0054150070650000000000000";
 	}
@@ -3601,8 +3601,6 @@ public class ConstructFieldMessage extends MessageTranslator {
 	public String constructField17(Object object, Integer num) throws XPostilion {
 		Iso8583Post msg = (Iso8583Post) object;
 		String field;
-		Base24Ath originalMsg = (Base24Ath) sourceTranToTmHashtableB24
-				.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR));
 		if (msg.isFieldSet(17)) {
 			field = msg.getField(17);
 		} else {

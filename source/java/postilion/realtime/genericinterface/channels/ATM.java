@@ -12,7 +12,6 @@ import postilion.realtime.genericinterface.Parameters;
 import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
 import postilion.realtime.genericinterface.extract.Extract;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
-import postilion.realtime.genericinterface.translate.stream.Header.Iso;
 import postilion.realtime.genericinterface.translate.util.Constants;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
@@ -393,7 +392,7 @@ public class ATM extends Super {
 
 			case Iso8583.MsgType._0220_TRAN_ADV:
 
-				if (msg.getProcessingCode().equals("321000") || msg.getProcessingCode().equals("322000")) {
+				if (msg.getProcessingCode().toString().equals("321000") || msg.getProcessingCode().toString().equals("322000")) {
 
 					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT",
 							"ATM_0220_CONSULTA_CUENTAS_RELACIONADAS");
@@ -496,9 +495,7 @@ public class ATM extends Super {
 	}
 
 	private void pagoObligacionesAtmTC(Base24Ath msg, Super objectValidations) throws Exception {
-		// TODO Auto-generated method stub
 
-		
 		switch (msg.getField(Iso8583.Bit._022_POS_ENTRY_MODE)) {
 		case "021":
 		case "010":
@@ -538,7 +535,6 @@ public class ATM extends Super {
 
 	private void validationCardsAccountMixtaDebitCreditPaymentObligationsWithCardATMTC(Base24Ath msg,
 			Super objectValidations, String indicatorMixCreditDebidP103) throws Exception {
-		// TODO Auto-generated method stub
 
 		Pattern pattern = null;
 		Matcher matcher = null;
@@ -765,9 +761,6 @@ public class ATM extends Super {
 
 	private void atmUtilizacionCreditoRotativoTD(Super objectValidations, Base24Ath msg)
 			throws XFieldUnableToConstruct, XPostilion, Exception {
-		// TODO Auto-generated method stub
-		
-		
 		ProcessingCode ps = null;
 		String procCode=null;
 		
@@ -820,9 +813,7 @@ public class ATM extends Super {
 
 	private void pagoObligacionesAtm(Base24Ath msg, Super objectValidations)
 			throws XFieldUnableToConstruct, XEncryptionKeyError, XPostilion, Exception {
-
-		// TODO Auto-generated method stub
-
+		
 		switch (msg.getField(Iso8583.Bit._022_POS_ENTRY_MODE)) {
 		case "021":
 		case "010":
@@ -940,7 +931,6 @@ public class ATM extends Super {
 
 	private void consultaDeCostoAtm(Super objectValidations, Base24Ath msg, Pattern pattern, Matcher matcher,
 			String account2) throws Exception {
-		// TODO Auto-generated method stub
 
 		String procCode = msg.getField(126).substring(22, 28);
 		ProcessingCode pc = new ProcessingCode(procCode);
@@ -1327,7 +1317,7 @@ public class ATM extends Super {
 
 	public static void tagsConsultaCostoPagoCreditosEfectivoMultifuncional(Super objectValidations, Base24Ath msg)
 			throws XPostilion {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
 		objectValidations.putInforCollectedForStructData("FI_CREDITO", "0000");
 		objectValidations.putInforCollectedForStructData("FI_DEBITO", "0000");
@@ -1340,7 +1330,7 @@ public class ATM extends Super {
 	}
 
 	public static void additionalTagsCostQuery(Base24Ath msg, Super objectValidations) throws XPostilion {
-		// TODO Auto-generated method stub
+		
 		objectValidations.putInforCollectedForStructData("FI_CREDITO", "0000");
 		objectValidations.putInforCollectedForStructData("FI_DEBITO", "0000");
 
@@ -1376,8 +1366,7 @@ public class ATM extends Super {
 	}
 
 	public static String tagTTypePOblig(Base24Ath msg, Super objectValidations) throws XFieldUnableToConstruct {
-		// TODO Auto-generated method stub
-
+		
 		switch (msg.getProcessingCode().toString()) {
 		case Constants.Channels.PCODE_PAGO_CREDITO_HIPOTECARIO_ATM_AHORROS:
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_CORRIENTE:
@@ -1462,7 +1451,7 @@ public class ATM extends Super {
 	}
 
 	public static String getIndicador_De_Aceptacion_O_De_No_Preaprobado(Base24Ath msg) throws XPostilion {
-		// TODO Auto-generated method stub
+		
 		String p48 = msg.getField(Iso8583.Bit._048_ADDITIONAL_DATA);
 		switch (p48.substring(p48.length() - 1)) {
 		case "7":
@@ -1542,38 +1531,6 @@ public class ATM extends Super {
 		objectValidations.putInforCollectedForStructData("FI_DEBITO", "0000");
 //		objectValidations.putInforCollectedForStructData("Transacc_Ind", "C");
 
-	}
-
-	private void tagsExtarctAtmPsp(Base24Ath msg, Super objectValidations) throws XPostilion {
-		objectValidations.putInforCollectedForStructData("Numero_de_Recibo_de_Terminal",
-				msg.getField(62).substring(24, 30));
-
-		objectValidations.putInforCollectedForStructData("PRIM_COV_NR",
-				msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(10));
-
-		objectValidations.putInforCollectedForStructData("ADDITIONAL_SERVICE_CODE",
-				msg.getField(Iso8583.Bit._104_TRAN_DESCRIPTION)
-						.substring(msg.getField(Iso8583.Bit._104_TRAN_DESCRIPTION).length() - 2));
-
-		objectValidations.putInforCollectedForStructData("NURA_CODE",
-				msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(10));
-
-		objectValidations.putInforCollectedForStructData("INCOCREDITO",
-				msg.getField(Iso8583.Bit._048_ADDITIONAL_DATA).substring(36));
-		objectValidations.putInforCollectedForStructData("FI_Credito",
-				msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(1, 5));
-		objectValidations.putInforCollectedForStructData("FI__Debito",
-				msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(5, 9));
-		objectValidations.putInforCollectedForStructData("Entidad_Origen",
-				msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0, 4));
-		objectValidations.putInforCollectedForStructData("Valor_total",
-				msg.getField(Iso8583.Bit._054_ADDITIONAL_AMOUNTS).substring(0, 12));
-		objectValidations.putInforCollectedForStructData("Valor_total_subconvenio",
-				msg.getField(Iso8583.Bit._054_ADDITIONAL_AMOUNTS).substring(12, 24));
-		objectValidations.putInforCollectedForStructData("subconv_ind",
-				((msg.getField(Iso8583.Bit._054_ADDITIONAL_AMOUNTS).substring(12, 24)).equals("000000000000")) ? "0"
-						: "1");
-		objectValidations.putInforCollectedForStructData("Identificacion_Canal", "CB");
 	}
 
 	/**
@@ -2270,14 +2227,6 @@ public class ATM extends Super {
 
 		try {
 			String procCode = null;
-			ProcessingCode pc = null;
-			if (msg.getProcessingCode().toString().equals("890000")) {
-				procCode = msg.getField(126).substring(22, 28);
-				pc = new ProcessingCode(procCode);
-			} else {
-				procCode = msg.getField(3);
-				pc = new ProcessingCode(procCode);
-			}
 			
 			accountsClienteCNB(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), procCode,
 					msg.getTrack2Data().getPan(), "10",

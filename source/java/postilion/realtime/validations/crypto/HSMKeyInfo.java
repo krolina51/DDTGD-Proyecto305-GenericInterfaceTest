@@ -24,7 +24,6 @@ public class HSMKeyInfo {
 		this.checkDigits=cd;
 	}
 	public HSMKeyInfo() {
-		// TODO Auto-generated constructor stub
 	}
 	/**
 	 * Parsea las llaves en bloques de 16 digitos
