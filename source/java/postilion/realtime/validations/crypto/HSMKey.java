@@ -11,8 +11,8 @@ import postilion.realtime.sdk.util.XPostilion;
 
 public class HSMKey {
 
-	public static Hashtable keys_info = new Hashtable();
-	public static Hashtable bin_info = new Hashtable();
+	public static Hashtable<String, HSMKeyInfo> keys_info = new Hashtable<String, HSMKeyInfo>();
+	public static Hashtable<String, String> bin_info = new Hashtable<String, String>();
 	public static String ip_hsm = "localhost";
 	public static int port_hsm = 0;
 
@@ -133,8 +133,8 @@ public class HSMKey {
 
 	}
 
-	public static Hashtable loadKeysInformationADQ() throws XPostilion, SQLException {
-		Hashtable data = new Hashtable();
+	public static Hashtable<String, HSMKeyInfo> loadKeysInformationADQ() throws XPostilion, SQLException {
+		Hashtable<String, HSMKeyInfo> data = new Hashtable<String, HSMKeyInfo>();
 		Connection cn = null;
 		CallableStatement stmt = null;
 		ResultSet rs = null;

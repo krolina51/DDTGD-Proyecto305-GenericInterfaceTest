@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import postilion.realtime.genericinterface.Parameters;
@@ -33,9 +32,6 @@ import postilion.realtime.sdk.util.XPostilion;
 
 public class CNB extends Super {
 
-	private static int covenantsConsultNumber = 0;
-	private Map<String, String> covenantMap = new HashMap<>();
-	private boolean consultCovenants;
 	private Client udpClient = null;
 	private String nameInterface = "";
 	private boolean encodeData = false;
@@ -43,8 +39,6 @@ public class CNB extends Super {
 	public CNB(Boolean validationResult, String descriptionError, String errorCodeAUTRA, String errorCodeISO,
 			HashMap<String, String> inforCollectedForStructData, Parameters params) {
 		super(validationResult, descriptionError, errorCodeAUTRA, errorCodeISO, inforCollectedForStructData, params);
-		this.covenantMap = params.getCovenantMap();
-		this.consultCovenants = params.isConsultCovenants();
 		this.udpClient = params.getUdpClient();
 		this.nameInterface = params.getNameInterface();
 		this.encodeData = params.isEncodeData();

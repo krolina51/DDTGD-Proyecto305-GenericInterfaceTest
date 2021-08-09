@@ -8,7 +8,6 @@ import postilion.realtime.sdk.crypto.*;
 import postilion.realtime.sdk.eventrecorder.AContext;
 import postilion.realtime.sdk.eventrecorder.EventRecorder;
 import postilion.realtime.sdk.eventrecorder.contexts.ApplicationContext;
-import postilion.realtime.sdk.eventrecorder.contexts.InterchangeContext;
 import postilion.realtime.library.common.util.constants.General;
 import postilion.realtime.library.common.model.ResponseCode;
 import postilion.realtime.genericinterface.channels.Super;
@@ -1075,81 +1074,88 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					.parse(new FileReader("D:\\Apl\\postilion\\genericinterfacetest\\parameters.json"));
 
 			org.json.simple.JSONObject parameters = (JSONObject) jsonObjects.get(this.nameInterface);
-			String cfgRetentionPeriod = parameters.get("cfgRetentionPeriod").toString();
-			String cfgValidateMAC = parameters.get("cfgValidateMAC").toString();
-			String cfgKwaName = parameters.get("cfgKwaName").toString();
-			sSignOn = parameters.get("sSignOn").toString();
-			responseCodesVersion = parameters.get("responseCodesVersion").toString();
 
-			issuerId = parameters.get("issuerId").toString();
-			String cfgIpUdpServer = parameters.get("cfgIpUdpServer").toString();
-			String cfgPortUdpServer = parameters.get("cfgPortUdpServer").toString();
-			boolean create0220ToTM = (boolean) parameters.get("create0220ToTM");
-			String cfgIpCryptoValidation = parameters.get("ipCryptoValidation").toString();
-			String cfgPortCryptoValidation = parameters.get("portCryptoValidation").toString();
-			JSONArray channelsIds = (JSONArray) parameters.get("channelIds");
-			businessValidation = (boolean) parameters.get("bussinessValidation");
+			if (parameters != null) {
+				String cfgRetentionPeriod = parameters.get("cfgRetentionPeriod").toString();
+				String cfgValidateMAC = parameters.get("cfgValidateMAC").toString();
+				String cfgKwaName = parameters.get("cfgKwaName").toString();
+				sSignOn = parameters.get("sSignOn").toString();
+				responseCodesVersion = parameters.get("responseCodesVersion").toString();
 
-			if (cfgRetentionPeriod != null) {
-				try {
-					retentionPeriod = Long.parseLong(cfgRetentionPeriod);
-				} catch (NumberFormatException e) {
+				issuerId = parameters.get("issuerId").toString();
+				String cfgIpUdpServer = parameters.get("cfgIpUdpServer").toString();
+				String cfgPortUdpServer = parameters.get("cfgPortUdpServer").toString();
+				boolean create0220ToTM = (boolean) parameters.get("create0220ToTM");
+				String cfgIpCryptoValidation = parameters.get("ipCryptoValidation").toString();
+				String cfgPortCryptoValidation = parameters.get("portCryptoValidation").toString();
+				JSONArray channelsIds = (JSONArray) parameters.get("channelIds");
+				businessValidation = (boolean) parameters.get("bussinessValidation");
+				if (cfgRetentionPeriod != null) {
+					try {
+						retentionPeriod = Long.parseLong(cfgRetentionPeriod);
+					} catch (NumberFormatException e) {
+						EventRecorder.recordEvent(new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD,
+								cfgRetentionPeriod));
+						throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD,
+								cfgRetentionPeriod);
+
+					}
+					sourceTranToTmHashtable = new TimedHashtable(retentionPeriod);
+					sourceTranToTmHashtableB24 = new TimedHashtable(retentionPeriod);
+				} else {
 					EventRecorder.recordEvent(
-							new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, cfgRetentionPeriod));
-					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, cfgRetentionPeriod);
-
+							new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING));
+					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING);
 				}
-				sourceTranToTmHashtable = new TimedHashtable(retentionPeriod);
-				sourceTranToTmHashtableB24 = new TimedHashtable(retentionPeriod);
-			} else {
-				EventRecorder.recordEvent(
-						new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING));
-				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING);
-			}
-			if (cfgValidateMAC != null) {
-				boolean validateMac = cfgValidateMAC.equals(General.TRUE);
-				if (cfgKwaName != null) {
-					if (validateMac) {
-						try {
-							CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
-							kwa = crypcfgman.getKwa(cfgKwaName);
-						} catch (XCrypto e) {
-							EventRecorder.recordEvent(
-									new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName));
-							throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName);
+				if (cfgValidateMAC != null) {
+					boolean validateMac = cfgValidateMAC.equals(General.TRUE);
+					if (cfgKwaName != null) {
+						if (validateMac) {
+							try {
+								CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
+								kwa = crypcfgman.getKwa(cfgKwaName);
+							} catch (XCrypto e) {
+								EventRecorder.recordEvent(
+										new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName));
+								throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName);
+							}
 						}
+					} else {
+						EventRecorder.recordEvent(
+								new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING));
+						throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING);
 					}
 				} else {
 					EventRecorder.recordEvent(
-							new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING));
-					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING);
+							new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING));
+					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING);
 				}
-			} else {
-				EventRecorder.recordEvent(
-						new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING));
-				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING);
-			}
 
-			this.ipUdpServer = validateIpUdpServerParameter(cfgIpUdpServer);
-			this.portUdpServer = validatePortUdpServerParameter(cfgPortUdpServer);
-			this.create0220ToTM = create0220ToTM;
-			this.ipCryptoValidation = validateIpUdpServerParameter(cfgIpCryptoValidation);
-			this.portCryptoValidation = Integer.valueOf(validatePortUdpServerParameter(cfgPortCryptoValidation));
-			if (channelsIds.size() != 0) {
-				CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
-				this.keys.put("VBK", crypcfgman.getKwa(this.nameInterface + "_VBK"));
-				channelsIds.stream().forEach(s -> {
-					try {
-						GenericInterface.getLogger()
-								.logLine("Looking pbk " + this.nameInterface + "_" + s.toString() + "_PBK");
-						this.keys.put(s.toString(),
-								crypcfgman.getKwa(this.nameInterface + "_" + s.toString() + "_PBK"));
-					} catch (XCrypto e) {
-						GenericInterface.getLogger().logLine(Utils.getStringMessageException(e));
-						EventRecorder.recordEvent(new XNodeParameterValueInvalid(
-								this.nameInterface + "_" + s.toString() + "_PBK", "Not present"));
-					}
-				});
+				this.ipUdpServer = validateIpUdpServerParameter(cfgIpUdpServer);
+				this.portUdpServer = validatePortUdpServerParameter(cfgPortUdpServer);
+				this.create0220ToTM = create0220ToTM;
+				this.ipCryptoValidation = validateIpUdpServerParameter(cfgIpCryptoValidation);
+				this.portCryptoValidation = Integer.valueOf(validatePortUdpServerParameter(cfgPortCryptoValidation));
+				if (channelsIds.size() != 0) {
+					CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
+					this.keys.put("VBK", crypcfgman.getKwa(this.nameInterface + "_VBK"));
+					channelsIds.stream().forEach(s -> {
+						try {
+							GenericInterface.getLogger()
+									.logLine("Looking pbk " + this.nameInterface + "_" + s.toString() + "_PBK");
+							this.keys.put(s.toString(),
+									crypcfgman.getKwa(this.nameInterface + "_" + s.toString() + "_PBK"));
+						} catch (XCrypto e) {
+							GenericInterface.getLogger().logLine(Utils.getStringMessageException(e));
+							EventRecorder.recordEvent(new XNodeParameterValueInvalid(
+									this.nameInterface + "_" + s.toString() + "_PBK", "Not present"));
+						}
+					});
+				}
+			}else {
+				EventRecorder.recordEvent(
+						new XNodeParameterValueInvalid("Parameters for interchange"+this.nameInterface, General.NULLSTRING));
+				throw new XNodeParameterValueInvalid("Parameters for interchange"+this.nameInterface, General.NULLSTRING);
 			}
 		} catch (Exception e) {
 			EventRecorder.recordEvent(

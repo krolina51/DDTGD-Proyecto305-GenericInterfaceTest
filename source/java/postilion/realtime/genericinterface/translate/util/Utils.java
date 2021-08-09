@@ -1,54 +1,33 @@
 package postilion.realtime.genericinterface.translate.util;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import postilion.realtime.library.common.model.ConfigAllTransaction;
 import postilion.realtime.library.common.util.constants.General;
-import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.Parameters;
 
 import postilion.realtime.genericinterface.eventrecorder.events.SQLExceptionEvent;
-import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
-import postilion.realtime.genericinterface.translate.ConstructFieldMessage;
-import postilion.realtime.genericinterface.translate.MessageTranslator;
-import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
 import postilion.realtime.genericinterface.translate.validations.Validation;
-import postilion.realtime.genericinterface.translate.validations.Validation.ErrorMessages;
 import postilion.realtime.sdk.eventrecorder.EventRecorder;
 import postilion.realtime.sdk.ipc.SecurityManager;
 import postilion.realtime.sdk.ipc.XEncryptionKeyError;
-import postilion.realtime.sdk.message.bitmap.Iso8583;
 import postilion.realtime.sdk.message.bitmap.Iso8583.AccountType;
 import postilion.realtime.sdk.message.bitmap.Iso8583.RspCode;
 import postilion.realtime.sdk.message.bitmap.Iso8583Post;
 import postilion.realtime.sdk.message.bitmap.Track2;
-import postilion.realtime.sdk.util.TimedHashtable;
 import postilion.realtime.sdk.util.XPostilion;
 
 public class Utils {
 
-	private TimedHashtable sourceTranToTmHashtableB24 = null;
-	private Map<String, HashMap<String, ConfigAllTransaction>> structureContent = new HashMap<>();
-	private Map<String, ConfigAllTransaction> structureMap = new HashMap<>();
 	private Client udpClient = null;
 	public String nameInterface = "";
-	private Parameters params;
 
 	public Utils(Parameters params) {
-		this.sourceTranToTmHashtableB24 = params.getSourceTranToTmHashtableB24();
-		this.structureContent = params.getStructureContent();
-		this.structureMap = params.getStructureMap();
 		this.udpClient = params.getUdpClient();
 		this.nameInterface = params.getNameInterface();
-		this.params = params;
 	}
 
 	static long tEnd;

@@ -6,7 +6,6 @@ import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,7 +22,6 @@ import postilion.realtime.genericinterface.translate.stream.Header;
 import postilion.realtime.genericinterface.translate.util.Constants;
 import postilion.realtime.genericinterface.translate.util.Constants.FormatDate;
 import postilion.realtime.genericinterface.translate.util.Constants.General;
-import postilion.realtime.genericinterface.translate.util.Constants.StatusMsg;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
 import postilion.realtime.library.common.InitialLoadFilter;
@@ -33,16 +31,10 @@ import postilion.realtime.library.common.util.constants.TagNameStructuredData;
 import postilion.realtime.sdk.crypto.DesKwa;
 import postilion.realtime.sdk.eventrecorder.EventRecorder;
 import postilion.realtime.sdk.message.bitmap.*;
-import postilion.realtime.sdk.message.bitmap.Iso8583.MsgType;
-import postilion.realtime.sdk.message.bitmap.Iso8583.TranType;
-import postilion.realtime.sdk.message.xml.XMLMessage2;
-import postilion.realtime.sdk.message.xml.XXMLMessageUnableToExtract;
-import postilion.realtime.sdk.util.Convert;
 import postilion.realtime.sdk.util.DateTime;
 import postilion.realtime.sdk.util.TimedHashtable;
 import postilion.realtime.sdk.util.XPostilion;
 import postilion.realtime.sdk.util.convert.Pack;
-import postilion.realtime.sdk.util.convert.Transform;
 
 /**
  * Esta clase permite ser llamada por la clase GenericInterface para procesar
@@ -55,11 +47,8 @@ public class MessageTranslator extends GenericInterface {
 
 	private DesKwa kwa;
 	private TimedHashtable sourceTranToTmHashtable = null;
-	private TimedHashtable sourceTranToTmHashtableB24 = null;
-	private Map<String, HashMap<String, ConfigAllTransaction>> structureContent = new HashMap<>();
 	private Map<String, ConfigAllTransaction> structureMap = new HashMap<>();
 	private Map<String, ResponseCode> allCodesIsoToB24TM = new HashMap<>();
-	private Map<String, String> institutionid = new HashMap<>();
 	private Client udpClient = null;
 	private String nameInterface = "";
 	private Parameters params;
@@ -251,9 +240,7 @@ public class MessageTranslator extends GenericInterface {
 			Iso8583Post msgOriginal = null;
 			StructuredData sd = new StructuredData();
 			
-			InvokeMethodByConfig invoke=new InvokeMethodByConfig(params);
-			ConstructFieldMessage constructor = new ConstructFieldMessage(this.params);
-			
+			InvokeMethodByConfig invoke=new InvokeMethodByConfig(params);			
 
 			if (msg.getResponseCode().equals(Iso8583.RspCode._00_SUCCESSFUL)) {// si la respuesta es exitosa
 				sd = msg.getStructuredData();
@@ -636,7 +623,6 @@ public class MessageTranslator extends GenericInterface {
 			
 			
 		} catch (XPostilion e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -757,51 +743,11 @@ public class MessageTranslator extends GenericInterface {
 			
 			
 		} catch (XPostilion e) {
-			// TODO Auto-generated catch block
-		
 			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 					MessageTranslator.class.getName(), "Method: [processCreateField]",
 					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
 			EventRecorder.recordEvent(e);
 		}
-	}
-
-	/**
-	 * Place the fields in the original message that come from structured data
-	 * 
-	 * @param msg
-	 * @param sd
-	 * @return
-	 */
-	private Base24Ath constructFieldsFromSd(Base24Ath msg, StructuredData sd,
-			Map<String, ConfigAllTransaction> structureMap) {
-		Base24Ath msgToRemote = msg;
-		try {
-			if (sd != null) {
-				Enumeration<?> sdFields = sd.getTypeNames();
-				while (sdFields.hasMoreElements()) {
-					String element = sdFields.nextElement().toString();
-					String[] fieldNum = element.split(Constants.Config.UNDERSCORE);
-					if (element.contains(Constants.Config.TAGNAMESD) && structureMap.get(fieldNum[2]) != null) {
-						msgToRemote.putField(Integer.parseInt(fieldNum[2]), sd.get(element));
-					}
-				}
-			}
-		} catch (Exception e) {
-			try {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						MessageTranslator.class.getName(), "Method: [constructFieldsFromSd]",
-						Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method: constructFieldsFromSd " + e.getMessage(), "LOG", this.nameInterface));
-			} catch (XPostilion e1) {
-				this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-						"Exception in Method:  constructFieldsFromSd: " + Utils.getStringMessageException(e), "LOG",
-						this.nameInterface));
-			}
-		}
-		return msgToRemote;
 	}
 	
 	private Base24Ath constructFieldsFromSd(Base24Ath msg, StructuredData sd) {
@@ -882,7 +828,6 @@ public class MessageTranslator extends GenericInterface {
 	 */
 	public Iso8583Post construct0220ToTm(Iso8583 msg, String nameInterchange) throws XPostilion {
 
-		long tStart, tEnd, resultTime;
 		tStart = System.currentTimeMillis();
 
 		StructuredData sd = new StructuredData();
@@ -1228,9 +1173,6 @@ public class MessageTranslator extends GenericInterface {
 				}
 			}
 		}
-
-		String ProcCode = null;
-		String keyHash = null;
 
 		try {
 			msgToRem.putHeader(constructAtmHeaderSourceNode(msg));
