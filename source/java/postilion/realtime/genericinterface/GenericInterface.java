@@ -233,6 +233,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		deleteFieldsRequest.put("501030", "14-15-22-25-26-40-42-56-98-100-123");
 		deleteFieldsRequest.put("401010", "14-15-22-25-26-40-42-56-100-123");
+		deleteFieldsRequest.put("013000", "14-15-25-26-40-52-56-102-103-104-123");
 
 		createFieldsRequest.put("3-270110", "compensationDateValidationP17ToP15");
 
@@ -1087,6 +1088,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			String cfgIpCryptoValidation = parameters.get("ipCryptoValidation").toString();
 			String cfgPortCryptoValidation = parameters.get("portCryptoValidation").toString();
 			JSONArray channelsIds = (JSONArray) parameters.get("channelIds");
+			businessValidation = (boolean) parameters.get("bussinessValidation");
 
 			if (cfgRetentionPeriod != null) {
 				try {
@@ -1522,7 +1524,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						msg.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, Constants.General.DEFAULT_P41);
 					}
 
-					objectValidations = objectValidations.businessValidation(msgFromRemote, objectValidations);// PONER
+					if(businessValidation)
+						objectValidations = objectValidations.businessValidation(msgFromRemote, objectValidations);// PONER
 																												// CUIDADO***********************
 					if (!objectValidations.getValidationResult()) {
 						udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
