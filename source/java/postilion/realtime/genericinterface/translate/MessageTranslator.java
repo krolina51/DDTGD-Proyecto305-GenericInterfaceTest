@@ -525,7 +525,9 @@ public class MessageTranslator extends GenericInterface {
 							"LOG", this.nameInterface));
 				}
 			}
-			
+			if(msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE).equals("012000")) {
+				Iso.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE,"90");
+			}
 			
 			Iso.putStructuredData(sd);
 					

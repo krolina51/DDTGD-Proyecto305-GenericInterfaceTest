@@ -105,6 +105,9 @@ public class ATM extends Super {
 										(this.encodeData) ? new String(Base64.getDecoder().decode(account2))
 												: account2);
 							}
+							GenericInterface.getLogger().logLine("Field 102 b24 " + msg.getField(102));
+							GenericInterface.getLogger().logLine("CLIENT_ACCOUNT_NR "
+									+ objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
 
 							if (objectValidations.getValidationResult()) {
 
@@ -272,7 +275,7 @@ public class ATM extends Super {
 					case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_CORRIENTE:// *
 
 						pagoObligacionesAtmTC(msg, objectValidations);
-						
+
 						break;
 
 					default:
@@ -392,7 +395,8 @@ public class ATM extends Super {
 
 			case Iso8583.MsgType._0220_TRAN_ADV:
 
-				if (msg.getProcessingCode().toString().equals("321000") || msg.getProcessingCode().toString().equals("322000")) {
+				if (msg.getProcessingCode().toString().equals("321000")
+						|| msg.getProcessingCode().toString().equals("322000")) {
 
 					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT",
 							"ATM_0220_CONSULTA_CUENTAS_RELACIONADAS");
@@ -525,7 +529,7 @@ public class ATM extends Super {
 		default:
 			break;
 		}
-		
+
 		objectValidations.putInforCollectedForStructData("Tipo_de_Tarjeta", "1");
 		objectValidations.putInforCollectedForStructData("Dispositivo", "0");
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "CRE");
@@ -563,7 +567,7 @@ public class ATM extends Super {
 					objectValidations);
 
 			Extract.tagsModelPaymentOfObligationsMixed(objectValidations, msg);
-			
+
 			objectValidations.putInforCollectedForStructData("Nombre_Transaccion", "PAGOCB");
 			objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_Debitada", "CRE");
 			objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE", "CRE");
@@ -571,7 +575,7 @@ public class ATM extends Super {
 					(msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
 							? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(8, 14)
 							: "000000");
-			
+
 			tagTTypePOblig(msg, objectValidations);
 
 			// TAGS UNICOS
@@ -663,7 +667,6 @@ public class ATM extends Super {
 			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"cuenta trajo sp: " + account + " cuenta p102: " + msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1),
 					"LOG", this.nameInterface));
-			
 
 			String field102 = msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1)
 					.substring(msg.getFieldLength(Iso8583.Bit._102_ACCOUNT_ID_1) - 17);
@@ -679,13 +682,13 @@ public class ATM extends Super {
 						msg.getProcessingCode().getFromAccount());
 				objectValidations.putInforCollectedForStructData("CLIENT_CARD_CLASS", "MM");
 				objectValidations.putInforCollectedForStructData("CUSTOMER_NAME", "");
-			} 
-			
+			}
+
 //			else if (matcher.matches()) {
 //				msg.putField(Iso8583.Bit._102_ACCOUNT_ID_1,
 //						(this.encodeData) ? new String(Base64.getDecoder().decode(account)) : account);
 //			}
-			
+
 			// TAGS EXTRACT
 			// ****************************************************************************
 
@@ -696,7 +699,7 @@ public class ATM extends Super {
 			case "0052":
 			case "0023":
 				Extract.tagsModelPaymentOfObligationsDebit(objectValidations, msg);
-				
+
 				objectValidations.putInforCollectedForStructData("Dispositivo", "0");
 				objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "LCR");
 				objectValidations.putInforCollectedForStructData("Entidad", "0000");
@@ -712,7 +715,7 @@ public class ATM extends Super {
 						(msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
 								? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(8, 14)
 								: "000000");
-				
+
 				tagTTypePOblig(msg, objectValidations);
 
 				break;
@@ -724,14 +727,12 @@ public class ATM extends Super {
 				objectValidations.putInforCollectedForStructData("Dispositivo", "0");
 				objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "LCR");
 				objectValidations.putInforCollectedForStructData("Entidad", "0000");
-				
+
 				break;
 			}
-			
 
 			// TAGS EXTRACT
 			// ****************************************************************************
-			
 
 			// TAGS ISC
 			// *********************************************************************************
@@ -762,8 +763,8 @@ public class ATM extends Super {
 	private void atmUtilizacionCreditoRotativoTD(Super objectValidations, Base24Ath msg)
 			throws XFieldUnableToConstruct, XPostilion, Exception {
 		ProcessingCode ps = null;
-		String procCode=null;
-		
+		String procCode = null;
+
 		if (msg.getField(3).equals("890000")) {
 
 			procCode = msg.getField(126).substring(22, 28);
@@ -772,16 +773,16 @@ public class ATM extends Super {
 			procCode = msg.getField(3);
 			ps = new ProcessingCode(procCode);
 		}
-		
-		accountsClienteCNB(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), ps.toString(),
-				msg.getTrack2Data().getPan(),ps.getToAccount(),
-				msg.getTrack2Data().getExpiryDate(),
-				(msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2)) ? "0" + msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2)
-						.substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length() - 17) : " 1234567",
+
+		accountsClienteCNB(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), ps.toString(), msg.getTrack2Data().getPan(),
+				ps.getToAccount(), msg.getTrack2Data().getExpiryDate(),
+				(msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
+						? "0" + msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2)
+								.substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length() - 17)
+						: " 1234567",
 				objectValidations);
 
 		// tener cuidado con los tipo de cuentas de servicio del credito *********
-		
 
 		Extract.tagsModelTransferDebit(objectValidations, msg);
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "38");
@@ -813,7 +814,7 @@ public class ATM extends Super {
 
 	private void pagoObligacionesAtm(Base24Ath msg, Super objectValidations)
 			throws XFieldUnableToConstruct, XEncryptionKeyError, XPostilion, Exception {
-		
+
 		switch (msg.getField(Iso8583.Bit._022_POS_ENTRY_MODE)) {
 		case "021":
 		case "010":
@@ -1016,22 +1017,19 @@ public class ATM extends Super {
 			objectValidations.putInforCollectedForStructData("TRANSACTION_CNB_TYPE",
 					"ATM_CONSULTA_COSTO_POBLIG_" + tagTTypePOblig(msg, objectValidations));
 			objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
-			
-			
+
 			switch (msg.getField(126).substring(22, 28).toString()) {
 			case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_AHORROS:// *
 			case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_CORRIENTE:// *
 
 				pagoObligacionesAtmTC(msg, objectValidations);
-				
+
 				break;
 
 			default:
 				pagoObligacionesAtm(msg, objectValidations);
 				break;
 			}
-			
-			
 
 			objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT",
 					"ATM_CONSULTA_COSTO_POBLIG_" + tagTTypePOblig(msg, objectValidations) + "_"
@@ -1317,7 +1315,7 @@ public class ATM extends Super {
 
 	public static void tagsConsultaCostoPagoCreditosEfectivoMultifuncional(Super objectValidations, Base24Ath msg)
 			throws XPostilion {
-		
+
 		objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
 		objectValidations.putInforCollectedForStructData("FI_CREDITO", "0000");
 		objectValidations.putInforCollectedForStructData("FI_DEBITO", "0000");
@@ -1330,7 +1328,7 @@ public class ATM extends Super {
 	}
 
 	public static void additionalTagsCostQuery(Base24Ath msg, Super objectValidations) throws XPostilion {
-		
+
 		objectValidations.putInforCollectedForStructData("FI_CREDITO", "0000");
 		objectValidations.putInforCollectedForStructData("FI_DEBITO", "0000");
 
@@ -1366,7 +1364,7 @@ public class ATM extends Super {
 	}
 
 	public static String tagTTypePOblig(Base24Ath msg, Super objectValidations) throws XFieldUnableToConstruct {
-		
+
 		switch (msg.getProcessingCode().toString()) {
 		case Constants.Channels.PCODE_PAGO_CREDITO_HIPOTECARIO_ATM_AHORROS:
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_CORRIENTE:
@@ -1451,7 +1449,7 @@ public class ATM extends Super {
 	}
 
 	public static String getIndicador_De_Aceptacion_O_De_No_Preaprobado(Base24Ath msg) throws XPostilion {
-		
+
 		String p48 = msg.getField(Iso8583.Bit._048_ADDITIONAL_DATA);
 		switch (p48.substring(p48.length() - 1)) {
 		case "7":
@@ -1631,8 +1629,8 @@ public class ATM extends Super {
 
 			// TAGS ISC
 			// **********************************************************************************************************
-			tagsEncodeSensitiveData("CREDIT_ACCOUNT_NR", msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7).trim(),
-					objectValidations);
+			tagsEncodeSensitiveData("CREDIT_ACCOUNT_NR",
+					msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7).trim(), objectValidations);
 			objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
 					objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
 			objectValidations.putInforCollectedForStructData("CREDIT_ACCOUNT_TYPE", ps.getToAccount());
@@ -1693,9 +1691,8 @@ public class ATM extends Super {
 					"ENTRO TRANSFERENCIA CREDITO", "LOG", this.nameInterface));
 
 			accountsByNumberClientCNB(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					Pack.resize(msg.getField(Iso8583Post.Bit._103_ACCOUNT_ID_2).substring(7).trim(), 18, '0', false)
-					, ps.getToAccount(),
-					objectValidations);
+					Pack.resize(msg.getField(Iso8583Post.Bit._103_ACCOUNT_ID_2).substring(7).trim(), 18, '0', false),
+					ps.getToAccount(), objectValidations);
 
 			Extract.tagsModelTransferCredit(objectValidations, msg);
 
@@ -2227,10 +2224,9 @@ public class ATM extends Super {
 
 		try {
 			String procCode = null;
-			
-			accountsClienteCNB(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), procCode,
-					msg.getTrack2Data().getPan(), "10",
-					msg.getTrack2Data().getExpiryDate(),
+
+			accountsClienteCNB(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), procCode, msg.getTrack2Data().getPan(),
+					"10", msg.getTrack2Data().getExpiryDate(),
 					(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)) ? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1)
 							: " 1234567",
 					objectValidations);
@@ -2371,15 +2367,13 @@ public class ATM extends Super {
 				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						"cuenta trajo sp: " + account + " cuenta p102: " + msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1),
 						"LOG", this.nameInterface));
-				
-				
-				if(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
-				{
+
+				if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)) {
 					pattern = Pattern.compile("0{" + msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).length() + "}");
 					matcher = pattern.matcher(msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
-	
+
 					if (!account.equals("0" + msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1)
-									.substring(msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).length() - 17))
+							.substring(msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).length() - 17))
 							&& !matcher.matches()) {
 						objectValidations.modifyAttributes(false, "CUENTA NO EXISTENTE", "0014", "14");
 						objectValidations.putInforCollectedForStructData("CLIENT_ACCOUNT_NR",
@@ -2509,7 +2503,6 @@ public class ATM extends Super {
 
 			Extract.tagsModelPaymentOfObligationsMixed(objectValidations, msg);
 
-			
 			// TAGS UNICOS
 			// ****************************************************************************
 			// TAGS UNICOS
@@ -2544,10 +2537,9 @@ public class ATM extends Super {
 
 			pattern = Pattern.compile("0{" + msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).length() + "}");
 			matcher = pattern.matcher(msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
-			
-			
-			GenericInterface.getLogger().logLine("FIELD102:["+msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1)+"]");
-			GenericInterface.getLogger().logLine("ACCOUNT:["+account+"]");
+
+			GenericInterface.getLogger().logLine("FIELD102:[" + msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1) + "]");
+			GenericInterface.getLogger().logLine("ACCOUNT:[" + account + "]");
 
 			if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1) && account != null
 					&& !account.equals("0" + msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1)
@@ -2578,7 +2570,6 @@ public class ATM extends Super {
 			// **********************************************************************************
 
 			objectValidations.putInforCollectedForStructData("P_CODE", "000000");
-
 
 			objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
 					msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
@@ -2624,13 +2615,12 @@ public class ATM extends Super {
 						msg.getProcessingCode().getFromAccount());
 				objectValidations.putInforCollectedForStructData("CLIENT_CARD_CLASS", "MM");
 				objectValidations.putInforCollectedForStructData("CUSTOMER_NAME", "");
-			} 
+			}
 //			else if (matcher.matches()) {
 //				msg.putField(Iso8583.Bit._102_ACCOUNT_ID_1,
 //						(this.encodeData) ? new String(Base64.getDecoder().decode(account)) : account);
 //			}
 
-			
 			// TAGS ISC
 			// *********************************************************************************
 			objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
@@ -2660,8 +2650,7 @@ public class ATM extends Super {
 
 			// TAGS EXTRACT
 			// ****************************************************************************
-			
-			
+
 			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"trajo datos cuentaCNB validacion: DEBITO  "
 							+ objectValidations.getInforCollectedForStructData().toString(),

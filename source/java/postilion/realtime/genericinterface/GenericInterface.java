@@ -252,7 +252,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		transformFields.put("54", "constructAdditionalAmounts");
 		transformFields.put("28", "transformAmountFeeFields");
 		transformFields.put("30", "transformAmountFeeFields");
-		transformFields.put("35", "constructField35Oficinas");
+//		transformFields.put("35", "constructField35Oficinas");
 		transformFields.put("95", "constructReplacementAmounts");
 		transformFields.put("100", "constructField100");
 
@@ -1546,7 +1546,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					} else {
 						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
 								objectValidations.getInforCollectedForStructData());
-
+						GenericInterface.getLogger().logLine("Field 102 Iso8583Post:" + Isomsg.getField(102));
 						GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
 
 						action.putMsgToTranmgr(Isomsg);
