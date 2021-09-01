@@ -153,7 +153,7 @@ public abstract class Super {
 	 * @return - Object with status and error message
 	 * @throws Exception
 	 */
-	public Super businessValidation(Base24Ath msg, Super objectValidations) throws Exception {
+	/*public Super businessValidation(Base24Ath msg, Super objectValidations) throws Exception {
 
 		switch (channelIdentifier(msg)) {
 		case Constants.Channels.CNB:
@@ -183,9 +183,9 @@ public abstract class Super {
 
 			}
 
-			return objectValidations;
+			return objectValidations;*/
 
-		case Constants.Channels.ATM:
+		/*case Constants.Channels.ATM:
 
 			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"******mmmmmm*****mm*** Entro validacion ATM con este msgType: " + String.valueOf(msg.getMsgType()),
@@ -195,9 +195,9 @@ public abstract class Super {
 					new HashMap<String, String>(), this.params);
 			objectValidations.validations(msg, objectValidations);
 
-			return objectValidations;
+			return objectValidations;*/
 
-		case Constants.Channels.VTL:
+		/*case Constants.Channels.VTL:
 
 			objectValidations = new VTL(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
 					new HashMap<String, String>(), this.params);
@@ -206,9 +206,9 @@ public abstract class Super {
 			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"******mmmmmm*****mm*** Entro validacion VTL con este msgType: " + String.valueOf(msg.getMsgType()),
 					"LOG", this.nameInterface));
-			return objectValidations;
+			return objectValidations;*/
 
-		default:
+		/*default:
 			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"******mmmmmm*****mm*** Entro validacion CBCO con este msgType: "
 							+ String.valueOf(msg.getMsgType()),
@@ -221,7 +221,7 @@ public abstract class Super {
 			return objectValidations;
 		}
 
-	}
+	}*/
 
 	public boolean validationexpiryDate(String expDate, Super objectValidations) throws XFieldUnableToConstruct {
 		int year = Integer.parseInt(expDate.substring(0, 2));

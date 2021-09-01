@@ -1530,8 +1530,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						msg.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, Constants.General.DEFAULT_P41);
 					}
 
-					if(businessValidation)
-						objectValidations = objectValidations.businessValidation(msgFromRemote, objectValidations);// PONER
+					//if(businessValidation)
+					//	objectValidations = objectValidations.businessValidation(msgFromRemote, objectValidations);// PONER
 																												// CUIDADO***********************
 					if (!objectValidations.getValidationResult()) {
 						udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
