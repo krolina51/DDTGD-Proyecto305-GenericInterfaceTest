@@ -12,7 +12,9 @@
 			  "bussinessValidation":true,
 			  "ipCryptoValidation":"10.86.82.119",
 			  "portCryptoValidation":7000,
-			  "channelIds": ["53"]
+			  "channelIds": ["53"],
+			  "routing_filter":"Prod1",
+			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json"
 		},
 	"FirstData":{
 			  "cfgRetentionPeriod":"360000",
@@ -27,7 +29,9 @@
 			  "bussinessValidation":true,
 			  "ipCryptoValidation":"10.86.82.119",
 			  "portCryptoValidation":7000,
-			  "channelIds": []
+			  "channelIds": [],
+			  "routing_filter":"Prod1",
+			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json"
 		},
 	"GenericTest":{
 			  "cfgRetentionPeriod":"360000",
@@ -42,7 +46,9 @@
 			  "bussinessValidation":false,
 			  "ipCryptoValidation":"10.86.82.119",
 			  "portCryptoValidation":7000,
-			  "channelIds": []
+			  "channelIds": [],
+			  "routing_filter":"Prod1",
+			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json"
 		},
 	"GenericTest2":{
 			  "cfgRetentionPeriod":"360000",
@@ -57,6 +63,8 @@
 			  "bussinessValidation":false,
 			  "ipCryptoValidation":"10.86.82.119",
 			  "portCryptoValidation":7000,
-			  "channelIds": []
+			  "channelIds": [],
+			  "routing_filter":"Prod1",
+			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json"
 		}
 }

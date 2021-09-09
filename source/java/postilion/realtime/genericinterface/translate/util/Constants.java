@@ -48,13 +48,14 @@ public class Constants {
 
 	/** Parametros de ejecución de la interfaz. */
 	public static final class RuntimeParm {
-		public static final int NR_OF_PARAMETERS_EXPECTED = 4;
+		public static final int NR_OF_PARAMETERS_EXPECTED = 1;
 		public static final String RETENTION_PERIOD = "Retention Period";
 		public static final String KWA_NAME = "KWA name";
 		public static final String VALIDATE_MAC = "Validation of MAC";
 		public static final String VALIDATE_BLOCK_CARD = "Validation of block card";
 		public static final String VALIDATE_IP_UDP_SERVER = "Udp server's ip";
 		public static final String VALIDATE_PORT_UDP_SERVER = "Udp server's port";
+		public static final String KVC_NAME = "KVC name";
 	}
 
 	/**

@@ -13,6 +13,7 @@ import postilion.realtime.library.common.model.ResponseCode;
 import postilion.realtime.genericinterface.channels.Super;
 import postilion.realtime.genericinterface.eventrecorder.events.CannotProcessAcqReconRspFromRemote;
 import postilion.realtime.genericinterface.eventrecorder.events.IncorrectLengthField_120KeyManagement;
+import postilion.realtime.genericinterface.eventrecorder.events.IncorrectRuntimeParameters;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidAddressKey;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidDataField_120KeyManagement;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidDataField_123CryptoServiceMsg;
@@ -60,6 +61,7 @@ import postilion.realtime.sdk.node.XNodeParameterValueInvalid;
 import postilion.realtime.sdk.util.DateTime;
 import postilion.realtime.sdk.util.TimedHashtable;
 import postilion.realtime.sdk.util.XPostilion;
+import postilion.realtime.sdk.util.convert.Pack;
 import postilion.realtime.sdk.util.convert.Transform;
 import postilion.realtime.validations.crypto.FactoryCommonRules;
 import postilion.realtime.sdk.node.ActiveActiveKeySyncMsgHandler;
@@ -68,6 +70,7 @@ import postilion.realtime.sdk.node.NodeDriverEnvAdapter;
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.HashMap;
@@ -186,6 +189,13 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public int portCryptoValidation = 7000;
 	public FactoryCommonRules factory;
 	public HashMap<String, DesKwa> keys = new HashMap<>();
+
+	public String routingFilter = "";
+	public String routingCreditPath = "";
+	public String routingTransitoriasPath = "";
+	public String routingFilterPath = "D:\\Apl\\postilion\\genericinterfacepb";
+	protected boolean validateCvv = false;
+	protected DesKvc kvc = null;
 
 	public Parameters params;
 
@@ -992,7 +1002,34 @@ public class GenericInterface extends AInterchangeDriver8583 {
 //		acquirersNetwork = postilion.realtime.genericinterface.translate.database.DBHandler.getAcquirerDesc();
 		this.nameInterface = interchange.getName();
 
-		getParameters();
+		//getParameters();
+		
+		String[] userParams = Pack.splitParams(interchange.getUserParameter());
+//		acquirersNetwork = postilion.realtime.genericinterface.translate.database.DBHandler.getAcquirerDesc();
+		this.nameInterface = interchange.getName();
+		String[] logParms = { nameInterface, Integer.toString(Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED),
+				Integer.toString(userParams.length), interchange.getUserParameter() };
+
+		if (userParams.length != Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED) {
+			EventRecorder.recordEvent(new IncorrectRuntimeParameters(new String[] { interchange.getName(),
+					Integer.toString(Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED),
+					Integer.toString(userParams.length), interchange.getUserParameter() }));
+			throw new XPostilion(new IncorrectRuntimeParameters(
+					new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
+		}
+
+		getParameters(userParams[0]);
+		
+		switch (routingFilter) {
+		case "Test2":
+		case "Prod2":
+			fillFilters2();
+			break;
+		default:
+			fillFilters();
+			break;
+		}
+			
 		udpClient = new Client(ipUdpServer, portUdpServer);
 		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId, udpClient,
 				nameInterface, ipCryptoValidation, portCryptoValidation, keys);
@@ -1063,15 +1100,127 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			getLogger().logLine("Exception in validateParameters: " + e.getMessage());
 		}
 	}
+	
+	public void fillFilters2() {
 
+		try (FileReader fr = new FileReader(routingFilterPath)) {
+			JSONParser parser = new JSONParser();
+			org.json.simple.JSONArray jsonArray = (org.json.simple.JSONArray) parser.parse(fr);
+			for (Object object : jsonArray) {
+				StringBuilder sbKey = new StringBuilder();
+				StringBuilder sbKey2 = new StringBuilder();
+				org.json.simple.JSONObject canal = (org.json.simple.JSONObject) object;
+
+				String strCanal = (String) canal.get("Canal");
+				String strCodProc = (String) canal.get("Codigo_Proceso");
+				String strEntryMode = (String) canal.get("Modo_Entrada");
+				sbKey.append(strCanal);
+				sbKey.append(strCodProc);
+				sbKey.append(strEntryMode);
+
+				sbKey2.append(strCanal);
+				sbKey2.append(strCodProc);
+				if (!primerFiltroTest2.containsKey(sbKey.toString()))
+					primerFiltroTest2.put(sbKey.toString(), sbKey.toString());
+
+				String strBin = (String) canal.get("BIN");
+				String strCuenta = (String) canal.get("Cuenta");
+				// iteracion sobre bines
+				if (!strBin.equals("0")) {
+					String[] strBines = strBin.split(",");
+					for (int i = 0; i < strBines.length; i++) {
+						if (!segundoFiltroTest2.containsKey(sbKey2.toString() + strBines[i]))
+							segundoFiltroTest2.put(sbKey2.toString() + strBines[i], sbKey2.toString() + strBines[i]);
+					}
+				}
+				// iteracion sobre tarjetas
+
+				if (!strCuenta.equals("0")) {
+					String[] strCuentas = strCuenta.split(",");
+					for (int i = 0; i < strCuentas.length; i++) {
+						if (!segundoFiltroTest2.containsKey(sbKey2.toString() + strCuentas[i]))
+							segundoFiltroTest2.put(sbKey2.toString() + strCuentas[i],
+									sbKey2.toString() + strCuentas[i]);
+					}
+				}
+
+			}
+			fr.close();
+		} catch (Exception e) {
+			EventRecorder.recordEvent(
+					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
+							"fillFilters: [newMsg]", Utils.getStringMessageException(e), "Unknown" }));
+			EventRecorder.recordEvent(e);
+		}
+
+	}
+	
+	public void fillFilters() {
+
+		try (FileReader fr = new FileReader(routingFilterPath)) {
+			JSONParser parser = new JSONParser();
+			org.json.simple.JSONArray jsonArray = (org.json.simple.JSONArray) parser.parse(fr);
+			for (Object object : jsonArray) {
+				StringBuilder sbKey = new StringBuilder();
+				org.json.simple.JSONObject canal = (org.json.simple.JSONObject) object;
+
+				String strCanal = (String) canal.get("Canal");
+				String strCodProc = (String) canal.get("Codigo_Proceso");
+				sbKey.append(strCanal);
+				sbKey.append(strCodProc);
+
+				String strBin = (String) canal.get("BIN");
+				String strTarjeta = (String) canal.get("Numero_Tarjeta");
+				String strCuenta = (String) canal.get("Cuenta");
+				// iteracion sobre bines
+				if (!strBin.equals("0")) {
+					String[] strBines = strBin.split(",");
+					for (int i = 0; i < strBines.length; i++) {
+						if (!primerFiltroTest1.containsKey(sbKey.toString() + strBines[i]))
+							primerFiltroTest1.put(sbKey.toString() + strBines[i], sbKey.toString() + strBines[i]);
+					}
+				}
+				// iteracion sobre tarjetas
+
+				if (!strTarjeta.equals("0")) {
+					String[] strTarjetas = strTarjeta.split(",");
+					for (int i = 0; i < strTarjetas.length; i++) {
+						if (!primerFiltroTest1.containsKey(sbKey.toString() + strTarjetas[i]))
+							primerFiltroTest1.put(sbKey.toString() + strTarjetas[i], sbKey.toString() + strTarjetas[i]);
+					}
+				}
+				
+				// iteracion sobre cuentas
+
+				if (!strCuenta.equals("0")) {
+					String[] strCuentas = strCuenta.split(",");
+					for (int i = 0; i < strCuentas.length; i++) {
+						if (!primerFiltroTest1.containsKey(sbKey.toString() + strCuentas[i]))
+							primerFiltroTest1.put(sbKey.toString() + strCuentas[i], sbKey.toString() + strCuentas[i]);
+					}
+				}
+
+			}
+			fr.close();
+		} catch (Exception e) {
+			EventRecorder.recordEvent(
+					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
+							"fillFilters: [newMsg]", Utils.getStringMessageException(e), "Unknown" }));
+			EventRecorder.recordEvent(e);
+		}
+
+	}
+
+   
 	@SuppressWarnings("unchecked")
-	public void getParameters() {
+	public void getParameters(String path) {
 
 		try {
+			
 			JSONParser parser = new JSONParser();
 
 			org.json.simple.JSONObject jsonObjects = (org.json.simple.JSONObject) parser
-					.parse(new FileReader("D:\\Apl\\postilion\\genericinterfacetest\\parameters.json"));
+					.parse(new FileReader(path));
 
 			org.json.simple.JSONObject parameters = (JSONObject) jsonObjects.get(this.nameInterface);
 
@@ -1089,6 +1238,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				String cfgIpCryptoValidation = parameters.get("ipCryptoValidation").toString();
 				String cfgPortCryptoValidation = parameters.get("portCryptoValidation").toString();
 				JSONArray channelsIds = (JSONArray) parameters.get("channelIds");
+				
+				this.routingFilter = parameters.get("routing_filter").toString();
+				this.routingFilterPath = parameters.get("routing_filter_path").toString();
+				
 				businessValidation = (boolean) parameters.get("bussinessValidation");
 				if (cfgRetentionPeriod != null) {
 					try {
@@ -1152,10 +1305,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						}
 					});
 				}
-			}else {
-				EventRecorder.recordEvent(
-						new XNodeParameterValueInvalid("Parameters for interchange"+this.nameInterface, General.NULLSTRING));
-				throw new XNodeParameterValueInvalid("Parameters for interchange"+this.nameInterface, General.NULLSTRING);
+			} else {
+				EventRecorder.recordEvent(new XNodeParameterValueInvalid(
+						"Parameters for interchange" + this.nameInterface, General.NULLSTRING));
+				throw new XNodeParameterValueInvalid("Parameters for interchange" + this.nameInterface,
+						General.NULLSTRING);
 			}
 		} catch (Exception e) {
 			EventRecorder.recordEvent(
@@ -1503,7 +1657,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);
 
 //			Base24Ath msgFromRemoteT = new Base24Ath(kwa);
-//			Iso8583Post msgToTm = new Iso8583Post();
+			Iso8583Post msgToTm = new Iso8583Post();
 			Base24Ath msgToRemote = new Base24Ath(kwa);
 			MessageTranslator translator = new MessageTranslator(params);
 
@@ -1517,33 +1671,55 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					action = new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromRemote, errMac), null, null);
 				} else {
 
-					Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
-							General.VOIDSTRING, new HashMap<String, String>(), params) {
-
-						@Override
-						public void validations(Base24Ath msg, Super objectValidations) {
-
-						}
-					};
-
 					if (!msg.isFieldSet(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID)) {
 						msg.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, Constants.General.DEFAULT_P41);
 					}
 
-					//if(businessValidation)
-					//	objectValidations = objectValidations.businessValidation(msgFromRemote, objectValidations);// PONER
-																												// CUIDADO***********************
-					if (!objectValidations.getValidationResult()) {
-						udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-								"no paso las validaciones de negocio", "LOG", nameInterface));
-						action.putMsgToTranmgr(translator.construct0220ToTm(msg, interchange.getName()));
-						msgToRemote = translator.constructBase24(msgFromRemote, objectValidations);
-						udpClient.sendData(
-								Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-										Transform.fromBinToHex(Transform.getString(msgToRemote.toMsg(false))), "B24",
-										nameInterface));
-						action.putMsgToRemote(msgToRemote);
-					} else {
+					// Validación Enrutamiento Autra o Interfaz 2
+					int intAutraNvo = 0;
+
+					switch (routingFilter) {
+					case "Test1":
+					case "Prod1":
+
+						intAutraNvo = ValidateAutra.validateAutraNuevo(msgFromRemote, udpClient, nameInterface,
+								routingFilter);
+
+						break;
+
+					case "Capa":
+
+						intAutraNvo = 0;
+
+						break;
+					case "Autra":
+
+						intAutraNvo = 1;
+
+						break;
+
+					default:
+
+						break;
+
+					}
+
+					switch (intAutraNvo) {
+					case 0:
+
+						Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
+								General.VOIDSTRING, new HashMap<String, String>(), params) {
+
+							@Override
+							public void validations(Base24Ath msg, Super objectValidations) {
+
+							}
+						};
+
+						// if(businessValidation)
+						// objectValidations = objectValidations.businessValidation(msgFromRemote,
+						// objectValidations);// PONER
+						// CUIDADO***********************
 						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
 								objectValidations.getInforCollectedForStructData());
 						GenericInterface.getLogger().logLine("Field 102 Iso8583Post:" + Isomsg.getField(102));
@@ -1552,8 +1728,32 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						action.putMsgToTranmgr(Isomsg);
 
 						putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
-					}
 
+						break;
+
+					default:
+						Super objectSuper = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
+								null, params) {
+
+							@Override
+							public void validations(Base24Ath msg, Super objectValidations) {
+
+							}
+						};
+
+						objectSuper.constructAutraMessage(msgFromRemote, msgToTm);
+
+						if (msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE).equals("910000")) {
+							msgToTm.putMsgType(Iso8583.MsgType._0600_ADMIN_REQ);
+						}
+
+						action.putMsgToTranmgr(msgToTm);
+						putRecordIntoSourceToTmHashtable(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgToTm);
+						putRecordIntoSourceToTmHashtableB24(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+								msgFromRemote);
+
+						break;
+					}
 				}
 			} catch (Exception e) {
 
@@ -1607,16 +1807,30 @@ public class GenericInterface extends AInterchangeDriver8583 {
 									"ISO", nameInterface));
 
 		try {
+			if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+					&& msg.getStructuredData().get("B24_MessageRsp") != null) {
+				String sdData = msg.getStructuredData().get("B24_MessageRsp");
+				byte[] decodedBytes = Base64.getDecoder().decode(sdData);
+				String decodedString = new String(decodedBytes, Charset.forName("US-ASCII"));
+				Base24Ath msgDecoded = new Base24Ath(null);
 
-			MessageTranslator translator = new MessageTranslator(params);
+				msgDecoded.fromMsg(decodedString);
 
-			Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
-			udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
-			GenericInterface.getLogger().logLine("210CONSTRUCTISO8583:" + msgToRemote2);
-			msgToRemote2.putField(128, "FFFFFFFF00000000");
+				GenericInterface.getLogger().logLine("Respuesta 0210 Desencapsulada:" + msgDecoded.toString());
+				udpClient.sendData(Client.getMsgKeyValue(msgDecoded.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						Transform.fromBinToHex(Transform.getString(msgDecoded.getBinaryData())), "B24", nameInterface));
+				if (!nameInterface.toLowerCase().startsWith("credibanco"))
+					action.putMsgToRemote(msgDecoded);
 
-			action.putMsgToRemote(msgToRemote2);
+			} else {
+				MessageTranslator translator = new MessageTranslator(params);
+				Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
+				udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
+				GenericInterface.getLogger().logLine("210CONSTRUCTISO8583:" + msgToRemote2);
+				msgToRemote2.putField(128, "FFFFFFFF00000000");
+				action.putMsgToRemote(msgToRemote2);
+			}
 
 		} catch (Exception e) {
 
@@ -1638,35 +1852,129 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public Action processTranReqFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
 			throws Exception {
 
-		msg.clearField(28);
-		msg.clearField(30);
 		putRecordIntoSourceToTmHashtable(
 				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
 				msg);
-
-		MessageTranslator translator = new MessageTranslator(params);
-		Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
-
 		Action action = new Action();
-
-		action.putMsgToRemote(msgToRemote);
+		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+				&& msg.getStructuredData().get("B24_Message") != null) {
+			String sdData = msg.getStructuredData().get("B24_Message");
+			byte[] decodedBytes = Base64.getDecoder().decode(sdData);
+			String decodedString = new String(decodedBytes);
+			GenericInterface.getLogger().logLine("B24_Message: " + decodedString);
+			Base24Ath msgDecoded = new Base24Ath(null);
+			msgDecoded.fromMsg(decodedString);
+			action.putMsgToRemote(msgDecoded);
+		} else {
+			msg.clearField(28);
+			msg.clearField(30);
+			MessageTranslator translator = new MessageTranslator(params);
+			Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
+			action.putMsgToRemote(msgToRemote);
+		}
 		return action;
 	}
 
 	@Override
 	public Action processAcquirerRevAdvFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
 			throws Exception {
-		MessageTranslator translator = new MessageTranslator(params);
-		Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
-
-		putRecordIntoSourceToTmHashtable(
-				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
-				msg);
+		GenericInterface.getLogger().logLine("Entro processAcquirerRevAdvFromTranmgr");
+		GenericInterface.getLogger().logLine("Iso8583Post Rev: " + msg.toString());
+		String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 		Action action = new Action();
+		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._006_AUTH_PROFILE)) {
+			switch (msg.getPrivField(Iso8583Post.PrivBit._006_AUTH_PROFILE)) {
+			case "30":
+				if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+						&& msg.getStructuredData().get("B24_Message") != null) {
+					action.putMsgToRemote(constructRevAdvToRemote(msg));
+				} else {
+					MessageTranslator translator = new MessageTranslator(params);
+					Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
 
-		action.putMsgToRemote(msgToRemote);
+					putRecordIntoSourceToTmHashtable(
+							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
+							msg);
+					action.putMsgToRemote(msgToRemote);
+				}
+				return action;
+			default:
+				break;
+			}
+		}
+
+		String sdData = msg.getStructuredData().get("B24_Message");
+		putRecordIntoSourceToTmHashtable(keyMsg, msg);
+		if (sdData != null) {
+			byte[] decodedBytes = Base64.getDecoder().decode(sdData);
+			String decodedString = new String(decodedBytes);
+			GenericInterface.getLogger().logLine("B24_Message: " + decodedString);
+			Base24Ath msgDecoded = new Base24Ath(null);
+			msgDecoded.fromMsg(decodedString);
+			action.putMsgToRemote(msgDecoded);
+		}
 		return action;
+	}
 
+	public Base24Ath constructRevAdvToRemote(Iso8583Post msg) throws XPostilion {
+		Base24Ath msg0200ToRev = new Base24Ath(null);
+		try {
+			String sdData0200 = msg.getStructuredData().get("B24_Message");
+			byte[] decodedBytes = Base64.getDecoder().decode(sdData0200);
+			String decodedString = new String(decodedBytes);
+
+			String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
+			putRecordIntoSourceToTmHashtable(keyMsg, msg);
+
+			String keyMsgFromRemote210 = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+					+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
+			GenericInterface.getLogger().logLine("keyMsgFromRemote210: " + keyMsgFromRemote210);
+			Iso8583Post msgIsoPost210 = (Iso8583Post) sourceTranToTmHashtable.get(keyMsgFromRemote210);
+
+			GenericInterface.getLogger().logLine("msgIsoPost210: " + msgIsoPost210.toString());
+
+			msg0200ToRev.fromMsg(decodedString);
+			msg0200ToRev.putMsgType(Iso8583.MsgType._0420_ACQUIRER_REV_ADV);
+
+			msg0200ToRev.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgIsoPost210.getField(Iso8583.Bit._038_AUTH_ID_RSP));
+			msg0200ToRev.putField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS,
+					constructField90AutraRevResponse(msgIsoPost210, msg));
+
+			msg0200ToRev.putField(Iso8583.Bit._039_RSP_CODE, msg.getField(Iso8583.Bit._039_RSP_CODE));
+
+			if (msgIsoPost210.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
+				msg0200ToRev.putField(Iso8583.Bit._102_ACCOUNT_ID_1,
+						msgIsoPost210.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
+			if (msgIsoPost210.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
+				msg0200ToRev.putField(Iso8583.Bit._103_ACCOUNT_ID_2,
+						msgIsoPost210.getField(Iso8583.Bit._103_ACCOUNT_ID_2));
+
+			msg0200ToRev.clearField(Iso8583.Bit._052_PIN_DATA);
+			msg0200ToRev.clearField(105);
+			msg0200ToRev.clearField(112);
+			msg0200ToRev.clearField(126);
+
+			GenericInterface.getLogger().logLine("Base24Ath Rev: " + msg0200ToRev.toString());
+		} catch (XPostilion e) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [constructRevAdvToRemote]",
+					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+			EventRecorder.recordEvent(e);
+		}
+		return msg0200ToRev;
+	}
+
+	public String constructField90AutraRevResponse(Iso8583Post msg210fromTM, Iso8583Post msg) throws XPostilion {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(msg.getField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0, 4));
+		sb.append((msg210fromTM.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)));
+		sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
+		sb.append((msg210fromTM.getField(Iso8583.Bit._012_TIME_LOCAL) + "00"));
+		sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
+		sb.append("0000000000");
+
+		return sb.toString();
 	}
 
 	@Override
@@ -1705,20 +2013,42 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public Action processTranReqRspFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msgFromRemote)
 			throws Exception {
 
+		Action action = new Action();
 		Iso8583Post originalMsg = (Iso8583Post) sourceTranToTmHashtable
 				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
 						+ msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 
-		originalMsg.putMsgType(msgFromRemote.getMsgType());
-		originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
-		originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
+		if (originalMsg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+				&& originalMsg.getStructuredData().get("B24_Message") != null) {
+			Base24Ath msg = (Base24Ath) msgFromRemote;
 
-		Action action = new Action();
-		action.putMsgToTranmgr(originalMsg);
+			GenericInterface.getLogger().logLine("Por Autra");
+			Super objectSuper = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING, null,
+					params) {
 
+				@Override
+				public void validations(Base24Ath msg, Super objectValidations) {
+
+				}
+			};
+
+			objectSuper.constructAutraResponseMessage(msg, originalMsg);
+
+			if (msg.getField(Iso8583.Bit._003_PROCESSING_CODE).equals("910000")) {
+				originalMsg.putMsgType(Iso8583.MsgType._0610_ADMIN_REQ_RSP);
+			}
+			action.putMsgToTranmgr(originalMsg);
+		} else {
+
+			originalMsg.putMsgType(msgFromRemote.getMsgType());
+			originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
+			originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
+			action.putMsgToTranmgr(originalMsg);
+
+		}
+		sourceTranToTmHashtable.remove(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+				+ msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 		return action;
-
-		// return super.processTranReqRspFromInterchange(interchange, msg);
 	}
 
 	/**************************************************************************************
@@ -1784,7 +2114,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Base24Ath msgFromRemote = (Base24Ath) msg;
 		udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
-//		Iso8583Post msgToTm = new Iso8583Post();
+		Iso8583Post msgToTm = new Iso8583Post();
 		putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);
 //		Base24Ath msgToRemote = new Base24Ath(kwa);
 		MessageTranslator translator = new MessageTranslator(params);
@@ -1796,24 +2126,61 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				action = new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromRemote, errMac), null, null);
 			} else {
 
-				Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
-						new HashMap<String, String>(), params) {
+				int intAutraAnt = ValidateAutra.validateAutra(msgFromRemote, udpClient, nameInterface, routingFilter);
 
-					@Override
-					public void validations(Base24Ath msg, Super objectValidations) {
+				int intAutraNvo = 0;
 
-					}
-				};
+				if (intAutraAnt != intAutraNvo) {
+					getLogger().logLine("**********************************************************************");
+					getLogger().logLine("DIFERENCIA ValidacionAutra");
+					getLogger().logLine(msgFromRemote.toString());
+					getLogger().logLine("**********************************************************************");
+					getLogger().logLine("**********************************************************************");
+				}
 
-				Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
-						objectValidations.getInforCollectedForStructData());
+				switch (intAutraNvo) {
+				case 0:
 
-				GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+					Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
+							General.VOIDSTRING, new HashMap<String, String>(), params) {
 
-				action.putMsgToTranmgr(Isomsg);
+						@Override
+						public void validations(Base24Ath msg, Super objectValidations) {
 
-				putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+						}
+					};
 
+					Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
+							objectValidations.getInforCollectedForStructData());
+
+					GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+
+					action.putMsgToTranmgr(Isomsg);
+
+					putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+
+				default:
+
+					Super objectSuper = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
+							null, params) {
+
+						@Override
+						public void validations(Base24Ath msg, Super objectValidations) {
+
+						}
+					};
+
+					GenericInterface.getLogger().logLine("msgToTm AUTRA:" + msgToTm.toString());
+					objectSuper.constructAutraRevMessage(msgFromRemote, msgToTm);
+					GenericInterface.getLogger().logLine("msgToTm AUTRA:" + msgToTm.toString());
+
+					action.putMsgToTranmgr(msgToTm);
+					putRecordIntoSourceToTmHashtable(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgToTm);
+					putRecordIntoSourceToTmHashtableB24(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+							msgFromRemote);
+					break;
+
+				}
 			}
 		} catch (Exception e) {
 
@@ -1843,17 +2210,31 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			throws Exception {
 		Action action = new Action();
 		try {
+			if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+					&& msg.getStructuredData().get("B24_MessageRsp") != null) {
+				String sdData = msg.getStructuredData().get("B24_MessageRsp");
+				byte[] decodedBytes = Base64.getDecoder().decode(sdData);
+				String decodedString = new String(decodedBytes);
+				Base24Ath msgDecoded = new Base24Ath(null);
 
-			MessageTranslator translator = new MessageTranslator(params);
+				msgDecoded.fromMsg(decodedString);
 
-			Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
-			udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
-			GenericInterface.getLogger().logLine("430CONSTRUCTISO8583:" + msgToRemote2);
-			msgToRemote2.putField(128, "FFFFFFFF00000000");
+				GenericInterface.getLogger().logLine("Respuesta 0430 Desencapsulada:" + msgDecoded.toString());
+				udpClient.sendData(Client.getMsgKeyValue(msgDecoded.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						Transform.fromBinToHex(Transform.getString(msgDecoded.getBinaryData())), "B24", nameInterface));
+				action.putMsgToRemote(msgDecoded);
 
-			action.putMsgToRemote(msgToRemote2);
+			} else {
+				MessageTranslator translator = new MessageTranslator(params);
 
+				Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
+				udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
+				GenericInterface.getLogger().logLine("430CONSTRUCTISO8583:" + msgToRemote2);
+				msgToRemote2.putField(128, "FFFFFFFF00000000");
+
+				action.putMsgToRemote(msgToRemote2);
+			}
 		} catch (Exception e) {
 
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
@@ -1869,19 +2250,35 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	@Override
 	public Action processAcquirerRevAdvRspFromInterchange(AInterchangeDriverEnvironment interchange,
 			Iso8583 msgFromRemote) throws Exception {
-		Iso8583Post originalMsg = (Iso8583Post) sourceTranToTmHashtable
-				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
-						+ msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
-
-		originalMsg.putMsgType(msgFromRemote.getMsgType());
-		originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
-		originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
-
+		GenericInterface.getLogger().logLine("Entro processAcquirerRevAdvRspFromInterchange");
+		Base24Ath msg = (Base24Ath) msgFromRemote;
 		Action action = new Action();
-		action.putMsgToTranmgr(originalMsg);
+		String keyMsgFromRemote = msg
+				.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+		Iso8583Post msgToTM = new Iso8583Post();
+		msgToTM = (Iso8583Post) sourceTranToTmHashtable.get(keyMsgFromRemote);
 
+		sourceTranToTmHashtable.remove(keyMsgFromRemote);
+
+		if (msgToTM.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+				&& msgToTM.getStructuredData().get("B24_Message") != null) {
+			Super objectSuper = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING, null,
+					params) {
+
+				@Override
+				public void validations(Base24Ath msg, Super objectValidations) {
+
+				}
+			};
+			objectSuper.constructAutraRevResponseMessage(msg, msgToTM);
+			action.putMsgToTranmgr(msgToTM);
+		} else {
+			msgToTM.putMsgType(msgFromRemote.getMsgType());
+			msgToTM.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
+			msgToTM.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
+			action.putMsgToTranmgr(msgToTM);
+		}
 		return action;
-
 	}
 
 	/**

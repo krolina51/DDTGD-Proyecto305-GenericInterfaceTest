@@ -12,6 +12,8 @@ import java.util.HashMap;
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.Parameters;
 import postilion.realtime.genericinterface.eventrecorder.events.SQLExceptionEvent;
+import postilion.realtime.genericinterface.translate.database.DBHandler.ColumnNames;
+import postilion.realtime.genericinterface.translate.database.DBHandler.Queries;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
 import postilion.realtime.library.common.util.constants.General;
@@ -27,11 +29,11 @@ import postilion.realtime.sdk.message.bitmap.StructuredData;
  * @author Cristian Cardozo
  */
 public class DBHandler {
-	
+
 	private Client udpClient = null;
 	private String nameInterface = "";
 	private Parameters params;
-	
+
 	public DBHandler(Parameters params) {
 		this.udpClient = params.getUdpClient();
 		this.nameInterface = params.getNameInterface();
@@ -116,8 +118,8 @@ public class DBHandler {
 
 			StringWriter outError = new StringWriter();
 			e.printStackTrace(new PrintWriter(outError));
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(p37, "catch sp accounts : " + outError.toString(), "LOG", this.nameInterface));
+			this.udpClient.sendData(Client.getMsgKeyValue(p37, "catch sp accounts : " + outError.toString(), "LOG",
+					this.nameInterface));
 
 			return result;
 		} finally {
@@ -293,6 +295,7 @@ public class DBHandler {
 	 * @return update true si activo false de lo contrario
 	 */
 	public boolean updateResgistry(String code, String process, String version) {
+
 		boolean update = false;
 		Statement st = null;
 		ResultSet rs = null;
@@ -301,7 +304,8 @@ public class DBHandler {
 		try {
 			con = JdbcManager.getDefaultConnection();
 			st = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			rs = st.executeQuery(String.format(Queries.SELECT_ALL_FROM_CUST_EQUIVALENT_RESPONSE_CODES, code, process, version));
+			rs = st.executeQuery(
+					String.format(Queries.SELECT_ALL_FROM_CUST_EQUIVALENT_RESPONSE_CODES, code, process, version));
 			rows = new Utils(this.params).countRows(rs);
 			boolean go = true;
 			if (rows > 0)
@@ -320,7 +324,7 @@ public class DBHandler {
 				}
 			else {
 				rs = st.executeQuery(String.format(Queries.SELECT_ALL_FROM_CUST_EQUIVALENT_RESPONSE_CODES, code,
-						(process.equals("0") ? "1" : "0")));
+						(process.equals("0") ? "1" : "0"), version));
 				rows = new Utils(this.params).countRows(rs);
 				go = true;
 				if (rows > 0)
@@ -353,7 +357,6 @@ public class DBHandler {
 				EventRecorder.recordEvent(new SQLExceptionEvent(new String[] { "Realtime",
 						Queries.SELECT_ALL_FROM_CUST_EQUIVALENT_RESPONSE_CODES, Utils.getStringMessageException(e) }));
 			}
-
 		}
 		return update;
 	}
