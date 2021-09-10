@@ -249,7 +249,7 @@ public class Parameters {
 
 	public Parameters(DesKwa kwa, TimedHashtable sourceTranToTmHashtable, TimedHashtable sourceTranToTmHashtableB24,
 			String issuerId, Client udpClient, String nameInterface, String ipCryptoValidation,
-			int portCryptoValidation, HashMap<String, DesKwa> keys) {
+			int portCryptoValidation, HashMap<String, DesKwa> keys, String routingField100) {
 		this.kwa = kwa;
 		this.sourceTranToTmHashtable = sourceTranToTmHashtable;
 		this.sourceTranToTmHashtableB24 = sourceTranToTmHashtableB24;
@@ -259,6 +259,7 @@ public class Parameters {
 		this.ipCryptoValidation = ipCryptoValidation;
 		this.portCryptoValidation = portCryptoValidation;
 		this.keys = keys;
+		this.routingField100 = routingField100;
 	}
 
 }

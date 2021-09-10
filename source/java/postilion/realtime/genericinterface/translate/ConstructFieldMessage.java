@@ -2445,11 +2445,11 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 			case "10":
 
-				return this.institutionid.get(RoutingAccount.ACCOUNT_SAVINGS_10);
+				return "10";
 
 			case "20":
 
-				return this.institutionid.get(RoutingAccount.ACCOUNT_CHECK_20);
+				return "20";
 
 			default:
 				String secondsfield12 = msg.getField(Iso8583.Bit._012_TIME_LOCAL).substring(5, 6);
@@ -2457,9 +2457,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 				switch (fieldValue % 2) {
 				case 0:
-					return this.institutionid.get(RoutingAccount.ACCOUNT_CHECK_20);
+					return "20";
 				default:
-					return this.institutionid.get(RoutingAccount.ACCOUNT_SAVINGS_10);
+					return "10";
 				}
 			}
 

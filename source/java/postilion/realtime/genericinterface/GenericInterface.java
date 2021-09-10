@@ -1032,7 +1032,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			
 		udpClient = new Client(ipUdpServer, portUdpServer);
 		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId, udpClient,
-				nameInterface, ipCryptoValidation, portCryptoValidation, keys);
+				nameInterface, ipCryptoValidation, portCryptoValidation, keys, routingField100);
 		factory = new FactoryCommonRules(params);
 
 	}
@@ -1241,6 +1241,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				
 				this.routingFilter = parameters.get("routing_filter").toString();
 				this.routingFilterPath = parameters.get("routing_filter_path").toString();
+				this.routingField100 = parameters.get("routing_field_100").toString();
 				
 				businessValidation = (boolean) parameters.get("bussinessValidation");
 				if (cfgRetentionPeriod != null) {
