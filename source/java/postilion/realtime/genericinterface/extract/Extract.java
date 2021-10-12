@@ -1,11 +1,10 @@
 package postilion.realtime.genericinterface.extract;
 
 import postilion.realtime.genericinterface.channels.Super;
-import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.util.Constants;
-import postilion.realtime.genericinterface.translate.util.Utils;
-import postilion.realtime.sdk.eventrecorder.EventRecorder;
+import postilion.realtime.genericinterface.translate.util.EventReporter;
+import postilion.realtime.genericinterface.translate.util.udp.Client;
 import postilion.realtime.sdk.message.bitmap.Iso8583;
 import postilion.realtime.sdk.message.bitmap.ProcessingCode;
 import postilion.realtime.sdk.message.bitmap.XFieldUnableToConstruct;
@@ -328,7 +327,6 @@ public class Extract {
 			tagsAllDataAccountsWithoutAccountsClienteCNBWithoutCard(objectValidations, msg);
 		}
 
-		
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
 				(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
 						? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4)
@@ -343,7 +341,7 @@ public class Extract {
 	}
 
 //// DEBITO
-	
+
 	public static void tagsModelTransferOtpDebit(Super objectValidations, Base24Ath msg) throws XPostilion {
 
 		tagsModelTransferView2(objectValidations, msg);
@@ -367,7 +365,7 @@ public class Extract {
 
 //			tagsAllDataCarsAccountsClienteCNBWithdrawalOtp(objectValidations);
 			tagsAllDataAccountsAccountsClienteCNBOtp(objectValidations);
-			
+
 		} else {
 			tagsAllDataAccountsWithoutAccountsClienteCNBOtp(objectValidations, msg);
 		}
@@ -378,7 +376,7 @@ public class Extract {
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", procCode.getToAccount());
 
 	}
-	
+
 // CREDITO
 	public static void tagsModelWithdrawalOtpCredit(Super objectValidations, Base24Ath msg) throws XPostilion {
 
@@ -414,9 +412,10 @@ public class Extract {
 //**************************MODELOS RETIRO OTP CNB*******************************************************************	
 //**************************MODELOS PAGO DE SERVICIOS****************************************************************	
 	// MIXTA
-	public static void tagsModelPaymentOfServicesMixed(Super objectValidations, Base24Ath msg) throws XPostilion {
+	public static void tagsModelPaymentOfServicesMixed(Super objectValidations, Base24Ath msg,Client udpClient,
+			String nameInterface ) throws XPostilion {
 
-		tagsModelPspGeneral(objectValidations, msg);
+		tagsModelPspGeneral(objectValidations, msg, udpClient, nameInterface);
 
 		objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_PSP",
 				objectValidations.getInforCollectedForStructData().get("TRANSACTION_TYPE_PSP") + "_MIXTA");
@@ -435,9 +434,10 @@ public class Extract {
 	}
 
 	// CREDITO
-	public static void tagsModelPaymentOfServicesCredit(Super objectValidations, Base24Ath msg) throws XPostilion {
+	public static void tagsModelPaymentOfServicesCredit(Super objectValidations, Base24Ath msg, Client udpClient,
+			String nameInterface) throws XPostilion {
 
-		tagsModelPspGeneral(objectValidations, msg);
+		tagsModelPspGeneral(objectValidations, msg, udpClient, nameInterface);
 
 		objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_CBN_PSP", "CREDITO");
 		objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_CBN", "CREDITO");
@@ -457,9 +457,10 @@ public class Extract {
 	}
 
 	// DEBITO
-	public static void tagsModelPaymentOfServicesDebit(Super objectValidations, Base24Ath msg) throws XPostilion {
+	public static void tagsModelPaymentOfServicesDebit(Super objectValidations, Base24Ath msg, Client udpClient,
+			String nameInterface) throws XPostilion {
 
-		tagsModelPspGeneral(objectValidations, msg);
+		tagsModelPspGeneral(objectValidations, msg, udpClient, nameInterface);
 
 		objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_PSP",
 				objectValidations.getInforCollectedForStructData().get("TRANSACTION_TYPE_PSP") + "_DEBITO");
@@ -477,8 +478,8 @@ public class Extract {
 
 	}
 
-
-	public static void tagsModelPspGeneral(Super objectValidations, Base24Ath msg) throws XPostilion {
+	public static void tagsModelPspGeneral(Super objectValidations, Base24Ath msg, Client udpClient,
+			String nameInterface) throws XPostilion {
 		try {
 			if (msg.isFieldSet(Base24Ath.Bit.DATA_ADDTIONAL)) {
 				objectValidations.putInforCollectedForStructData("Numero_de_Recibo_de_Terminal",
@@ -535,12 +536,8 @@ public class Extract {
 						msg.getField(Iso8583.Bit._048_ADDITIONAL_DATA).substring(12, 13));
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(
-					new String[] { "Unknown", Extract.class.getName(), "Method: [tagsModelPspGeneral]",
-							Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-
-			EventRecorder.recordEvent(e);
-
+			EventReporter.reportGeneralEvent(nameInterface, Extract.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "tagsModelPspGeneral", udpClient);
 		}
 	}
 
@@ -607,7 +604,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataCarsAccountsClienteCNBWithoutCard(Super objectValidations) {
-		
+
 		objectValidations.putInforCollectedForStructData("FI_Tarjeta",
 				objectValidations.getInforCollectedForStructData().get("CORRES_CARD_NR").substring(0, 6));
 		objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",
@@ -638,9 +635,8 @@ public class Extract {
 
 	}
 
-
 	private static void tagsAllDataAccountsAccountsClienteCNBWithoutCard(Super objectValidations) {
-		
+
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
@@ -652,13 +648,13 @@ public class Extract {
 
 		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_NR"));
-		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE", 
+		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE",
 				(objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_TYPE").equals("10")) ? "10"
 						: "20");
 	}
 
 	private static void tagsAllDataAccountsAccountsClienteCNBWithoutCardOtpCnb(Super objectValidations) {
-		
+
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
@@ -745,10 +741,11 @@ public class Extract {
 
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "04");
 		objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_Debitada", "CTE");
-		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR",(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
-				? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4)
-				: "00000000000000000"));
-		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE","20");
+		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR",
+				(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
+						? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4)
+						: "00000000000000000"));
+		objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE", "20");
 
 	}
 
@@ -772,7 +769,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataCarsWithoutCardBg(Super objectValidations, Base24Ath msg) throws XPostilion {
-		
+
 		objectValidations.putInforCollectedForStructData("CARD_CLASS", "00");
 		objectValidations.putInforCollectedForStructData("CLIENT_CARD_CLASS", "00");
 
@@ -797,15 +794,16 @@ public class Extract {
 		objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_Debitada",
 				(procCode.getFromAccount().equals("10")) ? "AHO" : "CTE");
 	}
+
 	private static void tagsAllDataAccountsWithoutAccountsClienteCNBOtp(Super objectValidations, Base24Ath msg)
 			throws XPostilion {
 		ProcessingCode procCode = getProcCode(msg);
-		
+
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
 						? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4)
-								: "00000000000000000"));
-		
+						: "00000000000000000"));
+
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
 				(procCode.getFromAccount().equals("14")) ? "05" : "04");
 		objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_Debitada",
@@ -813,7 +811,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataAccountsAccountsClienteCNBForMixedPObligWithoutCard(Super objectValidations) {
-		
+
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CORRES_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "OTR");
@@ -832,7 +830,7 @@ public class Extract {
 
 	private static void tagsAllDataAccountsWhitoutAccountsByNumberClientCNBPOblig(Super objectValidations,
 			Base24Ath msg) throws XPostilion {
-		
+
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				(msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
 						? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(8)
@@ -851,7 +849,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataAccountsAccountsByNumberClientCNBPoblig(Super objectValidations) {
-		
+
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_NR"));
 
@@ -870,7 +868,7 @@ public class Extract {
 
 	private static void tagsAllDataAccountsWhitoutAccountsClienteCNBForMixedPOblig(Super objectValidations,
 			Base24Ath msg) throws XPostilion {
-		
+
 		ProcessingCode procCode = getProcCode(msg);
 
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
@@ -891,7 +889,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataAccountsAccountsClienteCNBForMixedPOblig(Super objectValidations) {
-		
+
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "OTR");
@@ -909,7 +907,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataAccountsAccountsClienteCNB(Super objectValidations) {
-		
+
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
@@ -919,8 +917,9 @@ public class Extract {
 				(objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE").equals("10")) ? "AHO"
 						: "CTE");
 	}
+
 	private static void tagsAllDataAccountsAccountsClienteCNBOtp(Super objectValidations) {
-		
+
 		objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
 				objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_NR"));
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto",
@@ -933,7 +932,7 @@ public class Extract {
 
 	private static void tagsAllDataCarsWithoutAccountsClienteCNB(Super objectValidations, Base24Ath msg)
 			throws XFieldUnableToConstruct {
-		
+
 		objectValidations.putInforCollectedForStructData("FI_Tarjeta", msg.getTrack2Data().getPan());
 		objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", msg.getTrack2Data().getPan());
 		objectValidations.putInforCollectedForStructData("Tarjeta_Amparada", msg.getTrack2Data().getPan());
@@ -942,7 +941,7 @@ public class Extract {
 	}
 
 	private static void tagsAllDataCarsAccountsClienteCNB(Super objectValidations) {
-		
+
 		objectValidations.putInforCollectedForStructData("FI_Tarjeta",
 				objectValidations.getInforCollectedForStructData().get("CLIENT_CARD_NR").substring(0, 6));
 		objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",

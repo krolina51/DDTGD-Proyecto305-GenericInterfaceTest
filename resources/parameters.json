@@ -14,7 +14,12 @@
 			  "portCryptoValidation":7000,
 			  "channelIds": ["53"],
 			  "routing_filter":"Prod1",
-			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json"
+			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json",
+			  "routing_field_100":"0",
+			  "delay_timer":0,
+			  "period_timer":60000,
+			  "threshold_timer":10,
+			  "terminal_consecutive_section":"2"
 		},
 	"FirstData":{
 			  "cfgRetentionPeriod":"360000",
@@ -31,7 +36,12 @@
 			  "portCryptoValidation":7000,
 			  "channelIds": [],
 			  "routing_filter":"Prod1",
-			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json"
+			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json",
+			  "routing_field_100":"0",
+			  "delay_timer":0,
+			  "period_timer":60000,
+			  "threshold_timer":10,
+			  "terminal_consecutive_section":"2"
 		},
 	"GenericTest":{
 			  "cfgRetentionPeriod":"360000",
@@ -48,7 +58,12 @@
 			  "portCryptoValidation":7000,
 			  "channelIds": [],
 			  "routing_filter":"Prod1",
-			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json"
+			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json",
+			  "routing_field_100":"0",
+			  "delay_timer":0,
+			  "period_timer":60000,
+			  "threshold_timer":10,
+			  "terminal_consecutive_section":"2"
 		},
 	"GenericTest2":{
 			  "cfgRetentionPeriod":"360000",
@@ -65,6 +80,33 @@
 			  "portCryptoValidation":7000,
 			  "channelIds": [],
 			  "routing_filter":"Prod1",
-			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json"
+			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json",
+			  "routing_field_100":"0",
+			  "delay_timer":0,
+			  "period_timer":60000,
+			  "threshold_timer":10,
+			  "terminal_consecutive_section":"2"
+		},
+	"AutraGenV2":{
+			  "cfgRetentionPeriod":"360000",
+			  "cfgValidateMAC":false,
+			  "cfgKwaName":"DesarrolloBog_KWA",
+			  "sSignOn":"0",
+			  "issuerId":"3",
+			  "cfgIpUdpServer":"10.89.0.172",
+			  "cfgPortUdpServer":"17",
+			  "create0220ToTM":true,
+			  "responseCodesVersion":"1",
+			  "bussinessValidation":false,
+			  "ipCryptoValidation":"10.86.82.119",
+			  "portCryptoValidation":7000,
+			  "channelIds": [],
+			  "routing_filter":"Prod1",
+			  "routing_filter_path":"D:/Apl/Postilion/genericinterface/filtros.json",
+			  "routing_field_100":"0",
+			  "delay_timer":0,
+			  "period_timer":60000,
+			  "threshold_timer":10,
+			  "terminal_consecutive_section":"2"
 		}
 }

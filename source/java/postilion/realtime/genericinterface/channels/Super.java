@@ -15,13 +15,13 @@ import java.util.HashMap;
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.Parameters;
 import postilion.realtime.genericinterface.eventrecorder.events.SQLExceptionEvent;
-import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
 import postilion.realtime.genericinterface.translate.ConstructFieldMessage;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.database.DBHandler.Account;
 import postilion.realtime.genericinterface.translate.database.DBHandler.ColumnNames;
 import postilion.realtime.genericinterface.translate.database.DBHandler.StoreProcedures;
 import postilion.realtime.genericinterface.translate.util.Constants;
+import postilion.realtime.genericinterface.translate.util.EventReporter;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
 import postilion.realtime.genericinterface.translate.util.Constants.FormatDate;
@@ -153,75 +153,84 @@ public abstract class Super {
 	 * @return - Object with status and error message
 	 * @throws Exception
 	 */
-	/*public Super businessValidation(Base24Ath msg, Super objectValidations) throws Exception {
+	/*
+	 * public Super businessValidation(Base24Ath msg, Super objectValidations)
+	 * throws Exception {
+	 * 
+	 * switch (channelIdentifier(msg)) { case Constants.Channels.CNB:
+	 * 
+	 * this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit.
+	 * _037_RETRIEVAL_REF_NR),
+	 * "******mmmmmm*****mm*** Entro validacion CNB con este msgType: " +
+	 * String.valueOf(msg.getMsgType()), "LOG", this.nameInterface));
+	 * 
+	 * objectValidations = new CNB(true, General.VOIDSTRING, General.VOIDSTRING,
+	 * General.VOIDSTRING, new HashMap<String, String>(), this.params);
+	 * objectValidations.validations(msg, objectValidations);
+	 * 
+	 * switch (msg.getProcessingCode().toString()) { case
+	 * Constants.Channels.PCODE_CONSULTA_DE_COSTO_CNB: case
+	 * Constants.Channels.PCODE_CONSULTA_DE_SALDO_Y_CUPO_CNB_A: case
+	 * Constants.Channels.PCODE_CONSULTA_DE_SALDO_Y_CUPO_CNB_C: case
+	 * Constants.Channels.PCODE_CONSULTA_DE_SALDO_Y_CUPO2_CNB_A: case
+	 * Constants.Channels.PCODE_CONSULTA_DE_SALDO_Y_CUPO2_CNB_C:
+	 * 
+	 * objectValidations.putInforCollectedForStructData("A9B1", "I");
+	 * 
+	 * break;
+	 * 
+	 * default: objectValidations.putInforCollectedForStructData("A9B1", "M");
+	 * break;
+	 * 
+	 * }
+	 * 
+	 * return objectValidations;
+	 */
 
-		switch (channelIdentifier(msg)) {
-		case Constants.Channels.CNB:
+	/*
+	 * case Constants.Channels.ATM:
+	 * 
+	 * this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit.
+	 * _037_RETRIEVAL_REF_NR),
+	 * "******mmmmmm*****mm*** Entro validacion ATM con este msgType: " +
+	 * String.valueOf(msg.getMsgType()), "LOG", this.nameInterface));
+	 * 
+	 * objectValidations = new ATM(true, General.VOIDSTRING, General.VOIDSTRING,
+	 * General.VOIDSTRING, new HashMap<String, String>(), this.params);
+	 * objectValidations.validations(msg, objectValidations);
+	 * 
+	 * return objectValidations;
+	 */
 
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"******mmmmmm*****mm*** Entro validacion CNB con este msgType: " + String.valueOf(msg.getMsgType()),
-					"LOG", this.nameInterface));
+	/*
+	 * case Constants.Channels.VTL:
+	 * 
+	 * objectValidations = new VTL(true, General.VOIDSTRING, General.VOIDSTRING,
+	 * General.VOIDSTRING, new HashMap<String, String>(), this.params);
+	 * objectValidations.validations(msg, objectValidations);
+	 * 
+	 * this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit.
+	 * _037_RETRIEVAL_REF_NR),
+	 * "******mmmmmm*****mm*** Entro validacion VTL con este msgType: " +
+	 * String.valueOf(msg.getMsgType()), "LOG", this.nameInterface)); return
+	 * objectValidations;
+	 */
 
-			objectValidations = new CNB(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
-					new HashMap<String, String>(), this.params);
-			objectValidations.validations(msg, objectValidations);
-
-			switch (msg.getProcessingCode().toString()) {
-			case Constants.Channels.PCODE_CONSULTA_DE_COSTO_CNB:
-			case Constants.Channels.PCODE_CONSULTA_DE_SALDO_Y_CUPO_CNB_A:
-			case Constants.Channels.PCODE_CONSULTA_DE_SALDO_Y_CUPO_CNB_C:
-			case Constants.Channels.PCODE_CONSULTA_DE_SALDO_Y_CUPO2_CNB_A:
-			case Constants.Channels.PCODE_CONSULTA_DE_SALDO_Y_CUPO2_CNB_C:
-
-				objectValidations.putInforCollectedForStructData("A9B1", "I");
-
-				break;
-
-			default:
-				objectValidations.putInforCollectedForStructData("A9B1", "M");
-				break;
-
-			}
-
-			return objectValidations;*/
-
-		/*case Constants.Channels.ATM:
-
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"******mmmmmm*****mm*** Entro validacion ATM con este msgType: " + String.valueOf(msg.getMsgType()),
-					"LOG", this.nameInterface));
-
-			objectValidations = new ATM(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
-					new HashMap<String, String>(), this.params);
-			objectValidations.validations(msg, objectValidations);
-
-			return objectValidations;*/
-
-		/*case Constants.Channels.VTL:
-
-			objectValidations = new VTL(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
-					new HashMap<String, String>(), this.params);
-			objectValidations.validations(msg, objectValidations);
-
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"******mmmmmm*****mm*** Entro validacion VTL con este msgType: " + String.valueOf(msg.getMsgType()),
-					"LOG", this.nameInterface));
-			return objectValidations;*/
-
-		/*default:
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"******mmmmmm*****mm*** Entro validacion CBCO con este msgType: "
-							+ String.valueOf(msg.getMsgType()),
-					"LOG", this.nameInterface));
-
-			objectValidations = new CBCO(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
-					new HashMap<String, String>(), this.params);
-			objectValidations.validations(msg, objectValidations);
-
-			return objectValidations;
-		}
-
-	}*/
+	/*
+	 * default:
+	 * this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit.
+	 * _037_RETRIEVAL_REF_NR),
+	 * "******mmmmmm*****mm*** Entro validacion CBCO con este msgType: " +
+	 * String.valueOf(msg.getMsgType()), "LOG", this.nameInterface));
+	 * 
+	 * objectValidations = new CBCO(true, General.VOIDSTRING, General.VOIDSTRING,
+	 * General.VOIDSTRING, new HashMap<String, String>(), this.params);
+	 * objectValidations.validations(msg, objectValidations);
+	 * 
+	 * return objectValidations; }
+	 * 
+	 * }
+	 */
 
 	public boolean validationexpiryDate(String expDate, Super objectValidations) throws XFieldUnableToConstruct {
 		int year = Integer.parseInt(expDate.substring(0, 2));
@@ -635,22 +644,19 @@ public abstract class Super {
 		try {
 			OriginalInput = new String(msg.toMsg(false), "US-ASCII");
 		} catch (XBitmapUnableToConstruct e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface, Super.class.getName(),
-					"Method: [constructAutraResponseMessage]", Utils.getStringMessageException(e),
-					((Iso8583) msg).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, Super.class.getName(), e,
+					((Iso8583) msg).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructAutraResponseMessage",
+					this.udpClient);
 			OriginalInput = "";
 		} catch (UnsupportedEncodingException e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface, Super.class.getName(),
-					"Method: [constructAutraResponseMessage]", Utils.getStringMessageException(e),
-					((Iso8583) msg).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, Super.class.getName(), e,
+					((Iso8583) msg).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructAutraResponseMessage",
+					this.udpClient);
 			OriginalInput = "";
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface, Super.class.getName(),
-					"Method: [constructAutraResponseMessage]", Utils.getStringMessageException(e),
-					((Iso8583) msg).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, Super.class.getName(), e,
+					((Iso8583) msg).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructAutraResponseMessage",
+					this.udpClient);
 			OriginalInput = "";
 		}
 		GenericInterface.getLogger().logLine("Original Response B24 : " + OriginalInput);
@@ -816,13 +822,8 @@ public abstract class Super {
 			try {
 				channel = channelIdentifier((Iso8583Post) msg);
 			} catch (XPostilion e) {
-				EventRecorder.recordEvent(new TryCatchException(
-						new String[] { this.nameInterface, Super.class.getName(), "Method: [channelIdentifier]",
-								Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-						"Exception in Method: channelIdentifier: " + Utils.getStringMessageException(e), "LOG",
-						this.nameInterface));
+				EventReporter.reportGeneralEvent(this.nameInterface, Super.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "channelIdentifier", this.udpClient);
 			}
 		}
 		return channel;
@@ -862,12 +863,8 @@ public abstract class Super {
 				channel = Constants.Channels.ATM;
 
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface, Super.class.getName(),
-					"Method: [channelIdentifier]", Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-					"Exception in Method: channelIdentifier: " + Utils.getStringMessageException(e), "LOG",
-					this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, Super.class.getName(), e, "N/D", "channelIdentifier",
+					this.udpClient);
 			channel = null;
 		}
 
@@ -896,14 +893,8 @@ public abstract class Super {
 				break;
 			}
 		} catch (XFieldUnableToConstruct e) {
-			EventRecorder.recordEvent(new TryCatchException(
-					new String[] { this.nameInterface, Super.class.getName(), "Method: [channelIdentifier]",
-							Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-					"Exception in Method: channelIdentifier: " + Utils.getStringMessageException(e), "LOG",
-					this.nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, Super.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "channelIdentifier", this.udpClient);
 		}
 		return channel;
 
@@ -1003,13 +994,13 @@ public abstract class Super {
 			StringWriter outError = new StringWriter();
 			e.printStackTrace(new PrintWriter(outError));
 			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"catch metodo accountsByNumberClientCNB : " + outError.toString(), "LOG", this.nameInterface));
+					"catch metodo accountsByNumberClientCNB : " + outError.toString(), "ERR", this.nameInterface));
 
 		} finally {
 			try {
 				JdbcManager.cleanup(con, stmt, rs);
 			} catch (SQLException e) {
-				this.udpClient.sendData(Client.getMsgKeyValue(p37, e.getMessage(), "LOG", this.nameInterface));
+				this.udpClient.sendData(Client.getMsgKeyValue(p37, e.getMessage(), "ERR", this.nameInterface));
 				EventRecorder.recordEvent(new SQLExceptionEvent(new String[] { Account.POSTCARD_DATABASE,
 						StoreProcedures.GET_ACCOUNT_ADITIONAL_INFO_CNB, e.getMessage() }));
 			}
@@ -1199,7 +1190,7 @@ public abstract class Super {
 				StringWriter outError = new StringWriter();
 				e.printStackTrace(new PrintWriter(outError));
 				this.udpClient.sendData(Client.getMsgKeyValue(p37,
-						"catch metodo accountsClienteCBN : " + outError.toString(), "LOG", this.nameInterface));
+						"catch metodo accountsClienteCBN : " + outError.toString(), "ERR", this.nameInterface));
 
 			} finally {
 				JdbcManager.cleanup(con, stmt, rs);
@@ -1402,10 +1393,9 @@ public abstract class Super {
 					break;
 				}
 			} catch (XPostilion e) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						Super.class.getName(), "Method: [transformProcessingCodeForAutra]",
-						Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
+				EventReporter.reportGeneralEvent(this.nameInterface, Super.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "transformProcessingCodeForAutra",
+						this.udpClient);
 			}
 		}
 		return field3;

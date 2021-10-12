@@ -66,9 +66,19 @@ public class Utils {
 	 * @return Id de cuenta en claro.
 	 * @throws XEncryptionKeyError En caso de error.
 	 */
-	public static String getClearAccount(Object object) throws XEncryptionKeyError {
-		String encryptedAccId = (String) object;
+	public static String getClearAccount(String encryptedAccId) throws XEncryptionKeyError {
 		return securityManager.decryptToString(encryptedAccId);
+	}
+	
+	/**
+	 * Obtiene el id de cuenta en claro.
+	 * 
+	 * @param clearAccId El id de la cuenta cifrado.
+	 * @return Id de cuenta en claro.
+	 * @throws XEncryptionKeyError En caso de error.
+	 */
+	public static String getEncryptAccount(String clearAccId) throws XEncryptionKeyError {
+		 return securityManager.encrypt(clearAccId);
 	}
 
 	/**

@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
+import postilion.realtime.genericinterface.translate.util.EventReporter;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.validations.Validation;
 import postilion.realtime.sdk.eventrecorder.EventRecorder;
@@ -35,7 +36,7 @@ public class Client {
 
 	}
 
-	public Client(String ipAddress, String port) {
+	public Client(String ipAddress, String port, String nameInterface) {
 
 		if (!ipAddress.equals("0") && !port.equals("0")) {
 			try {
@@ -51,9 +52,7 @@ public class Client {
 					throw new Exception("Port parameter for server UDP, is not a Port valid");
 
 			} catch (Exception e) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { "Unknown", Client.class.getName(),
-						"Constructor: [Client]", Utils.getStringMessageException(e), "N/A" }));
-				EventRecorder.recordEvent(e);
+				EventReporter.reportGeneralEvent(nameInterface, Client.class.getName(), e, "N/D", "Client", null);
 				GenericInterface.getLogger()
 						.logLine("Exception in Constructor:  Client: " + Utils.getStringMessageException(e));
 			}
@@ -124,14 +123,12 @@ public class Client {
 		try {
 			socket = new DatagramSocket();
 //			DatagramPacket request = new DatagramPacket(data, data.length, ipAddress, port);
-			DatagramPacket request = new DatagramPacket(data, data.length, ipAddress, 40000 + (int)(Math.random()*10));
+			DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
+					40000 + (int) (Math.random() * 10));
 			socket.send(request);
 			socket.close();
-			
+
 		} catch (IOException e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { "Unknown", Client.class.getName(),
-					"Method: [sendData]", Utils.getStringMessageException(e), "N/A" }));
-			EventRecorder.recordEvent(e);
 			GenericInterface.getLogger()
 					.logLine("Exception in Method:  sendData: " + Utils.getStringMessageException(e));
 		} finally {
@@ -151,36 +148,32 @@ public class Client {
 		Iso8583Post msgResponse = new Iso8583Post();
 		String msgIncoming = new String();
 		DatagramSocket socket = null;
-		
 
 		try {
 
-				
-				byte[] data = Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ISO", interchangeName);
-				
-			
+			byte[] data = Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ISO", interchangeName);
+
 			try {
 				socket = new DatagramSocket();
 				socket.setSoTimeout(5000);
 				String p11 = msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 //				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress, port);
-				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress, 50000 + Integer.parseInt(p11.substring(p11.length()-1)));
+				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
+						50000 + Integer.parseInt(p11.substring(p11.length() - 1)));
 				socket.send(request);
 				byte[] bufer = new byte[4172];// 4072
 				DatagramPacket respuesta = new DatagramPacket(bufer, bufer.length);
 				socket.receive(respuesta);
-				String dataB64 =new String(respuesta.getData()).trim();
+				String dataB64 = new String(respuesta.getData()).trim();
 				GenericInterface.getLogger().logLine("data incoming: " + dataB64);
 				msgIncoming = new String(Base64.getDecoder().decode(dataB64));
 				socket.close();
 			} catch (SocketTimeoutException e) {
 				msgIncoming = "TIMEOUT";
 			} catch (IOException e) {
-				EventRecorder.recordEvent(new TryCatchException(
-						new String[] { msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Client.class.getName(),
-								"Method: [sendMsg]", Utils.getStringMessageException(e), "N/A" }));
-				EventRecorder.recordEvent(e);
+				EventReporter.reportGeneralEvent(interchangeName, Client.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "sendMsg", null);
 				GenericInterface.getLogger()
 						.logLine("Exception in Method:  sendMsg: " + Utils.getStringMessageException(e));
 			} finally {
@@ -198,9 +191,8 @@ public class Client {
 				GenericInterface.getLogger().logLine("Msg response: " + msgResponse);
 			}
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { "Unknown", Client.class.getName(),
-					"Method: [sendMsg]", Utils.getStringMessageException(e), "N/A" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(interchangeName, Client.class.getName(), e,
+					"N/D", "sendMsg", null);
 			GenericInterface.getLogger()
 					.logLine("Exception in Method:  sendMsg: " + Utils.getStringMessageException(e));
 		} catch (IllegalArgumentException e) {
@@ -216,8 +208,7 @@ public class Client {
 		}
 		return msgResponse;
 	}
-	
-	
+
 //	public Iso8583Post sendMsgInfo(Iso8583Post msg, String interchangeName, String info) throws XPostilion {
 //		Iso8583Post msgResponse = new Iso8583Post();
 //		String msgIncoming = new String();

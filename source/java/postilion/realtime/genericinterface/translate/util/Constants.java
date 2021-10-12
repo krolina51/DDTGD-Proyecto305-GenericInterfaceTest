@@ -322,6 +322,7 @@ public class Constants {
 		public static final String CBCO= "CBCO";
 		public static final String VTL= "VTL";
 		public static final String IVR= "IVR";
+		public static final String OFC= "OFC";
 		//CNB
 		//Retiro con tarjeta CNB
 		public static final String PCODE_RETIRO_CON_TARJETA_CNB_A = "501043";
@@ -516,6 +517,18 @@ public class Constants {
 		public static String CSM_SOURCE_KEY_DATA_ATH = new String(" CTP/00000000002B3D )                                        ");
 	}
 	
+	public static final class TransactionRouting {
+		public static final int INT_CAPA_DE_INTEGRACION = 0;
+		public static final int INT_AUTRA = 1;
+	}
 	
-
+	public static final class DefaultATM {
+		public static String ATM_CHANNEL_NAME= new String("ATM");
+		public static String ATM_ID_CHANNEL = new String("AT");
+		public static String ATM_CHANNEL = new String("01");
+		public static String ATM_VIEW_ROUTER = new String("V1");
+		public static String ATM_TRANSACTION_INPUT = new String("ATM_RETIRO");
+		public static String ATM_COD_TRANSACTION = new String("20");
+		
+	}
 }

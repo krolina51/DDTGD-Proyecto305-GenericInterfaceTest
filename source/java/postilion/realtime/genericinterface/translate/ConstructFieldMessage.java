@@ -23,7 +23,9 @@ import postilion.realtime.genericinterface.eventrecorder.events.TryCatchExceptio
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath.TranType;
 import postilion.realtime.genericinterface.translate.database.DBHandler;
+import postilion.realtime.genericinterface.translate.util.BussinesRules;
 import postilion.realtime.genericinterface.translate.util.Constants;
+import postilion.realtime.genericinterface.translate.util.EventReporter;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.util.Constants.Account;
 import postilion.realtime.genericinterface.translate.util.Constants.FormatDate;
@@ -94,13 +96,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				posConditionCode = Iso8583.PosCondCode.NORMAL_PRESENTMENT;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructPosConditionCodeToTranmgr]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructPosConditionCodeToTranmgr: " + e.getMessage(), "LOG",
-					this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructPosConditionCodeToTranmgr",
+					this.udpClient);
 		}
 		return posConditionCode;
 	}
@@ -114,28 +112,21 @@ public class ConstructFieldMessage extends MessageTranslator {
 	 *************************************************************************************/
 	public String constructPosPinCaptureCode(Iso8583Post msgToTm, Integer num) throws XFieldUnableToConstruct {
 		String posPinCaptureCode = null;
+		String retRefNumber = "N/D";
 		try {
+			retRefNumber = msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			if (msgToTm.isFieldSet(Iso8583Post.Bit._123_POS_DATA_CODE) && msgToTm.getPosDataCode()
 					.getPinCaptureCapability().equals(PosDataCode.PinCaptureCapability._4_FOUR)) {
 				posPinCaptureCode = PosPinCaptureCode.FOUR;
-			}else {
+			} else {
 				posPinCaptureCode = "00";
 			}
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, retRefNumber,
+					"constructPosPinCaptureCode", this.udpClient, "of type XPostilion");
 		} catch (Exception e) {
-			try {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						ConstructFieldMessage.class.getName(), "Method: [constructPosPinCaptureCode]",
-						Utils.getStringMessageException(e), msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method:  constructPosPinCaptureCode: " + e.getMessage(), "LOG",
-						this.nameInterface));
-			} catch (XPostilion e1) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						ConstructFieldMessage.class.getName(), "Method: [constructPosPinCaptureCode]",
-						Utils.getStringMessageException(e1), "Unknown" }));
-
-			}
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, retRefNumber,
+					"constructPosPinCaptureCode", this.udpClient, "of type Exception");
 		}
 		return posPinCaptureCode;
 	}
@@ -212,12 +203,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 			accountId = pan.substring(pan.length() - 6, pan.length());
 
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructField102AccountId]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructField102AccountId " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField102AccountId", this.udpClient);
 		}
 		return accountId;
 	}
@@ -341,13 +328,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				cardAcceptortermId = Pack.resize(General.VOIDSTRING, General.LENGTH_8, General.SPACE, true);
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructCardAcceptorTermIdToTranmgr]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructCardAcceptorTermIdToTranmgr " + e.getMessage(), "LOG",
-					this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructCardAcceptorTermIdToTranmgr",
+					this.udpClient);
 		}
 		return cardAcceptortermId;
 	}
@@ -475,12 +458,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 				pinBlock = Transform.fromHexToBin(msg.getField(Iso8583.Bit._052_PIN_DATA));
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructPinDataToTranmgr]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructPinDataToTranmgr " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructPinDataToTranmgr", this.udpClient);
 		}
 		return pinBlock;
 	}
@@ -530,12 +509,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				amounts.addAdditionalAmount(amount);
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructAdditionalAmounts]",
-					Utils.getStringMessageException(e), msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructAdditionalAmounts " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructAdditionalAmounts",
+					this.udpClient);
 		}
 		return amounts.toString();
 	}
@@ -553,12 +529,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 		try {
 			echoData = msgFromRmto.getTrack2Data().getServiceRestrictionCode();
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructEchoData]",
-					Utils.getStringMessageException(e), msgFromRmto.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msgFromRmto.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructEchoData " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msgFromRmto.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructEchoData", this.udpClient);
 		}
 		return echoData;
 	}
@@ -576,15 +548,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 			ReplacementAmounts field95 = ReplacementAmounts.ZERO_AMOUNTS;
 			return field95.toString();
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructReplacementAmounts]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(
-					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructReplacementAmounts " + e.getMessage(), "LOG", this.nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructReplacementAmounts",
+					this.udpClient);
 		}
 		return null;
 	}
@@ -601,16 +567,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 		try {
 			return Constants.Config.AMOUNTS_ZERO;
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructReplacementAmountsZero]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: constructReplacementAmountsZero " + e.getMessage(), "LOG",
-							this.nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructReplacementAmountsZero",
+					this.udpClient);
 		}
 		return null;
 	}
@@ -670,12 +629,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 				break;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructPosDataCode]",
-					Utils.getStringMessageException(e), msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructPosDataCode " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructPosDataCode", this.udpClient);
 		}
 		return posDataCode.toString();
 	}
@@ -722,12 +677,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 			// .append(msg.getField(Iso8583Post.Bit._007_TRANSMISSION_DATE_TIME)).append(General.TWO_ZEROS)
 			// .append(msg.getField(Iso8583Post.Bit._013_DATE_LOCAL));
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructSwitchKey]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructSwitchKey " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructSwitchKey", this.udpClient);
 		}
 		return switchKey.toString();
 	}
@@ -745,23 +696,18 @@ public class ConstructFieldMessage extends MessageTranslator {
 				if (msg.isFieldSet(num))
 					return msg.getField(num);
 				else
-					return Constants.General.FOUR_ZEROS;
+					return new DateTime().get(FormatDate.MMDD);
 
 			} else if (object instanceof Iso8583Post) {
 				Iso8583Post msg = (Iso8583Post) object;
 				if (msg.isFieldSet(num))
 					return msg.getStructuredData().get("B24_Field_17");
 				else
-					return Constants.General.FOUR_ZEROS;
+					return new DateTime().get(FormatDate.MMDD);
 			}
-
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructDateCapture]", Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-					"Exception in Method: constructDateCapture " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, "N/D",
+					"constructDateCapture", this.udpClient);
 		}
 
 		return null;
@@ -794,14 +740,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 			}
 
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField44]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: constructField44 " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField44", this.udpClient);
 		}
 		return field;
 	}
@@ -822,16 +762,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 			} else if (object instanceof Iso8583Post) {
 				field = "";
 			}
-
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField61]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: constructField61 " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField61", this.udpClient);
 		}
 		return field;
 	}
@@ -853,14 +786,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 			return msgFromTm.getStructuredData().get("B24_Field_48");
 		} catch (XPostilion e) {
 			field48 = construct0210ErrorFields(object, num);
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField48]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(field37,
-					"Exception in Method: constructField48 " + Utils.getStringMessageException(e), "LOG",
-					this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, field37,
+					"constructField48", this.udpClient);
 		}
 		return field48;
 	}
@@ -880,7 +807,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return null;
 	}
-	
+
 	/**************************************************************************************
 	 * Build and return field 43 Default.
 	 * 
@@ -944,10 +871,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 				} else {
 					if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)) {
-						if (msg.getStructuredData().get(
-								"B24_Field_126") != null) {
-							field126 = msg.getStructuredData()
-									.get("B24_Field_126");
+						if (msg.getStructuredData().get("B24_Field_126") != null) {
+							field126 = msg.getStructuredData().get("B24_Field_126");
 							initialLength = field126.length();
 						}
 					}
@@ -955,34 +880,22 @@ public class ConstructFieldMessage extends MessageTranslator {
 					try {
 						responseCode = InitialLoadFilter.getFilterCodeIsoToB24(field39, this.allCodesIsoToB24);
 					} catch (NoSuchElementException e) {
-						
-						
-						udpClient.sendData(
-								Client.getMsgKeyValue("N/A", "Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
+						EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+								msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField126IsoTranslate",
+								this.udpClient,
+								"of type NoSuchElementException" + "Exception en Mensaje: " + msg.toString());
 
-						this.udpClient
-								.sendData(
-										Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-												"NoSuchElementException in Method: constructField126IsoTranslate "
-														+ Utils.getStringMessageException(e),
-												"LOG", this.nameInterface));
-						if (new DBHandler(this.params).updateResgistry(field39, "0",responseCodesVersion)) {
+						if (new DBHandler(this.params).updateResgistry(field39, "0", responseCodesVersion)) {
 							this.allCodesIsoToB24 = postilion.realtime.library.common.db.DBHandler
-									.getResponseCodes(false, "0",responseCodesVersion);
+									.getResponseCodes(false, "0", responseCodesVersion);
 							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(field39, this.allCodesIsoToB24);
 						} else {
 							responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
-									field39, field39);
-							EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-									ConstructFieldMessage.class.getName(), "Method: [constructField126IsoTranslate]",
-									Utils.getStringMessageException(e),
-									msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-							EventRecorder.recordEvent(e);
-							this.udpClient
-									.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-											"NoSuchElementException in Method: constructField126IsoTranslate value"
-													+ field39 + "is not in the table",
-											"LOG", this.nameInterface));
+									field39, field39, "10002");
+							EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(),
+									e, msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField126IsoTranslate",
+									this.udpClient,
+									"of type NoSuchElementException " + field39 + " is not in the table");
 						}
 					}
 					field126 = field126.substring(0, initialLength - 14)
@@ -1005,27 +918,19 @@ public class ConstructFieldMessage extends MessageTranslator {
 			return field126;
 
 		} catch (XPostilion | NullPointerException | SQLException e) {
-			
-			String strMsg=null;
-			
+
+			String strMsg = null;
+
 			if (object instanceof Base24Ath) {
 				Base24Ath msg = (Base24Ath) object;
-				strMsg=msg.toString();
-				
+				strMsg = msg.toString();
+
 			} else if (object instanceof Iso8583Post) {
 				Iso8583Post msg = (Iso8583Post) object;
-				strMsg=msg.toString();
+				strMsg = msg.toString();
 			}
-			
-			udpClient.sendData(
-					Client.getMsgKeyValue("N/A", "Exception en Mensaje: " + strMsg , "ERR", nameInterface));
-			
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructField126IsoTranslate]",
-					Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"Exception in Method: constructField126IsoTranslate " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructField126IsoTranslate", this.udpClient, "Exception en Mensaje: " + strMsg);
 		}
 
 		return Constants.General.DEFAULT_126;// devolver uno por defecto
@@ -1041,34 +946,25 @@ public class ConstructFieldMessage extends MessageTranslator {
 			boolean isClientFailure = true;
 			if (sdFromTm != null) {
 				if (sdFromTm.get(Constants.General.ERROR_CODE) != null
-						&& sdFromTm.get(
-								Constants.General.COMMISION) == null) {
+						&& sdFromTm.get(Constants.General.COMMISION) == null) {
 					ResponseCode responseCode;
 					try {
 						responseCode = InitialLoadFilter.getFilterCodeISCToIso(
-								sdFromTm.get(
-										Constants.General.ERROR_CODE),
-								this.allCodesIscToIso);
+								sdFromTm.get(Constants.General.ERROR_CODE), this.allCodesIscToIso);
 					} catch (NoSuchElementException e) {
-						this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-								"NoSuchElementException in Method: constructField126IsoTranslateApprove "
-										+ Utils.getStringMessageException(e),
-								"LOG", this.nameInterface));
-						if (new DBHandler(this.params).updateResgistry(
-								sdFromTm.get(
-										Constants.General.ERROR_CODE),
-								"0",responseCodesVersion)) {
+						EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+								msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField126IsoTranslateApprove",
+								this.udpClient, "of type NoSuchElementException");
+						if (new DBHandler(this.params).updateResgistry(sdFromTm.get(Constants.General.ERROR_CODE), "0",
+								responseCodesVersion)) {
 							this.allCodesIscToIso = postilion.realtime.library.common.db.DBHandler
-									.getResponseCodes(true, "0",responseCodesVersion);
-							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(sdFromTm.get(
-									Constants.General.ERROR_CODE),
-									this.allCodesIscToIso);
+									.getResponseCodes(true, "0", responseCodesVersion);
+							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(
+									sdFromTm.get(Constants.General.ERROR_CODE), this.allCodesIscToIso);
 						} else {
 							responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
-									sdFromTm.get(
-											Constants.General.ERROR_CODE),
-									sdFromTm.get(
-											Constants.General.ERROR_CODE));
+									sdFromTm.get(Constants.General.ERROR_CODE),
+									sdFromTm.get(Constants.General.ERROR_CODE), "10002");
 							EventRecorder.recordEvent(new TryCatchException(
 									new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
 											"Method: [constructField126IsoTranslateApprove]",
@@ -1078,9 +974,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 							this.udpClient.sendData(Client.getMsgKeyValue(
 									msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 									"NoSuchElementException in Method: constructField126IsoTranslateApprove value"
-											+ sdFromTm.get(
-													Constants.General.ERROR_CODE)
-											+ " is not in the table.",
+											+ sdFromTm.get(Constants.General.ERROR_CODE) + " is not in the table.",
 									"LOG", this.nameInterface));
 						}
 					}
@@ -1089,15 +983,12 @@ public class ConstructFieldMessage extends MessageTranslator {
 									Constants.General.ZERO, false))
 							.concat(field126.substring(initialLength - 2, initialLength));
 					isClientFailure = false;
-				} else if (sdFromTm
-						.get(Constants.General.ERROR_CODE) == null
-						&& sdFromTm.get(
-								Constants.General.COMMISION) != null) {
+				} else if (sdFromTm.get(Constants.General.ERROR_CODE) == null
+						&& sdFromTm.get(Constants.General.COMMISION) != null) {
 					String tranType = sdFromTm.get("B24_Field_3");
 					if (tranType != null)
 						field126 = tranType.equals(TranType._89_FEE_INQUIRY)
-								? addCommision(field126, initialLength, sdFromTm.get(
-										Constants.General.COMMISION))
+								? addCommision(field126, initialLength, sdFromTm.get(Constants.General.COMMISION))
 								: field126;
 					isClientFailure = false;
 				}
@@ -1110,26 +1001,21 @@ public class ConstructFieldMessage extends MessageTranslator {
 				try {
 					responseCode = InitialLoadFilter.getFilterCodeIsoToB24(field39, this.allCodesIsoToB24);
 				} catch (NoSuchElementException e) {
-					this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"NoSuchElementException in Method: constructField126IsoTranslateApprove "
-									+ Utils.getStringMessageException(e),
-							"LOG", this.nameInterface));
-					if (new DBHandler(this.params).updateResgistry(field39, "0",responseCodesVersion)) {
+					EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField126IsoTranslateApprove",
+							this.udpClient, "of type NoSuchElementException");
+					if (new DBHandler(this.params).updateResgistry(field39, "0", responseCodesVersion)) {
 
 						this.allCodesIsoToB24 = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false,
-								"0",responseCodesVersion);
+								"0", responseCodesVersion);
 						responseCode = InitialLoadFilter.getFilterCodeIsoToB24(field39, this.allCodesIsoToB24);
 					} else {
 						responseCode = new ResponseCode("10002", "Error Code could not extracted from message", field39,
-								field39);
-						EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-								ConstructFieldMessage.class.getName(), "Method: [constructField126IsoTranslateApprove]",
-								Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-						EventRecorder.recordEvent(e);
-						this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-								"NoSuchElementException in Method: constructField126IsoTranslateApprove value "
-										+ field39 + " is not in the table.",
-								"LOG", this.nameInterface));
+								field39, "10002");
+						EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+								msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+								"constructField126IsoTranslateApprove ", this.udpClient,
+								"of type NoSuchElementException, value " + field39 + " is not in the table.");
 					}
 				}
 				field126 = field126.substring(0, initialLength - 14)
@@ -1138,10 +1024,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 						.concat(field126.substring(initialLength - 2, initialLength));
 			}
 		} catch (SQLException e1) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructField126IsoTranslateApprove]",
-					Utils.getStringMessageException(e1), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e1);
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e1,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField126IsoTranslateApprove",
+					this.udpClient, "of type SQLException");
 		}
 		return field126;
 
@@ -1188,16 +1073,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 		try {
 			return ServiceRestrictionCode.THREE_ZEROS;
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructServiceRestrictionCode]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: constructServiceRestrictionCode " + e.getMessage(), "LOG",
-							this.nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructServiceRestrictionCode",
+					this.udpClient);
 		}
 		return null;
 	}
@@ -1213,14 +1091,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 		try {
 			return AdditionalRspData.DEFAULT;
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constuctServiceRspData]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(
-					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constuctServiceRspData " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constuctServiceRspData",
+					this.udpClient);
 		}
 		return null;
 	}
@@ -1256,14 +1129,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 				}
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructAccountIdentification]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(
-					Client.getMsgKeyValue(p37, "Exception in Method: constructAccountIdentification " + e.getMessage(),
-							"LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructAccountIdentification", this.udpClient);
 		}
 		return field102;
 	}
@@ -1296,14 +1163,12 @@ public class ConstructFieldMessage extends MessageTranslator {
 							: Constants.General.DEFAULT_P54;
 				}
 			}
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructField54", this.udpClient, "type of XPostilion");
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField54]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"Exception in Method: constructField54 " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructField54", this.udpClient, "type of Exception");
 		}
 		return field;
 	}
@@ -1326,14 +1191,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 					: msg.getStructuredData().get("CLIENT_ACCOUNT_NR");
 
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField102fromStructureData]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructField102fromStructureData " + e.getMessage(), "LOG",
-					this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField102fromStructureData",
+					this.udpClient);
 		}
 		return null;
 	}
@@ -1350,14 +1210,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 		try {
 			return Constants.General.DEFAULT_P54_CONSULTA_COSTO_X60;
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructDefaultField54]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: constructField54 " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructDefaultField54",
+					this.udpClient);
 		}
 		return null;
 	}
@@ -1395,17 +1250,12 @@ public class ConstructFieldMessage extends MessageTranslator {
 					field62 = msg.getStructuredData().get("B24_Field_" + num.toString());
 
 			}
-
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, field37,
+					"constructFieldFromStructuredData", this.udpClient, "of type XPostilion");
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructFieldFromStructuredData]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(field37,
-					"Exception in Method: constructFieldFromStructuredData" + e.getMessage(), "LOG",
-					this.nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, field37,
+					"constructFieldFromStructuredData", this.udpClient, "of type Exception");
 		}
 		return field62;
 
@@ -1588,14 +1438,12 @@ public class ConstructFieldMessage extends MessageTranslator {
 				p37 = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 				return Pack.resize(msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID), 16, ' ', true);
 			}
-		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructAdditionalRspData]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"Exception in Method: constructAdditionalRspData " + e.getMessage(), "LOG", this.nameInterface));
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructAdditionalRspData", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e1, p37,
+					"constructAdditionalRspData", this.udpClient, "of type Exception");
 		}
 		return null;
 	}
@@ -1626,16 +1474,12 @@ public class ConstructFieldMessage extends MessageTranslator {
 				else
 					return Constants.General.SIX_ZEROS;
 			}
-		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField38DefaultOrCopy]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-
-			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"Exception in Method: constructField38DefaultOrCopy " + Utils.getStringMessageException(e), "LOG",
-					this.nameInterface));
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructField38DefaultOrCopy", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e1, p37,
+					"constructField38DefaultOrCopy", this.udpClient, "of type Exception");
 		}
 		return Constants.General.SIX_ZEROS;
 	}
@@ -1667,14 +1511,12 @@ public class ConstructFieldMessage extends MessageTranslator {
 				}
 
 			}
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructFields6061DefaultOrCopy", this.udpClient, "of type XPostilion");
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { ConstructFieldMessage.class.getName(),
-					"Method: [constructFields6061DefaultOrCopy]", Utils.getStringMessageException(e) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"Exception in Method: constructFields6061DefaultOrCopy " + Utils.getStringMessageException(e),
-					"LOG", this.nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructFields6061DefaultOrCopy", this.udpClient, "of type Exception");
 		}
 		return Constants.General.SIX_ZEROS;
 	}
@@ -1733,15 +1575,12 @@ public class ConstructFieldMessage extends MessageTranslator {
 				}
 
 			}
-		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"constructField105DefaultOrCopy", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-
-			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"Exception in Method: constructField38DefaultOrCopy " + e.getMessage(), "LOG", this.nameInterface));
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructField105DefaultOrCopy", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e1, p37,
+					"constructField105DefaultOrCopy", this.udpClient, "of type Exception");
 		}
 		return field105;
 	}
@@ -1785,19 +1624,15 @@ public class ConstructFieldMessage extends MessageTranslator {
 					this.udpClient.sendData(Client.getMsgKeyValue("999999", "campo " + num.toString() + ": " + field,
 							"LOG", this.nameInterface));
 					return field;
-
 				} else
 					return Constants.General.TWENTYONE_ZEROS;
 			}
-		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"constructField105DefaultOrCopy", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"Exception in Method: constructField102_103ConsultaCosto " + e.getMessage(), "LOG",
-					this.nameInterface));
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructField102_103ConsultaCosto", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e1, p37,
+					"constructField102_103ConsultaCosto", this.udpClient, "of type Exception");
 		}
 		return null;
 	}
@@ -1832,18 +1667,16 @@ public class ConstructFieldMessage extends MessageTranslator {
 				} else
 					return Constants.General.TWENTYONE_ZEROS;
 			}
-		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"constructField102ConsultaCostoTransferencia", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"Exception in Method: constructField102ConsultaCostoTransferencia " + e.getMessage(), "LOG",
-					this.nameInterface));
+
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructField102ConsultaCostoTransferencia", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e1, p37,
+					"constructField102ConsultaCostoTransferencia", this.udpClient, "of type Exception");
 		}
 		return null;
-	}
+	}// **
 
 	/**************************************************************************************
 	 * Transform the field 38 to TM
@@ -1882,13 +1715,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 					return Constants.General.TWENTYFOUR_ZEROS;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField104Deposito]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(p37,
-					"Exception in Method: constructField104Deposito " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructField104Deposito", this.udpClient);
 		}
 		return null;
 	}
@@ -1957,14 +1785,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 					return Constants.General.TWENTYONE_ZEROS;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField102DefaultOrCopy]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(
-					Client.getMsgKeyValue(p37, "Exception in Method: constructField102DefaultOrCopy " + e.getMessage(),
-							"LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"constructField102DefaultOrCopy", this.udpClient);
 		}
 		return null;
 	}
@@ -1989,14 +1811,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				codeRsp = Constants.Config.CODE_ERROR_30;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructResponseCode]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: constructResponseCode " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructResponseCode",
+					this.udpClient);
 		}
 		return codeRsp;
 	}
@@ -2019,22 +1836,19 @@ public class ConstructFieldMessage extends MessageTranslator {
 						responseCode = InitialLoadFilter.getFilterCodeIsoToB24(
 								msg.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesB24ToIso);
 					} catch (NoSuchElementException e) {
-						this.udpClient
-								.sendData(
-										Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-												"NoSuchElementException in Method: constructResponseCodeField63 "
-														+ Utils.getStringMessageException(e),
-												"LOG", this.nameInterface));
-						if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
-								"1",responseCodesVersion)) {
+						EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+								msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructResponseCodeField63",
+								this.udpClient, "of type NoSuchElementException");
+						if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE), "1",
+								responseCodesVersion)) {
 							this.allCodesB24ToIso = postilion.realtime.library.common.db.DBHandler
-									.getResponseCodesBase24("1",responseCodesVersion);
+									.getResponseCodesBase24("1", responseCodesVersion);
 							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(
 									msg.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesB24ToIso);
 						} else {
 							responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
 									msg.getField(Iso8583Post.Bit._039_RSP_CODE),
-									msg.getField(Iso8583Post.Bit._039_RSP_CODE));
+									msg.getField(Iso8583Post.Bit._039_RSP_CODE), "10002");
 							EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 									ConstructFieldMessage.class.getName(), "Method: [constructResponseCodeField63]",
 									Utils.getStringMessageException(e),
@@ -2067,22 +1881,19 @@ public class ConstructFieldMessage extends MessageTranslator {
 							responseCode = InitialLoadFilter.getFilterCodeIsoToB24(
 									msg.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesIsoToB24TM);
 						} catch (NoSuchElementException e) {
-							this.udpClient
-									.sendData(
-											Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-													"NoSuchElementException in Method: constructResponseCodeField63 "
-															+ Utils.getStringMessageException(e),
-													"LOG", this.nameInterface));
+							EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(),
+									e, msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructResponseCodeField63",
+									this.udpClient, "of type NoSuchElementException");
 							if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
-									"1",responseCodesVersion)) {
+									"1", responseCodesVersion)) {
 								this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler
-										.getResponseCodes(false, "1",responseCodesVersion);
+										.getResponseCodes(false, "1", responseCodesVersion);
 								responseCode = InitialLoadFilter.getFilterCodeIsoToB24(
 										msg.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesIsoToB24TM);
 							} else {
 								responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
 										msg.getField(Iso8583Post.Bit._039_RSP_CODE),
-										msg.getField(Iso8583Post.Bit._039_RSP_CODE));
+										msg.getField(Iso8583Post.Bit._039_RSP_CODE), "10002");
 								EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 										ConstructFieldMessage.class.getName(), "Method: [constructResponseCodeField63]",
 										Utils.getStringMessageException(e),
@@ -2106,14 +1917,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				}
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"constructResponseCodeField63", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(
-					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructResponseCodeField63 " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructResponseCodeField63",
+					this.udpClient);
 			code = Pack.resize("10002" + "Error Code could not extracted from message", General.LENGTH_44,
 					General.SPACE, true);
 		}
@@ -2135,13 +1941,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 				originalKey = msg.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0, 32);
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructOriginalKey]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructOriginalKey " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructOriginalKey", this.udpClient);
 		}
 		return originalKey;
 	}
@@ -2158,15 +1959,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 		try {
 			return AuthorizationIdRsp.SIX_ZEROS;
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructAuthorizationIdResponse]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: constructAuthorizationIdResponse " + e.getMessage(), "LOG",
-							this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructAuthorizationIdResponse",
+					this.udpClient);
 		}
 		return null;
 	}
@@ -2193,22 +1988,19 @@ public class ConstructFieldMessage extends MessageTranslator {
 							cResponse = InitialLoadFilter.getFilterCodeIsoToB24(
 									msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesIsoToB24TM);
 						} catch (NoSuchElementException e) {
-							this.udpClient
-									.sendData(
-											Client.getMsgKeyValue(msgFromTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-													"NoSuchElementException in Method: constuctCodeResponseInIsc "
-															+ Utils.getStringMessageException(e),
-													"LOG", this.nameInterface));
-							if (new DBHandler(this.params)
-									.updateResgistry(msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "1",responseCodesVersion)) {
+							EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(),
+									e, msgFromTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+									"constuctCodeResponseInIsc", this.udpClient, "of type NoSuchElementException");
+							if (new DBHandler(this.params).updateResgistry(
+									msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "1", responseCodesVersion)) {
 								this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler
-										.getResponseCodes(false, "1",responseCodesVersion);
+										.getResponseCodes(false, "1", responseCodesVersion);
 								cResponse = InitialLoadFilter.getFilterCodeIsoToB24(
 										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesIsoToB24TM);
 							} else {
 								cResponse = new ResponseCode("10002", "Error Code could not extracted from message",
 										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE),
-										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE));
+										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "10002");
 								EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 										ConstructFieldMessage.class.getName(), "Method: [constuctCodeResponseInIsc]",
 										Utils.getStringMessageException(e),
@@ -2227,22 +2019,19 @@ public class ConstructFieldMessage extends MessageTranslator {
 							cResponse = InitialLoadFilter.getFilterCodeIsoToB24(
 									msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesIsoToB24);
 						} catch (NoSuchElementException e) {
-							this.udpClient
-									.sendData(
-											Client.getMsgKeyValue(msgFromTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-													"NoSuchElementException in Method: constuctCodeResponseInIsc "
-															+ Utils.getStringMessageException(e),
-													"LOG", this.nameInterface));
-							if (new DBHandler(this.params)
-									.updateResgistry(msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "0",responseCodesVersion)) {
+							EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(),
+									e, msgFromTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+									"constuctCodeResponseInIsc", this.udpClient, "of type NoSuchElementException");
+							if (new DBHandler(this.params).updateResgistry(
+									msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "0", responseCodesVersion)) {
 								this.allCodesIsoToB24 = postilion.realtime.library.common.db.DBHandler
-										.getResponseCodes(false, "0",responseCodesVersion);
+										.getResponseCodes(false, "0", responseCodesVersion);
 								cResponse = InitialLoadFilter.getFilterCodeIsoToB24(
 										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), this.allCodesIsoToB24);
 							} else {
 								cResponse = new ResponseCode("10002", "Error Code could not extracted from message",
 										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE),
-										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE));
+										msgFromTm.getField(Iso8583Post.Bit._039_RSP_CODE), "10002");
 								EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 										ConstructFieldMessage.class.getName(), "Method: [constuctCodeResponseInIsc]",
 										Utils.getStringMessageException(e),
@@ -2261,13 +2050,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 							General.SPACE, true);
 				}
 			} catch (Exception e) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						ConstructFieldMessage.class.getName(), "Method: [constuctCodeResponseInIsc]",
-						Utils.getStringMessageException(e), msgFromTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue(
-						((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method: constuctCodeResponseInIsc " + e.getMessage(), "LOG", this.nameInterface));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						msgFromTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constuctCodeResponseInIsc",
+						this.udpClient);
 			}
 		}
 		return codeResponse;
@@ -2294,15 +2079,10 @@ public class ConstructFieldMessage extends MessageTranslator {
 				defaultCardAccepto = General.DEFAULT_CARD_ACCEPTOR_ID_CODE;
 			}
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructDefaultCardAceptorCode]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: constructDefaultCardAceptorCode " + e.getMessage(), "LOG",
-							this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructDefaultCardAceptorCode",
+					this.udpClient);
+
 		}
 		return defaultCardAccepto;
 	}
@@ -2326,14 +2106,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				nameCardAcceptor = Pack.resize(msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID), 40, ' ', true);
 			}
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructNameCardAcceptor]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(
-					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructNameCardAcceptor " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructNameCardAcceptor",
+					this.udpClient);
 		}
 		return nameCardAcceptor;
 	}
@@ -2371,14 +2146,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 						.concat(msg.getProcessingCode().getToAccount())).toString();
 			}
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructProcessingCode]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(
-					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructProcessingCode " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructProcessingCode",
+					this.udpClient);
 		}
 		return processingCode;
 	}
@@ -2402,14 +2172,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 			}
 			cardAcceptortermId = Pack.resize(constructCardAcceptorTermIdToTranmgr(msg, num), 15, '0', false);
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructCardAcceptorTermIdToTranmgrResize]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructCardAcceptorTermIdToTranmgrResize " + e.getMessage(), "LOG",
-					this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructCardAcceptorTermIdToTranmgrResize",
+					this.udpClient);
 		}
 		return cardAcceptortermId;
 	}
@@ -2464,20 +2229,15 @@ public class ConstructFieldMessage extends MessageTranslator {
 			}
 
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "constructField100", Utils.getStringMessageException(e),
-					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructField100 " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField100", this.udpClient);
 		}
 		return "10";
 	}
 
 	public String constructField62Last5Mov(Object object, Integer num) throws XPostilion {
 		StringBuilder sb = new StringBuilder("");
-		//String strField62=null;
+		// String strField62=null;
 		try {
 			if (object instanceof Iso8583Post) {
 				Iso8583Post msg = (Iso8583Post) object;
@@ -2503,18 +2263,13 @@ public class ConstructFieldMessage extends MessageTranslator {
 				} else {
 					sb.append("   ");
 				}
-				
-				//strField62= Pack.resize(sb.toString(),150, ' ', true);
+
+				// strField62= Pack.resize(sb.toString(),150, ' ', true);
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField62Last5Mov]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(
-					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructField62Last5Mov " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField62Last5Mov",
+					this.udpClient);
 		}
 		return sb.toString();
 	}
@@ -2558,11 +2313,10 @@ public class ConstructFieldMessage extends MessageTranslator {
 	public static String constructField35Virtual(Object object, Integer num) throws XPostilion {
 		return Constants.General.DEFAULT_TRACK2_MASIVA;
 	}
-	
+
 	public static String constructField35Oficinas(Object object, Integer num) throws XPostilion {
 		return "0099010000000000000D991200000001";
 	}
-	
 
 	/**
 	 * Routing by account type
@@ -2748,13 +2502,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 				valueField = General.VOIDSTRING;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [construct0220ErrorFields]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: construct0220ErrorFields " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "construct0220ErrorFields", this.udpClient);
 		}
 		return valueField;
 	}
@@ -2915,13 +2664,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				valueField = General.VOIDSTRING;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [construct0210ErrorFields]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: construct0210ErrorFields " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "construct0210ErrorFields", this.udpClient);
+
 		}
 		return valueField;
 	}
@@ -2942,17 +2687,19 @@ public class ConstructFieldMessage extends MessageTranslator {
 				responseCode = InitialLoadFilter.getFilterCodeIsoToB24(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
 						this.allCodesB24ToIso);
 			} catch (NoSuchElementException e) {
-				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"NoSuchElementException in Method: constructP39For0220NotiBloq "
-								+ Utils.getStringMessageException(e),
-						"LOG", this.nameInterface));
-				if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE), "1",responseCodesVersion)) {
-					this.allCodesB24ToIso = postilion.realtime.library.common.db.DBHandler.getResponseCodesBase24("1",responseCodesVersion);
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructP39For0220NotiBloq", this.udpClient,
+						"of type NoSuchElementException");
+				if (new DBHandler(this.params).updateResgistry(msg.getField(Iso8583Post.Bit._039_RSP_CODE), "1",
+						responseCodesVersion)) {
+					this.allCodesB24ToIso = postilion.realtime.library.common.db.DBHandler.getResponseCodesBase24("1",
+							responseCodesVersion);
 					responseCode = InitialLoadFilter.getFilterCodeIsoToB24(msg.getField(Iso8583Post.Bit._039_RSP_CODE),
 							this.allCodesB24ToIso);
 				} else {
 					responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
-							msg.getField(Iso8583Post.Bit._039_RSP_CODE), msg.getField(Iso8583Post.Bit._039_RSP_CODE));
+							msg.getField(Iso8583Post.Bit._039_RSP_CODE), msg.getField(Iso8583Post.Bit._039_RSP_CODE),
+							"10002");
 					EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 							ConstructFieldMessage.class.getName(), "Method: [constructP39For0220NotiBloq]",
 							Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
@@ -2965,12 +2712,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 			}
 			valueField = responseCode.getKeyIso();
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "constructP39For0220NotiBloq",
-					Utils.getStringMessageException(e), ((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructP39For0220NotiBloq " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructP39For0220NotiBloq",
+					this.udpClient);
 			Base24Ath msg = (Base24Ath) obj;
 			valueField = msg.getField(Iso8583Post.Bit._039_RSP_CODE);
 		}
@@ -2990,12 +2734,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				valueField = msgOriginalB24.getField(Iso8583Post.Bit._048_ADDITIONAL_DATA);
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructOriginalFieldMsg]",
-					Utils.getStringMessageException(e), ((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructOriginalFieldMsg " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructOriginalFieldMsg",
+					this.udpClient);
 		}
 		return valueField;
 	}
@@ -3004,12 +2745,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 		try {
 			return Pack.resize(General.VOIDSTRING, 15, General.SPACE, true);
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructCardAcceptorIDCode]",
-					Utils.getStringMessageException(e), ((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructCardAcceptorIDCode " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructCardAcceptorIDCode",
+					this.udpClient);
 		}
 		return null;
 	}
@@ -3026,12 +2764,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 		try {
 			valueField = Constants.General.SPACE_25;
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructP59toB24]",
-					Utils.getStringMessageException(e), ((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructP39For0220NotiBloq " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructP59toB24", this.udpClient);
 		}
 		return valueField;
 	}
@@ -3058,14 +2792,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 					}
 			}
 		} catch (Exception e) {
-
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructField102toB24]",
-					Utils.getStringMessageException(e), ((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructField102toB24 " + e.getMessage(), "LOG", this.nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField102toB24",
+					this.udpClient);
 		}
 
 		return valueField;
@@ -3094,15 +2823,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 					}
 			}
 		} catch (Exception e) {
-
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructField102ConsultaCreditoRotativo]",
-					Utils.getStringMessageException(e), ((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructField102ConsultaCreditoRotativo " + e.getMessage(), "LOG",
-					this.nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"constructField102ConsultaCreditoRotativo", this.udpClient);
 		}
 
 		return valueField;
@@ -3129,13 +2852,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 			}
 			newField48.setCharAt(newField48.length() - 2, '0');
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					ConstructFieldMessage.class.getName(), "Method: [constructField048InRspCostInquiry]",
-					Utils.getStringMessageException(e), ((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructField048InRspCostInquiry " + e.getMessage(), "LOG",
-					this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField048InRspCostInquiry",
+					this.udpClient);
 			try {
 				Base24Ath msgOriginalB24 = (Base24Ath) this.sourceTranToTmHashtable
 						.get(msg.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR));
@@ -3143,14 +2862,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				newField48.setCharAt(newField48.length() - 2, '0');
 			} catch (XPostilion e1) {
 				newField48.append(Constants.General.DEFAULT_P48);
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-								"Method: [constructField048InRspCostInquiry]", Utils.getStringMessageException(e),
-								((Iso8583) obj).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method: constructField048InRspCostInquiry " + e.getMessage(), "LOG",
-						this.nameInterface));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField048InRspCostInquiry",
+						this.udpClient);
 			}
 		}
 		return newField48.toString();
@@ -3166,8 +2880,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 	 */
 	public static String addCommision(String field126, int initialLength, String commision) {
 		field126 = field126.substring(0, initialLength - 14)
-				.concat(Pack.resize(commision + General.VOIDSTRING, 12,
-						Constants.General.ZERO, false))
+				.concat(Pack.resize(commision + General.VOIDSTRING, 12, Constants.General.ZERO, false))
 				.concat(field126.substring(initialLength - 2, initialLength));
 		return field126;
 	}
@@ -3192,14 +2905,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 				return this.institutionid.get(RoutingAccount.ACCOUNT_SAVINGS_10);
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructField100ForCostInquiry]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructField100ForCostInquiry " + e.getMessage(), "LOG",
-					this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField100ForCostInquiry", this.udpClient);
 		}
 		return "10";
 	}
@@ -3219,13 +2926,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 			field.append(msg.getField(num));
 		} catch (XPostilion e) {
 			field.append("00000000");
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [transformAmountFeeFields]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: transformAmountFeeFields " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "transformAmountFeeFields", this.udpClient);
 		}
 
 		this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), field.toString(),
@@ -3259,13 +2961,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 			}
 		} catch (XPostilion e) {
 			field = "0000000000000000000000000000";
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [transformField103]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: transformField103 " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "transformField103", this.udpClient);
 		}
 		return field;
 	}
@@ -3287,13 +2984,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 					+ Transform.fromHexToBin(msg.getField(Iso8583.Bit._053_SECURITY_INFO));
 			return Pack.resize(newField53, 48, Transform.fromHexToBin("00").charAt(0), true);
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [constructNewPinDataToTranmgr]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructNewPinDataToTranmgr " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructNewPinDataToTranmgr", this.udpClient);
 		}
 		return null;
 	}
@@ -3357,15 +3049,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 					: new SimpleDateFormat("MMdd").format(objectBusinessCalendar.getNextBusinessDate());
 
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-							"Method: [compensationDateValidationP17ToP15]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: compensationDateValidationP17ToP15 " + e.getMessage(), "LOG",
-					this.nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "compensationDateValidationP17ToP15",
+					this.udpClient);
 		}
 
 		return new SimpleDateFormat("MMdd").format(objectBusinessCalendar.getCurrentBusinessDate());
@@ -3382,13 +3068,13 @@ public class ConstructFieldMessage extends MessageTranslator {
 					valueField = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
 				}
 			} catch (XFieldUnableToConstruct e) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						ConstructFieldMessage.class.getName(), "Method: [constructField3to0220ToTM]",
-						Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField3to0220ToTM", this.udpClient,
+						"of type XFieldUnableToConstruct");
 			} catch (XPostilion e) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						ConstructFieldMessage.class.getName(), "Method: [constructField3to0220ToTM]",
-						Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField3to0220ToTM", this.udpClient,
+						"of type XPostilion");
 			}
 		} else {
 			valueField = Constants.General.PCODE_DEFAULT_ERROR;
@@ -3410,10 +3096,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				pCode = msg.getProcessingCode();
 				pCode.putTranType(postilion.realtime.sdk.message.bitmap.Iso8583.TranType._21_DEPOSITS);
 			} catch (XFieldUnableToConstruct | XFieldUnableToPutSubfield e) {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-								"Method: [transformField3ForDepositATMToTranMgr]", Utils.getStringMessageException(e),
-								((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"transformField3ForDepositATMToTranMgr", this.udpClient);
 			}
 		} else if (object instanceof Iso8583Post) {
 			Iso8583Post msg = (Iso8583Post) object;
@@ -3422,10 +3107,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				pCode = msg.getProcessingCode();
 				pCode.putTranType("27");
 			} catch (XFieldUnableToConstruct | XFieldUnableToPutSubfield e) {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-								"Method: [transformField3ForDepositATMToTranMgr]", Utils.getStringMessageException(e),
-								((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"transformField3ForDepositATMToTranMgr", this.udpClient);
 			}
 		} else {
 			pCode = new ProcessingCode("270110");
@@ -3474,10 +3158,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				pCode = msg.getProcessingCode();
 				pCode.putTranType(postilion.realtime.sdk.message.bitmap.Iso8583Post.TranType._51_PAYMENT_BY_DEPOSIT);
 			} catch (XFieldUnableToConstruct | XFieldUnableToPutSubfield e) {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-								"Method: [transformField3ForCreditPaymentATM]", Utils.getStringMessageException(e),
-								((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"transformField3ForCreditPaymentATM", this.udpClient);
 			}
 		} else if (object instanceof Iso8583Post) {
 			Iso8583Post msg = (Iso8583Post) object;
@@ -3486,10 +3169,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				pCode = msg.getProcessingCode();
 				pCode.putTranType("27");
 			} catch (XFieldUnableToConstruct | XFieldUnableToPutSubfield e) {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-								"Method: [transformField3ForCreditPaymentATM]", Utils.getStringMessageException(e),
-								((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"transformField3ForCreditPaymentATM", this.udpClient);
 			}
 		} else {
 			pCode = new ProcessingCode("270100");
@@ -3506,10 +3188,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				pCode = msg.getProcessingCode();
 				pCode.putTranType(postilion.realtime.sdk.message.bitmap.Iso8583Post.TranType._91_GENERAL_ADMIN);
 			} catch (XFieldUnableToConstruct | XFieldUnableToPutSubfield e) {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-								"Method: [transformField3ForTokenActivationATM]", Utils.getStringMessageException(e),
-								((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"transformField3ForTokenActivationATM", this.udpClient);
 			}
 			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"salida Method: transformField3ForTokenActivationATM processing code" + pCode.toString(), "LOG",
@@ -3522,10 +3203,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				pCode = msg.getProcessingCode();
 				pCode.putTranType("95");
 			} catch (XFieldUnableToConstruct | XFieldUnableToPutSubfield e) {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, ConstructFieldMessage.class.getName(),
-								"Method: [transformField3ForTokenActivationATM]", Utils.getStringMessageException(e),
-								((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"transformField3ForTokenActivationATM", this.udpClient);
 			}
 		} else {
 			pCode = new ProcessingCode("950000");
@@ -3552,10 +3232,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				}
 
 			} catch (Exception e) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						ConstructFieldMessage.class.getName(), "Method: [transformField3ForRelatedAccountsInquiryATM]",
-						Utils.getStringMessageException(e),
-						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"transformField3ForRelatedAccountsInquiryATM", this.udpClient);
 			}
 		} else if (object instanceof Iso8583Post) {
 			Iso8583Post msg = (Iso8583Post) object;
@@ -3573,10 +3252,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 					break;
 				}
 			} catch (Exception e) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						ConstructFieldMessage.class.getName(), "Method: [transformField3ForRelatedAccountsInquiryATM]",
-						Utils.getStringMessageException(e),
-						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"transformField3ForRelatedAccountsInquiryATM", this.udpClient);
 			}
 		}
 		return pCode;
@@ -3590,14 +3268,13 @@ public class ConstructFieldMessage extends MessageTranslator {
 					field35 = msg.getField(Iso8583.Bit._035_TRACK_2_DATA);
 				}
 			} catch (XFieldUnableToConstruct e) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						ConstructFieldMessage.class.getName(), "Method: [constructField35To0220Error]",
-						Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructField35To0220Error", this.udpClient);
 			}
 		}
 		return field35;
 	}
-	
+
 	public String constructField17(Object object, Integer num) throws XPostilion {
 		Iso8583Post msg = (Iso8583Post) object;
 		String field;
@@ -3610,5 +3287,86 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return field;
 	}
-	
+
+	/**************************************************************************************
+	 * Metodo para consultar consecutivo para la transacción
+	 *
+	 * @param atmId
+	 * @return
+	 **************************************************************************************/
+	public String getTransactionConsecutive(String termPrefix, String term, String termConsSection) {
+		String output = null;
+		// To-DO consultar consecutivo
+		output = BussinesRules.getCalculateConsecutive("AT", term, termConsSection, this.nameInterface, this.udpClient);
+		return output;
+	}
+
+	/**
+	 * Validate field four of incoming message all transaction types
+	 * 
+	 * @param msg              message in base24
+	 * @param nameInterface    name of Interface where the event occurs
+	 * @param cutValues        Map
+	 * @param udpClient        Client object to report to monitor UDP
+	 * @return CUT
+	 * @throws XPostilion
+	 * 
+	 */
+	public static String createfieldCut(Base24Ath msg, String nameInterface, Map<String, String> cutValues,
+			Client udpClient) throws XPostilion {
+		String strCut = null;
+		try {
+			// Método retiro y consulta ATM
+			String p41 = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID);
+			String red = p41.substring(4, 8);
+			String channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13);
+			String terminalOwn = null;
+			String key = "";
+			if ((p41.substring(0, 4).equals("0054"))) {
+				terminalOwn = msg.getField(Iso8583.Bit._048_ADDITIONAL_DATA).substring(0, 4);
+			}
+
+			else {
+				channel = "1";
+				terminalOwn = red;
+			}
+
+			StringBuilder ksb = new StringBuilder();
+
+			if (msg.getProcessingCode().toString().equals("890000")) {
+				key = msg.getField(126).substring(22, 28);
+			} else {
+				key = msg.getProcessingCode().toString();
+			}
+
+			ksb.append(key);
+			ksb.append(channel == "99" ? channel : "0" + channel);
+			ksb.append(terminalOwn);
+
+			String valueCut = cutValues.get(ksb.toString());
+
+			StringBuilder sb = new StringBuilder();
+
+			if (valueCut == null) {
+				valueCut = "ATWI 000010000IPP772";
+			}
+
+			sb.append(valueCut);
+			sb.append(String.valueOf(LocalDate.now().getYear()));
+			sb.append(msg.getField(Iso8583.Bit._013_DATE_LOCAL));
+			sb.append(msg.getField(Iso8583.Bit._012_TIME_LOCAL));
+			sb.append(msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR).substring(1));
+
+			strCut = sb.toString();
+
+			return strCut;
+
+		} catch (Exception e) {
+			EventReporter.reportGeneralEvent(nameInterface, BussinesRules.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "createfieldCut", udpClient);
+		}
+
+		return strCut;
+	}
+
 }

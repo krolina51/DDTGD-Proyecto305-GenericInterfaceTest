@@ -1,5 +1,6 @@
 package postilion.realtime.genericinterface;
 
+import postilion.realtime.library.common.db.DBHandler;
 import postilion.realtime.library.common.model.ConfigAllTransaction;
 import postilion.realtime.library.common.util.Logger;
 import postilion.realtime.library.common.util.constants.MsgTypeCsm;
@@ -10,6 +11,8 @@ import postilion.realtime.sdk.eventrecorder.EventRecorder;
 import postilion.realtime.sdk.eventrecorder.contexts.ApplicationContext;
 import postilion.realtime.library.common.util.constants.General;
 import postilion.realtime.library.common.model.ResponseCode;
+import postilion.realtime.date.CalendarDTO;
+import postilion.realtime.date.CalendarLoader;
 import postilion.realtime.genericinterface.channels.Super;
 import postilion.realtime.genericinterface.eventrecorder.events.CannotProcessAcqReconRspFromRemote;
 import postilion.realtime.genericinterface.eventrecorder.events.IncorrectLengthField_120KeyManagement;
@@ -19,7 +22,6 @@ import postilion.realtime.genericinterface.eventrecorder.events.InvalidDataField
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidDataField_123CryptoServiceMsg;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidLenghtCryptoKeyIdll;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidMacRdbnNtwrk;
-import postilion.realtime.genericinterface.eventrecorder.events.InvalidMessage;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidSinkKeyLoaded;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidSourceKeyLoaded;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidTypeKey;
@@ -47,6 +49,7 @@ import postilion.realtime.genericinterface.translate.util.Constants;
 import postilion.realtime.genericinterface.translate.util.Constants.KeyExchange;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
+import postilion.realtime.genericinterface.translate.util.EventReporter;
 import postilion.realtime.genericinterface.translate.validations.Validation;
 import postilion.realtime.sdk.message.IMessage;
 import postilion.realtime.sdk.message.bitmap.BitmapMessage;
@@ -68,13 +71,13 @@ import postilion.realtime.sdk.node.ActiveActiveKeySyncMsgHandler;
 import postilion.realtime.sdk.node.NodeDriverEnvAdapter;
 
 import java.io.FileReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimerTask;
+import java.util.Timer;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -193,11 +196,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public String routingFilter = "";
 	public String routingCreditPath = "";
 	public String routingTransitoriasPath = "";
-	public String routingFilterPath = "D:\\Apl\\postilion\\genericinterfacepb";
+	public String routingFilterPath = "D:\\Apl\\postilion\\genericinterfacetest";
 	protected boolean validateCvv = false;
 	protected DesKvc kvc = null;
-
 	public Parameters params;
+	public CalendarDTO calendarInfo;
+	public long delay = 0;
+	public long period = 60_000;
+	public String termConsecutiveSection = "";	
 
 	/************************************************************************************
 	 * SDK Postilion method implementation, which serves to initialize interchange
@@ -215,6 +221,98 @@ public class GenericInterface extends AInterchangeDriver8583 {
 //						GRPCServer.runServer();
 //			}});
 //		grpcServer.start();
+
+		fillMaps();
+
+		getLogger().logLine("#=== Enter to [Init] Method Interchange " + interchange.getName() + " ===#");
+		this.calendarInfo = new CalendarDTO();
+//		acquirersNetwork = postilion.realtime.genericinterface.translate.database.DBHandler.getAcquirerDesc();
+
+		this.nameInterface = interchange.getName();
+		String[] userParams = Pack.splitParams(interchange.getUserParameter());
+//		acquirersNetwork = postilion.realtime.genericinterface.translate.database.DBHandler.getAcquirerDesc();
+		this.nameInterface = interchange.getName();
+		String[] logParms = { nameInterface, Integer.toString(Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED),
+				Integer.toString(userParams.length), interchange.getUserParameter() };
+
+		if (userParams.length != Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED) {
+			EventRecorder.recordEvent(new IncorrectRuntimeParameters(new String[] { interchange.getName(),
+					Integer.toString(Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED),
+					Integer.toString(userParams.length), interchange.getUserParameter() }));
+			throw new XPostilion(new IncorrectRuntimeParameters(
+					new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
+		}
+
+		getParameters(userParams[0]);
+
+		Timer timer = new Timer();
+		TimerTask task = new CalendarLoader(this.calendarInfo, this.nameInterface);
+		timer.schedule(task, this.delay, this.period);
+
+		udpClient = new Client(ipUdpServer, portUdpServer, nameInterface);
+
+		switch (routingFilter) {
+		case "Test2":
+		case "Prod2":
+			fillFilters2();
+			break;
+		default:
+			fillFilters();
+			break;
+		}
+
+		allCodesIsoToB24 = DBHandler.getResponseCodes(false, "0", responseCodesVersion);
+		if (allCodesIsoToB24.size() == 0) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [init]",
+					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesIsoToB24",
+					"N/A" }));
+			throw new XPostilion(
+					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
+		}
+
+		allCodesIscToIso = DBHandler.getResponseCodes(true, "0", responseCodesVersion);
+		if (allCodesIscToIso.size() == 0) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [init]",
+					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesIscToIso",
+					"N/A" }));
+			throw new XPostilion(
+					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
+		}
+
+		allCodesIsoToB24TM = DBHandler.getResponseCodes(false, "1", responseCodesVersion);
+		if (allCodesIsoToB24TM.size() == 0) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [init]",
+					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesIsoToB24TM",
+					"N/A" }));
+			throw new XPostilion(
+					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
+		}
+
+		allCodesB24ToIso = DBHandler.getResponseCodesBase24("1", responseCodesVersion);
+		if (allCodesB24ToIso.size() == 0) {
+			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
+					GenericInterface.class.getName(), "Method: [init]",
+					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesB24ToIso",
+					"N/A" }));
+			throw new XPostilion(
+					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
+		}
+
+		// udpClient = new Client(ipUdpServer, portUdpServer);
+		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId, udpClient,
+				nameInterface, ipCryptoValidation, portCryptoValidation, keys, routingField100, allCodesIsoToB24,
+				allCodesIscToIso, allCodesIsoToB24TM, allCodesB24ToIso, this.calendarInfo, this.termConsecutiveSection);
+		factory = new FactoryCommonRules(params);
+
+	}
+
+	/**
+	 * Llenado hashMap para tratamiento de campos.
+	 */
+	private static void fillMaps() {
 
 		createFields220ToTM.put("3", "3");
 		createFields220ToTM.put("4", "4");
@@ -903,27 +1001,22 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		deleteFieldsResponse.put("501041", "15");
 		deleteFieldsResponse.put("401010", "15-22-52");
 		deleteFieldsResponse.put("501030", "15-22-44-52-105");
-
+		
 		copyFieldsResponseRev.put("3", "3");
 		copyFieldsResponseRev.put("4", "4");
 		copyFieldsResponseRev.put("7", "7");
 		copyFieldsResponseRev.put("11", "11");
-		copyFieldsResponseRev.put("12", "12");
-		copyFieldsResponseRev.put("13", "13");
 		copyFieldsResponseRev.put("22", "22");
 		copyFieldsResponseRev.put("32", "32");
 		copyFieldsResponseRev.put("35", "35");
 		copyFieldsResponseRev.put("37", "37");
-		copyFieldsResponseRev.put("38", "38");
 		copyFieldsResponseRev.put("39", "39");
 		// copyFieldsResponseRev.put("41", "41");
 		copyFieldsResponseRev.put("48", "48");
 		copyFieldsResponseRev.put("49", "49");
 		copyFieldsResponseRev.put("54", "54");
 		copyFieldsResponseRev.put("90", "90");
-		copyFieldsResponseRev.put("95", "95");
-		copyFieldsResponseRev.put("102", "102");
-		copyFieldsResponseRev.put("103", "103");
+		copyFieldsResponseRev.put("95", "95");		
 
 //		createFieldsResponseRev.put("48-401000", "constructFieldFromTimedHashTable");
 //		createFieldsResponseRev.put("48-402000", "constructFieldFromTimedHashTable");
@@ -963,26 +1056,26 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		// deleteFieldsResponseRev.put("102", "102");
 		// deleteFieldsResponseRev.put("103", "103");
 		// deleteFieldsResponseRev.put("104", "104");
-
+        
+		deleteFieldsResponseRev.put("011000", "15-17-49-102");
 		deleteFieldsResponseRev.put("401000", "100-61-60");
 		deleteFieldsResponseRev.put("402000", "100-61-60");
 		deleteFieldsResponseRev.put("401010", "22-61-95");
 		deleteFieldsResponseRev.put("401020", "61");
 		deleteFieldsResponseRev.put("402010", "61");
-		deleteFieldsResponseRev.put("402020", "61");
+		deleteFieldsResponseRev.put("402020", "61");		
 
 		createFieldsResponseAdv.put("17", "constructOriginalFieldMsg");
 		createFieldsResponseAdv.put("38", "constructAuthorizationIdResponse");
 		createFieldsResponseAdv.put("48", "constructOriginalFieldMsg");
 		createFieldsResponseAdv.put("100", "construct0210ErrorFields");
-
+		
 		copyFieldsResponseAdv.put("3", "3");
 		copyFieldsResponseAdv.put("4", "4");
 		copyFieldsResponseAdv.put("7", "7");
 		copyFieldsResponseAdv.put("11", "11");
 		copyFieldsResponseAdv.put("12", "12");
 		copyFieldsResponseAdv.put("13", "13");
-		copyFieldsResponseAdv.put("17", "17");
 		copyFieldsResponseAdv.put("15", "15");
 		copyFieldsResponseAdv.put("22", "22");
 		copyFieldsResponseAdv.put("32", "32");
@@ -991,116 +1084,16 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		copyFieldsResponseAdv.put("39", "39");
 		copyFieldsResponseAdv.put("49", "49");
 		copyFieldsResponseAdv.put("90", "90");
-		copyFieldsResponseAdv.put("102", "102");
+		copyFieldsResponseAdv.put("102", "102");		
 
 		deleteFieldsResponseAdv.put("28", "28");
 		deleteFieldsResponseAdv.put("30", "30");
 
-		getLogger().logLine("#=== Enter to [Init] Method Interchange " + interchange.getName() + " ===#");
-
-		// String[] userParams = Pack.splitParams(interchange.getUserParameter());
-//		acquirersNetwork = postilion.realtime.genericinterface.translate.database.DBHandler.getAcquirerDesc();
-		this.nameInterface = interchange.getName();
-
-		//getParameters();
-		
-		String[] userParams = Pack.splitParams(interchange.getUserParameter());
-//		acquirersNetwork = postilion.realtime.genericinterface.translate.database.DBHandler.getAcquirerDesc();
-		this.nameInterface = interchange.getName();
-		String[] logParms = { nameInterface, Integer.toString(Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED),
-				Integer.toString(userParams.length), interchange.getUserParameter() };
-
-		if (userParams.length != Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED) {
-			EventRecorder.recordEvent(new IncorrectRuntimeParameters(new String[] { interchange.getName(),
-					Integer.toString(Constants.RuntimeParm.NR_OF_PARAMETERS_EXPECTED),
-					Integer.toString(userParams.length), interchange.getUserParameter() }));
-			throw new XPostilion(new IncorrectRuntimeParameters(
-					new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
-		}
-
-		getParameters(userParams[0]);
-		
-		switch (routingFilter) {
-		case "Test2":
-		case "Prod2":
-			fillFilters2();
-			break;
-		default:
-			fillFilters();
-			break;
-		}
-			
-		udpClient = new Client(ipUdpServer, portUdpServer);
-		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId, udpClient,
-				nameInterface, ipCryptoValidation, portCryptoValidation, keys, routingField100);
-		factory = new FactoryCommonRules(params);
-
 	}
 
-	/************************************************************************************
-	 * Metodo que valida los parametros de usuario de la interchange
+	/**
 	 *
-	 * @param userParameters arreglo con los parametros de usuario
-	 * @throws XNodeParameterValueInvalid
-	 *
-	 ************************************************************************************/
-	public void validateParameters(String[] userParameters) throws XNodeParameterValueInvalid {
-		try {
-
-			String cfgRetentionPeriod = userParameters[Constants.Indexes.RETENTION_PERIOD];
-			String cfgValidateMAC = userParameters[Constants.Indexes.VALIDATE_MAC];
-			String cfgKwaName = userParameters[Constants.Indexes.KWA_NAME];
-			sSignOn = userParameters[Constants.Indexes.SEND_SIGN_ON];
-			issuerId = userParameters[Constants.Indexes.ISSUERID];
-
-			if (cfgRetentionPeriod != null) {
-				try {
-					retentionPeriod = Long.parseLong(cfgRetentionPeriod);
-				} catch (NumberFormatException e) {
-					EventRecorder.recordEvent(
-							new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, cfgRetentionPeriod));
-					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, cfgRetentionPeriod);
-
-				}
-				sourceTranToTmHashtable = new TimedHashtable(retentionPeriod);
-				sourceTranToTmHashtableB24 = new TimedHashtable(retentionPeriod);
-			} else {
-				EventRecorder.recordEvent(
-						new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING));
-				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING);
-			}
-			if (cfgValidateMAC != null) {
-				boolean validateMac = cfgValidateMAC.equals(General.TRUE);
-				if (cfgKwaName != null) {
-					if (validateMac) {
-						try {
-							CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
-							kwa = crypcfgman.getKwa(cfgKwaName);
-						} catch (XCrypto e) {
-							EventRecorder.recordEvent(
-									new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName));
-							throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName);
-						}
-					}
-				} else {
-					EventRecorder.recordEvent(
-							new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING));
-					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, General.NULLSTRING);
-				}
-			} else {
-				EventRecorder.recordEvent(
-						new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING));
-				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING);
-			}
-
-		} catch (Exception e) {
-			EventRecorder.recordEvent(new InvalidMessage(
-					new String[] { Constants.Config.NAME, "Method: [validateParameters]", e.getMessage() }));
-			EventRecorder.recordEvent(e);
-			getLogger().logLine("Exception in validateParameters: " + e.getMessage());
-		}
-	}
-	
+	 */
 	public void fillFilters2() {
 
 		try (FileReader fr = new FileReader(routingFilterPath)) {
@@ -1110,21 +1103,21 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				StringBuilder sbKey = new StringBuilder();
 				StringBuilder sbKey2 = new StringBuilder();
 				org.json.simple.JSONObject canal = (org.json.simple.JSONObject) object;
-
 				String strCanal = (String) canal.get("Canal");
 				String strCodProc = (String) canal.get("Codigo_Proceso");
 				String strEntryMode = (String) canal.get("Modo_Entrada");
 				sbKey.append(strCanal);
 				sbKey.append(strCodProc);
 				sbKey.append(strEntryMode);
-
 				sbKey2.append(strCanal);
 				sbKey2.append(strCodProc);
+
 				if (!primerFiltroTest2.containsKey(sbKey.toString()))
 					primerFiltroTest2.put(sbKey.toString(), sbKey.toString());
 
 				String strBin = (String) canal.get("BIN");
 				String strCuenta = (String) canal.get("Cuenta");
+
 				// iteracion sobre bines
 				if (!strBin.equals("0")) {
 					String[] strBines = strBin.split(",");
@@ -1133,8 +1126,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							segundoFiltroTest2.put(sbKey2.toString() + strBines[i], sbKey2.toString() + strBines[i]);
 					}
 				}
-				// iteracion sobre tarjetas
 
+				// iteracion sobre tarjetas
 				if (!strCuenta.equals("0")) {
 					String[] strCuentas = strCuenta.split(",");
 					for (int i = 0; i < strCuentas.length; i++) {
@@ -1147,14 +1140,16 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			}
 			fr.close();
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
-							"fillFilters: [newMsg]", Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"fillFilters2", this.udpClient);
 		}
 
 	}
-	
+
+	/**
+	 * Llena HashMap deacuerdo a lo encontrado en el archivo Json ubicado en la ruta
+	 * routingFilterPath
+	 */
 	public void fillFilters() {
 
 		try (FileReader fr = new FileReader(routingFilterPath)) {
@@ -1163,7 +1158,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			for (Object object : jsonArray) {
 				StringBuilder sbKey = new StringBuilder();
 				org.json.simple.JSONObject canal = (org.json.simple.JSONObject) object;
-
 				String strCanal = (String) canal.get("Canal");
 				String strCodProc = (String) canal.get("Codigo_Proceso");
 				sbKey.append(strCanal);
@@ -1172,6 +1166,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				String strBin = (String) canal.get("BIN");
 				String strTarjeta = (String) canal.get("Numero_Tarjeta");
 				String strCuenta = (String) canal.get("Cuenta");
+
 				// iteracion sobre bines
 				if (!strBin.equals("0")) {
 					String[] strBines = strBin.split(",");
@@ -1180,8 +1175,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							primerFiltroTest1.put(sbKey.toString() + strBines[i], sbKey.toString() + strBines[i]);
 					}
 				}
-				// iteracion sobre tarjetas
 
+				// iteracion sobre tarjetas
 				if (!strTarjeta.equals("0")) {
 					String[] strTarjetas = strTarjeta.split(",");
 					for (int i = 0; i < strTarjetas.length; i++) {
@@ -1189,9 +1184,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							primerFiltroTest1.put(sbKey.toString() + strTarjetas[i], sbKey.toString() + strTarjetas[i]);
 					}
 				}
-				
-				// iteracion sobre cuentas
 
+				// iteracion sobre cuentas
 				if (!strCuenta.equals("0")) {
 					String[] strCuentas = strCuenta.split(",");
 					for (int i = 0; i < strCuentas.length; i++) {
@@ -1203,34 +1197,29 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			}
 			fr.close();
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
-							"fillFilters: [newMsg]", Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"fillFilters", this.udpClient);
 		}
 
 	}
 
-   
+	/**
+	 * Inicializacion de variables segun datos que llegan en los parametros
+	 */
 	@SuppressWarnings("unchecked")
 	public void getParameters(String path) {
 
 		try {
-			
+
 			JSONParser parser = new JSONParser();
-
-			org.json.simple.JSONObject jsonObjects = (org.json.simple.JSONObject) parser
-					.parse(new FileReader(path));
-
+			org.json.simple.JSONObject jsonObjects = (org.json.simple.JSONObject) parser.parse(new FileReader(path));
 			org.json.simple.JSONObject parameters = (JSONObject) jsonObjects.get(this.nameInterface);
-
 			if (parameters != null) {
 				String cfgRetentionPeriod = parameters.get("cfgRetentionPeriod").toString();
 				String cfgValidateMAC = parameters.get("cfgValidateMAC").toString();
 				String cfgKwaName = parameters.get("cfgKwaName").toString();
 				sSignOn = parameters.get("sSignOn").toString();
 				responseCodesVersion = parameters.get("responseCodesVersion").toString();
-
 				issuerId = parameters.get("issuerId").toString();
 				String cfgIpUdpServer = parameters.get("cfgIpUdpServer").toString();
 				String cfgPortUdpServer = parameters.get("cfgPortUdpServer").toString();
@@ -1238,16 +1227,23 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				String cfgIpCryptoValidation = parameters.get("ipCryptoValidation").toString();
 				String cfgPortCryptoValidation = parameters.get("portCryptoValidation").toString();
 				JSONArray channelsIds = (JSONArray) parameters.get("channelIds");
-				
 				this.routingFilter = parameters.get("routing_filter").toString();
 				this.routingFilterPath = parameters.get("routing_filter_path").toString();
 				this.routingField100 = parameters.get("routing_field_100").toString();
-				
 				businessValidation = (boolean) parameters.get("bussinessValidation");
+				try {
+					this.delay = (long) parameters.get("delay_timer");
+					this.period = (long) parameters.get("period_timer");
+					this.calendarInfo.setThreshold((long) parameters.get("threshold_timer"));
+				} catch (ClassCastException e) { // PARA MEJORAR
+					EventRecorder.recordEvent(new XNodeParameterValueInvalid("Delay, period, or threshold timer ",
+							"Incorrect data type"));
+					throw new XNodeParameterValueInvalid("Delay, period, or threshold timer", "Incorrect data type");
+				}
 				if (cfgRetentionPeriod != null) {
 					try {
 						retentionPeriod = Long.parseLong(cfgRetentionPeriod);
-					} catch (NumberFormatException e) {
+					} catch (NumberFormatException e) { // PARA MEJORAR
 						EventRecorder.recordEvent(new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD,
 								cfgRetentionPeriod));
 						throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD,
@@ -1261,6 +1257,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING));
 					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.RETENTION_PERIOD, General.NULLSTRING);
 				}
+
 				if (cfgValidateMAC != null) {
 					boolean validateMac = cfgValidateMAC.equals(General.TRUE);
 					if (cfgKwaName != null) {
@@ -1268,7 +1265,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							try {
 								CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
 								kwa = crypcfgman.getKwa(cfgKwaName);
-							} catch (XCrypto e) {
+							} catch (XCrypto e) { // PARA MEJORAR
 								EventRecorder.recordEvent(
 										new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName));
 								throw new XNodeParameterValueInvalid(Constants.RuntimeParm.KWA_NAME, cfgKwaName);
@@ -1290,6 +1287,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				this.create0220ToTM = create0220ToTM;
 				this.ipCryptoValidation = validateIpUdpServerParameter(cfgIpCryptoValidation);
 				this.portCryptoValidation = Integer.valueOf(validatePortUdpServerParameter(cfgPortCryptoValidation));
+				this.termConsecutiveSection =  parameters.get("terminal_consecutive_section").toString();
+
 				if (channelsIds.size() != 0) {
 					CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
 					this.keys.put("VBK", crypcfgman.getKwa(this.nameInterface + "_VBK"));
@@ -1299,7 +1298,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 									.logLine("Looking pbk " + this.nameInterface + "_" + s.toString() + "_PBK");
 							this.keys.put(s.toString(),
 									crypcfgman.getKwa(this.nameInterface + "_" + s.toString() + "_PBK"));
-						} catch (XCrypto e) {
+						} catch (XCrypto e) { // PARA MEJORAR
 							GenericInterface.getLogger().logLine(Utils.getStringMessageException(e));
 							EventRecorder.recordEvent(new XNodeParameterValueInvalid(
 									this.nameInterface + "_" + s.toString() + "_PBK", "Not present"));
@@ -1313,10 +1312,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						General.NULLSTRING);
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
-							"getParameters:", Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"getParameters", this.udpClient);
 		}
 
 	}
@@ -1336,10 +1333,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			kwa = null;
 			init(interchange);
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
-							"Method: [processResyncCommand]", Utils.getStringMessageException(e), "N/A" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"processResyncCommand", this.udpClient);
 		}
 		return action;
 	}
@@ -1431,15 +1426,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		} catch (Exception e) {
 			GenericInterface.getLogger().logLine(Utils.getStringMessageException(e));
 			exceptionMessage = Transform.fromBinToHex(Transform.getString(data));
-			udpClient.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "LOG",
+			udpClient.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "ERR",
 					nameInterface));
 
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
-							"Method: [newMsg]", Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			udpClient.sendData(
-					Client.getMsgKeyValue("N/A", "Exception in newMsg: " + e.getMessage(), "LOG", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"newMsg", this.udpClient);
 
 		}
 		return null;
@@ -1584,16 +1575,13 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				return newCheckDigits.startsWith(checkDigits);
 			}
 		} catch (RuntimeException e) {
-			udpClient.sendData(Client.getMsgKeyValue("N/A",
-					"RuntimeException in loadSourceNodeKey:\n" + e.getMessage() + "\n" + e.getLocalizedMessage(), "LOG",
-					nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"loadSourceNodeKey", this.udpClient,
+					e.getMessage() + "\n" + e.getLocalizedMessage() + "\n" + " of type RuntimeException");
 			throw e;
 		} catch (Exception e) {
-			StringWriter outError = new StringWriter();
-			e.printStackTrace(new PrintWriter(outError));
-			String errorString = outError.toString();
-			udpClient.sendData(Client.getMsgKeyValue("N/A", "Exception in loadSourceNodeKey:\n" + errorString, "LOG",
-					nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"loadSourceNodeKey", this.udpClient, "of type Exception");
 			return false;
 		}
 	}
@@ -1630,6 +1618,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public Action processTranReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
 			throws XPostilion {
 		Action action = new Action();
+		String retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 
 		if (msg instanceof Iso8583Post) {
 
@@ -1655,17 +1644,17 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			Base24Ath msgFromRemote = (Base24Ath) msg;
 
-			putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);
+			putRecordIntoSourceToTmHashtableB24(retRefNumber, msgFromRemote);
 
 //			Base24Ath msgFromRemoteT = new Base24Ath(kwa);
 			Iso8583Post msgToTm = new Iso8583Post();
-			Base24Ath msgToRemote = new Base24Ath(kwa);
+//			Base24Ath msgToRemote = new Base24Ath(kwa);
 			MessageTranslator translator = new MessageTranslator(params);
 
 //			Utils tool = new Utils(params);
 			try {
 
-				// ValidaciÃ³n MAC
+				// Validacion MAC
 				int errMac = msgFromRemote.failedMAC();
 
 				if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR) {
@@ -1676,26 +1665,25 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						msg.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, Constants.General.DEFAULT_P41);
 					}
 
-					// Validación Enrutamiento Autra o Interfaz 2
-					int intAutraNvo = 0;
+					// Validacion Enrutamiento Interfaz2 o Autra
+					int routingto = 0;
 
 					switch (routingFilter) {
 					case "Test1":
 					case "Prod1":
 
-						intAutraNvo = ValidateAutra.validateAutraNuevo(msgFromRemote, udpClient, nameInterface,
-								routingFilter);
+						routingto = ValidateAutra.getRouting(msgFromRemote, udpClient, nameInterface, routingFilter);
 
 						break;
 
 					case "Capa":
 
-						intAutraNvo = 0;
+						routingto = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
 
 						break;
 					case "Autra":
 
-						intAutraNvo = 1;
+						routingto = Constants.TransactionRouting.INT_AUTRA;
 
 						break;
 
@@ -1705,8 +1693,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 					}
 
-					switch (intAutraNvo) {
-					case 0:
+					switch (routingto) {
+					case Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION:
 
 						Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
 								General.VOIDSTRING, new HashMap<String, String>(), params) {
@@ -1717,18 +1705,13 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							}
 						};
 
-						// if(businessValidation)
-						// objectValidations = objectValidations.businessValidation(msgFromRemote,
-						// objectValidations);// PONER
-						// CUIDADO***********************
-						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
-								objectValidations.getInforCollectedForStructData());
-						GenericInterface.getLogger().logLine("Field 102 Iso8583Post:" + Isomsg.getField(102));
-						GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+						// Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
+						// objectValidations.getInforCollectedForStructData());
+
+						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote, objectValidations);
 
 						action.putMsgToTranmgr(Isomsg);
-
-						putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+						putRecordIntoSourceToTmHashtable(retRefNumber, Isomsg);
 
 						break;
 
@@ -1749,9 +1732,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						}
 
 						action.putMsgToTranmgr(msgToTm);
-						putRecordIntoSourceToTmHashtable(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgToTm);
-						putRecordIntoSourceToTmHashtableB24(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-								msgFromRemote);
+
+						putRecordIntoSourceToTmHashtable(retRefNumber, msgToTm);
+						putRecordIntoSourceToTmHashtableB24(retRefNumber, msgFromRemote);
 
 						break;
 					}
@@ -1759,20 +1742,12 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			} catch (Exception e) {
 
 				// Iso8583Post msg220=translator.construct0220ToTm(msg, nameInterface);
-				// action.putMsgToTranmgr(msg220);
-
+				// action.putMsgToTranmgr( );
 				e.printStackTrace();
-				udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method: processTranReqFromInterchange " + Utils.getStringMessageException(e),
-						"LOG", nameInterface));
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						GenericInterface.class.getName(), "Method: [processTranReqFromInterchange]",
-						Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-
-				EventRecorder.recordEvent(e);
-
-				udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in message: " + exceptionMessage, "LOG", nameInterface));
+				EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+						retRefNumber, "processTranReqFromInterchange", this.udpClient);
+				udpClient.sendData(Client.getMsgKeyValue(retRefNumber, "Exception in message: " + exceptionMessage,
+						"ERR", nameInterface));
 
 			}
 		}
@@ -1791,21 +1766,17 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public Action processTranReqRspFromTranmgr(AInterchangeDriverEnvironment interchange, Iso8583Post msg)
 			throws Exception {
 		Action action = new Action();
-		udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-				"LA RESPUESTA 0210 TRAE ESTOS VALORES EN EL 102:" + msg.getField("102") + " y estos en el 103: "
-						+ msg.getField("103"),
-				"LOG", nameInterface));
+		String retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 
-		udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-				Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ISO", nameInterface));
+		udpClient.sendData(Client.getMsgKeyValue(retRefNumber, "LA RESPUESTA 0210 TRAE ESTOS VALORES EN EL 102:"
+				+ msg.getField("102") + " y estos en el 103: " + msg.getField("103"), "LOG", nameInterface));
+
+		udpClient.sendData(Client.getMsgKeyValue(retRefNumber, Transform.fromBinToHex(Transform.getString(msg.toMsg())),
+				"ISO", nameInterface));
 
 		if (!msg.getField(Iso8583.Bit._039_RSP_CODE).equals("00"))
-			udpClient
-					.sendData(
-							Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-									"DECISO" + msg.getField(Iso8583.Bit._039_RSP_CODE)
-											+ Transform.fromBinToHex(Transform.getString(msg.toMsg())),
-									"ISO", nameInterface));
+			udpClient.sendData(Client.getMsgKeyValue(retRefNumber, "DECISO" + msg.getField(Iso8583.Bit._039_RSP_CODE)
+					+ Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ISO", nameInterface));
 
 		try {
 			if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
@@ -1829,21 +1800,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
 				GenericInterface.getLogger().logLine("210CONSTRUCTISO8583:" + msgToRemote2);
-				msgToRemote2.putField(128, "FFFFFFFF00000000");
 				action.putMsgToRemote(msgToRemote2);
 			}
 
 		} catch (Exception e) {
-
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"ERRISO30" + Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ISO", nameInterface));
-			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"ERRISO30 Exception en Mensaje: " + msg.toString(), "LOG", nameInterface));
-
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processTranReqRspFromTranmgr]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+					"ERRISO30" + Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ERR", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, retRefNumber,
+					"processTranReqRspFromTranmgr", this.udpClient);
 		}
 		return action;
 	}
@@ -1893,9 +1857,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					MessageTranslator translator = new MessageTranslator(params);
 					Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
 
-					putRecordIntoSourceToTmHashtable(
-							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
-							msg);
+					putRecordIntoSourceToTmHashtable(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+							+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msg);
 					action.putMsgToRemote(msgToRemote);
 				}
 				return action;
@@ -1919,7 +1882,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 	public Base24Ath constructRevAdvToRemote(Iso8583Post msg) throws XPostilion {
 		Base24Ath msg0200ToRev = new Base24Ath(null);
+		String retRefNumber = "N/D";
 		try {
+			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			String sdData0200 = msg.getStructuredData().get("B24_Message");
 			byte[] decodedBytes = Base64.getDecoder().decode(sdData0200);
 			String decodedString = new String(decodedBytes);
@@ -1957,10 +1922,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			GenericInterface.getLogger().logLine("Base24Ath Rev: " + msg0200ToRev.toString());
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [constructRevAdvToRemote]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+					retRefNumber, "constructRevAdvToRemote", this.udpClient);
+
 		}
 		return msg0200ToRev;
 	}
@@ -2090,15 +2054,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				}
 			}
 		} catch (Exception e) {
-
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"ERRISO30" + Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ISO", nameInterface));
-			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"ERRISO30 Exception en Mensaje: " + msg.toString(), "LOG", nameInterface));
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processTranAdvRspFromTranmgr]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+					"ERRISO30" + Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ERR", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processTranAdvRspFromTranmgr", this.udpClient);
 		}
 		return action;
 	}
@@ -2151,14 +2110,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						}
 					};
 
-					Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
-							objectValidations.getInforCollectedForStructData());
+					// Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
+					// objectValidations.getInforCollectedForStructData());
 
+					Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote, objectValidations);
 					GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
-
 					action.putMsgToTranmgr(Isomsg);
-
-					putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+					putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);					
+					break;
 
 				default:
 
@@ -2184,19 +2143,13 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				}
 			}
 		} catch (Exception e) {
-
 			Iso8583Post msg220 = translator.construct0220ToTm(msg, nameInterface);
 			action.putMsgToTranmgr(msg220);
-
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"ERRISO30 Exception en Mensaje: " + msg.toString(), "LOG", nameInterface));
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processAcquirerRevAdvFromInterchange]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: processAcquirerRevAdvFromInterchange " + e.getMessage(), "LOG",
-					nameInterface));
+					"ERRISO30 Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processAcquirerRevAdvFromInterchange",
+					this.udpClient);
 		}
 		return action;
 	}
@@ -2228,22 +2181,19 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			} else {
 				MessageTranslator translator = new MessageTranslator(params);
 
-				Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
+				Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg); 
 				udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
 				GenericInterface.getLogger().logLine("430CONSTRUCTISO8583:" + msgToRemote2);
-				msgToRemote2.putField(128, "FFFFFFFF00000000");
 
 				action.putMsgToRemote(msgToRemote2);
 			}
 		} catch (Exception e) {
-
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"ERRISO30 Exception en Mensaje: " + msg.toString(), "LOG", nameInterface));
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processAcquirerRevAdvRspFromTranmgr]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+					"ERRISO30 Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processAcquirerRevAdvRspFromTranmgr",
+					this.udpClient);
 		}
 		return action;
 	}
@@ -2314,8 +2264,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					}
 				};
 
-				Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
-						objectValidations.getInforCollectedForStructData());
+				// Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote,
+				// objectValidations.getInforCollectedForStructData());
+
+				Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote, objectValidations);
 
 				GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
 
@@ -2326,16 +2278,12 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			}
 
 		} catch (Exception e) {
-
 			Iso8583Post msg220 = translator.construct0220ToTm(msg, nameInterface);
 			action.putMsgToTranmgr(msg220);
-
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"ERRISO30 Exception en Mensaje: " + msg.toString(), "LOG", nameInterface));
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processTranAdvFromInterchange]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+					"ERRISO30 Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processTranAdvFromInterchange", this.udpClient);
 		}
 		return action;
 	}
@@ -2366,17 +2314,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			hdrInic.putField(Header.Field.STATUS, String.valueOf(codeError));
 			rsp.putHeader(hdrInic);
 			rsp.putMsgType(0x9000 + rsp.getMsgType());
-
 			EventRecorder.recordEvent(
 					new InvalidMacRdbnNtwrk(new String[] { rsp.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR) }));
 			rsp.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG, // 123
 					Constants.KeyExchange.CSM_ERROR_GRAL_SRC);
-
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [constructEchoMsgIndicatorFailedMAC]",
-					Utils.getStringMessageException(e), rsp.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+					rsp.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructEchoMsgIndicatorFailedMAC",
+					this.udpClient);
 		}
 		return rsp;
 	}
@@ -2434,12 +2379,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				break;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processNwrkMngReqFromInterchange]",
-					Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			udpClient.sendData(Client.getMsgKeyValue("Unknown",
-					"Exception in processNwrkMngReqFromInterchange:  " + e.getMessage(), "LOG", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processNwrkMngReqFromInterchange",
+					this.udpClient);
 		}
 		return action;
 	}
@@ -2604,16 +2546,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 						action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote,
 								Constants.ErrorTypeCsm.INT_CSM_RSM_SRC, Iso8583.RspCode._06_ERROR, null));
-
-						EventRecorder.recordEvent(new TryCatchException(
-								new String[] { this.nameInterface, GenericInterface.class.getName(),
-										"Method: [processKeyLoadKeyReqFromInterchangeToSourceNode]",
-										Utils.getStringMessageException(e), "Unknown" }));
-						EventRecorder.recordEvent(e);
-						udpClient.sendData(Client.getMsgKeyValue("Unknown",
-								"Exception in Method: processKeyLoadKeyReqFromInterchangeToSourceNode "
-										+ e.getMessage(),
-								"LOG", nameInterface));
+						EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+								msgToRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+								"processKeyLoadKeyReqFromInterchangeToSourceNode", this.udpClient);
 
 					}
 				}
@@ -2646,17 +2581,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_RSM_SRC,
 					Iso8583.RspCode._06_ERROR, null));
-
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processKeyLoadKeyReqFromInterchangeToSourceNode]",
-					Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-
-			udpClient.sendData(Client.getMsgKeyValue("Unknown",
-					"Exception in Method: processKeyLoadKeyReqFromInterchangeToSourceNode " + e.getMessage(), "LOG",
-					nameInterface));
-
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"processKeyLoadKeyReqFromInterchangeToSourceNode", this.udpClient);
 			return action;
+
 		}
 	}
 
@@ -2776,10 +2704,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				EventRecorder.recordEvent(new SourceKeyExchangeInitiated(new String[] { interchange.getName() }));
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processKeyRequestReqFromInterchange]",
-					Utils.getStringMessageException(e), "N/A" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processKeyRequestReqFromInterchange",
+					this.udpClient);
 		}
 		return action;
 	}
@@ -2818,10 +2745,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				msgToRemote = null;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [constructSourceNodeExchangeKwpMsgToRemote]",
-					Utils.getStringMessageException(e), "N/A" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
+					msgToRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"constructSourceNodeExchangeKwpMsgToRemote", this.udpClient);
 		}
 		return msgToRemote;
 	}
@@ -2841,12 +2767,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			Base24Ath msg_to_remote = constructNwrkMngMsgRspToRemote(msg);
 			return new Action(null, msg_to_remote, null, null);
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processEchoTestReqFromInterchange]",
-					Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			udpClient.sendData(Client.getMsgKeyValue("Unknown",
-					"Exception in processEchoTestReqFromInterchange: " + e.getMessage(), "LOG", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"processEchoTestReqFromInterchange", this.udpClient);
 		}
 		return action;
 	}
@@ -2947,12 +2869,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				break;
 			}
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
-							"Method: [constructNwrkMngReqToRemote]", Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			udpClient.sendData(Client.getMsgKeyValue("N/A",
-					"Exception in constructNwrkMngReqToRemote: " + e.getMessage(), "LOG", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"constructNwrkMngReqToRemote", this.udpClient);
 		}
 		return msgToRemote;
 	}
@@ -2968,12 +2886,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			network_header.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.POS);
 			network_header.putField(Header.Field.RELEASE_NUMBER, Base24Ath.Version.REL_NR_34);
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
-							"Method: [constructNewNetworkHeader]", Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			udpClient.sendData(Client.getMsgKeyValue("N/A", "Exception in constructNewNetworkHeader: " + e.getMessage(),
-					"LOG", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"constructNewNetworkHeader", this.udpClient);
 		}
 		return network_header;
 	}
@@ -3034,12 +2948,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			return action;
 
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processNwrkMngReqRspFromInterchange]",
-					Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			udpClient.sendData(Client.getMsgKeyValue("Unknown",
-					"Exception in processNwrkMngReqRspFromInterchange: " + e.getMessage(), "LOG", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"processNwrkMngReqRspFromInterchange", this.udpClient);
 		}
 		return action;
 	}
@@ -3147,10 +3057,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			networkHeader.putField(Header.Field.RELEASE_NUMBER, Base24Ath.Version.REL_NR_60);
 			networkHeader.putField(Header.Field.RESPONDER_CODE, Header.SystemCode.HOST);
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
-							"Method: [constructNetworkHeader]", Utils.getStringMessageException(e), "N/A" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"constructNetworkHeader", this.udpClient);
 		}
 		return networkHeader;
 	}
@@ -3173,12 +3081,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			msgToRemote.putField(Iso8583.Bit.SECURITY_INFO, MsgTypeCsm.KEY_EXCHANGE_INBOUND_OUTBOUND_MSG);
 			msgToRemote.putField(Iso8583.Bit.NETWORK_MNG_INFO_CODE, Constants.KeyExchange.NEW_KEY);
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [constructKeyExchangeNwrkMsgToRemote]",
-					Utils.getStringMessageException(e), "N/A" }));
-			EventRecorder.recordEvent(e);
-			udpClient.sendData(Client.getMsgKeyValue("N/A",
-					"Exception in constructKeyExchangeNwrkMsgToRemote: " + e.getMessage(), "LOG", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"constructKeyExchangeNwrkMsgToRemote", this.udpClient);
 		}
 		return msgToRemote;
 	}
@@ -3203,10 +3107,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			msgToRemote.copyFieldFrom(Base24Ath.Bit.KEY_MANAGEMENT, msg); // 120
 			msgToRemote.copyFieldFrom(Base24Ath.Bit.CRYPTO_SERVICE_MSG, msg); // 123
 		} catch (Exception e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, GenericInterface.class.getName(),
-							"Method: [constructNwrkMngMsgRspToRemote]", Utils.getStringMessageException(e), "N/A" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"constructNwrkMngMsgRspToRemote", this.udpClient);
 		}
 		return msgToRemote;
 	}
@@ -3227,12 +3129,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			response.copyFieldFrom(Iso8583.Bit._048_ADDITIONAL_DATA, msg);
 			action.putMsgToRemote(response);
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					GenericInterface.class.getName(), "Method: [processSignOnReqFromInterchange]",
-					Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			udpClient.sendData(Client.getMsgKeyValue("Unknown",
-					"Exception in processSignOnReqFromInterchange: " + e.getMessage(), "LOG", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
+					"processSignOnReqFromInterchange", this.udpClient);
 		}
 		return action;
 	}

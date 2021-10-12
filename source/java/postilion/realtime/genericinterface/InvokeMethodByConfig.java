@@ -3,12 +3,10 @@ package postilion.realtime.genericinterface;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
 import postilion.realtime.genericinterface.translate.MessageTranslator;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
-import postilion.realtime.genericinterface.translate.util.Utils;
+import postilion.realtime.genericinterface.translate.util.EventReporter;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
-import postilion.realtime.sdk.eventrecorder.EventRecorder;
 import postilion.realtime.sdk.message.bitmap.Iso8583;
 import postilion.realtime.sdk.message.bitmap.Iso8583Post;
 import postilion.realtime.sdk.message.xml.XMLMessage2;
@@ -53,28 +51,26 @@ public class InvokeMethodByConfig extends MessageTranslator {
 				| IllegalArgumentException | InvocationTargetException | InstantiationException e) {
 
 			this.udpClient.sendData(Client.getMsgKeyValue("9999", "CLASSREQ:" + classReq, "LOG", nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, InvokeMethodByConfig.class.getName(), e,
+					((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "invokeMethodConfig",
+					this.udpClient);
 
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, InvokeMethodByConfig.class.getName(),
-							"Method: [invokeMethodConfig]", Utils.getStringMessageException(e),
-							((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
 			try {
 				if (object instanceof Iso8583Post) {
 					Iso8583Post msg = (Iso8583Post) object;
-					this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: invokeMethodConfig " + e.getMessage(), "LOG", nameInterface));
+					EventReporter.reportGeneralEvent(this.nameInterface, InvokeMethodByConfig.class.getName(), e,
+							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "invokeMethodConfig", this.udpClient);
 				} else if (object instanceof Base24Ath) {
 					Base24Ath msg = (Base24Ath) object;
-					this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: invokeMethodConfig " + e.getMessage(), "LOG", nameInterface));
+					EventReporter.reportGeneralEvent(this.nameInterface, InvokeMethodByConfig.class.getName(), e,
+							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "invokeMethodConfig", this.udpClient);
 				}
 			} catch (XPostilion e1) {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, InvokeMethodByConfig.class.getName(),
-								"Method: [invokeMethodConfig]", Utils.getStringMessageException(e),
-								((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
+				EventReporter.reportGeneralEvent(this.nameInterface, InvokeMethodByConfig.class.getName(), e1,
+						((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "invokeMethodConfig",
+						this.udpClient);
 			}
+
 		}
 		return fieldValue;
 	}
@@ -87,8 +83,10 @@ public class InvokeMethodByConfig extends MessageTranslator {
 	 * @param method   - Method Name to execute
 	 * @param object   - new instance to invoke
 	 * @return - the object information result of that was executed
+	 * @throws XPostilion
 	 *************************************************************************************/
-	public Object invokeMethod2Config(String classReq, String method, Object object, Integer numfield) {
+	public Object invokeMethod2Config(String classReq, String method, Object object, Integer numfield)
+			throws XPostilion {
 		Object result = new Object();
 		try {
 			Class<?> classRequest = Class.forName(classReq);
@@ -100,19 +98,20 @@ public class InvokeMethodByConfig extends MessageTranslator {
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException | InstantiationException e) {
 			try {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, InvokeMethodByConfig.class.getName(),
-								"Method: [invokeMethod2Config]", Utils.getStringMessageException(e),
-								((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
+				if (object instanceof Iso8583Post) {
+					Iso8583Post msg = (Iso8583Post) object;
+					EventReporter.reportGeneralEvent(this.nameInterface, InvokeMethodByConfig.class.getName(), e,
+							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "invokeMethod2Config", this.udpClient);
+				} else if (object instanceof Base24Ath) {
+					Base24Ath msg = (Base24Ath) object;
+					EventReporter.reportGeneralEvent(this.nameInterface, InvokeMethodByConfig.class.getName(), e,
+							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "invokeMethod2Config", this.udpClient);
+				}
 
-				this.udpClient.sendData(
-						Client.getMsgKeyValue(((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-								"Exception in Method: invokeMethod2Config " + e.getMessage(), "LOG", nameInterface));
 			} catch (XPostilion e1) {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, InvokeMethodByConfig.class.getName(),
-								"Method: [invokeMethod2Config]", Utils.getStringMessageException(e), "Unknown" }));
+				EventReporter.reportGeneralEvent(this.nameInterface, InvokeMethodByConfig.class.getName(), e1,
+						((Iso8583) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "invokeMethod2Config",
+						this.udpClient);
 			}
 		}
 		return result;
@@ -141,14 +140,9 @@ public class InvokeMethodByConfig extends MessageTranslator {
 			result = methodExec.invoke(obj, object, xmlObject);
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException | InstantiationException e) {
-			EventRecorder.recordEvent(
-					new TryCatchException(new String[] { this.nameInterface, InvokeMethodByConfig.class.getName(),
-							"Method: [invokeXmlMethodConfig]", Utils.getStringMessageException(e), "Unknown" }));
-			EventRecorder.recordEvent(e);
-			this.udpClient
-					.sendData(Client.getMsgKeyValue(((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Exception in Method: invokeXmlMethodConfig " + Utils.getStringMessageException(e), "LOG",
-							nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, InvokeMethodByConfig.class.getName(), e,
+					((Base24Ath) object).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "invokeXmlMethodConfig",
+					this.udpClient);
 		}
 		return result;
 	}

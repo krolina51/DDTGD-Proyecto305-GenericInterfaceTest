@@ -10,27 +10,29 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
+import postilion.realtime.date.SettlementDate;
+import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.InvokeMethodByConfig;
 import postilion.realtime.genericinterface.Parameters;
 import postilion.realtime.genericinterface.channels.Super;
-import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
-import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.database.DBHandler;
 import postilion.realtime.genericinterface.translate.stream.Header;
+import postilion.realtime.genericinterface.translate.util.BussinesRules;
 import postilion.realtime.genericinterface.translate.util.Constants;
 import postilion.realtime.genericinterface.translate.util.Constants.FormatDate;
 import postilion.realtime.genericinterface.translate.util.Constants.General;
-import postilion.realtime.genericinterface.translate.util.Utils;
+import postilion.realtime.genericinterface.translate.util.EventReporter;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
 import postilion.realtime.library.common.InitialLoadFilter;
 import postilion.realtime.library.common.model.ConfigAllTransaction;
 import postilion.realtime.library.common.model.ResponseCode;
 import postilion.realtime.library.common.util.constants.TagNameStructuredData;
 import postilion.realtime.sdk.crypto.DesKwa;
-import postilion.realtime.sdk.eventrecorder.EventRecorder;
-import postilion.realtime.sdk.message.bitmap.*;
+import postilion.realtime.sdk.message.bitmap.Iso8583;
+import postilion.realtime.sdk.message.bitmap.Iso8583Post;
+import postilion.realtime.sdk.message.bitmap.StructuredData;
+import postilion.realtime.sdk.message.bitmap.XBitmapUnableToConstruct;
 import postilion.realtime.sdk.util.DateTime;
 import postilion.realtime.sdk.util.TimedHashtable;
 import postilion.realtime.sdk.util.XPostilion;
@@ -116,669 +118,594 @@ public class MessageTranslator extends GenericInterface {
 			bitMapBinario.append(new BigInteger(bitMap.toString(), 16).toString(2));
 			return bitMapBinario.toString();
 		} catch (Exception e) {
-			EventRecorder.recordEvent(new TryCatchException(
-					new String[] { this.nameInterface, MessageTranslator.class.getName(), "Method: [getBitMap]",
-							Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: getBitMapHexMsg " + e.getMessage(), "LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e,
+					((Iso8583) msg).getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "getBitMap", this.udpClient);
 		}
 		return null;
 	}
-	
-	
-	public Base24Ath constructBase24Request(Iso8583Post msg)
-	{
+
+	public Base24Ath constructBase24Request(Iso8583Post msg) {
 		Base24Ath msgToRmto = new Base24Ath(this.kwa);
+		String retRefNumber = "N/D";
 		try {
+			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 
 			msgToRmto.putHeader(constructAtmHeaderSourceNode(msgToRmto));
 			msgToRmto.putMsgType(msg.getMsgType());
-			
+
 			StructuredData sd = new StructuredData();
 			sd = msg.getStructuredData();
-			String pCode126=sd.get("B24_Field_126")!=null? sd.get("B24_Field_126").substring(22, 28):null;
-			for(int i=3;i<=126;i++)
-			{
-				if(sd!=null && sd.get("B24_Field_"+String.valueOf(i))!=null)
-					msgToRmto.putField(i, sd.get("B24_Field_"+String.valueOf(i)));
-				else if(msg.isFieldSet(i))
+			String pCode126 = sd.get("B24_Field_126") != null ? sd.get("B24_Field_126").substring(22, 28) : null;
+			for (int i = 3; i <= 126; i++) {
+				if (sd != null && sd.get("B24_Field_" + String.valueOf(i)) != null)
+					msgToRmto.putField(i, sd.get("B24_Field_" + String.valueOf(i)));
+				else if (msg.isFieldSet(i))
 					msgToRmto.putField(i, msg.getField(i));
-				
-				String key1=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE)+"_"+ pCode126;
-				String key2=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-				String key3=String.valueOf(i);
-				
-				String methodName=null;
-				
-				if(createFieldsRequest.containsKey(key1))
-				{
-					methodName=createFieldsRequest.get(key1);
-					if(!methodName.equals("N/A"))
-						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, i));
-					
+
+				String key1 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE) + "_" + pCode126;
+				String key2 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+				String key3 = String.valueOf(i);
+
+				String methodName = null;
+
+				if (createFieldsRequest.containsKey(key1)) {
+					methodName = createFieldsRequest.get(key1);
+					if (!methodName.equals("N/A"))
+						msgToRmto.putField(i,
+								invoke.invokeMethodConfig(
+										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+										methodName, msg, i));
+
+				} else if (createFieldsRequest.containsKey(key2)) {
+					methodName = createFieldsRequest.get(key2);
+					if (!methodName.equals("N/A"))
+						msgToRmto.putField(i,
+								invoke.invokeMethodConfig(
+										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+										methodName, msg, i));
+				} else if (createFieldsRequest.containsKey(key3)) {
+					methodName = createFieldsRequest.get(key3);
+					if (!methodName.equals("N/A"))
+						msgToRmto.putField(i,
+								invoke.invokeMethodConfig(
+										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+										methodName, msg, i));
 				}
-				else if(createFieldsRequest.containsKey(key2))
-				{
-					methodName=createFieldsRequest.get(key2);
-					if(!methodName.equals("N/A"))
-						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, i));
-				}
-				else if(createFieldsRequest.containsKey(key3))
-				{
-					methodName=createFieldsRequest.get(key3);
-					if(!methodName.equals("N/A"))
-						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, i));
-				}
-				
+
 			}
-			
-			String PCode=msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-			Set<String> set=deleteFieldsRequest.keySet().stream().filter(s->s.length()<=3).collect(Collectors.toSet());
-			
-			if(set.size()>0)
-			{
-				for(String item:set)
-				{
-					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
-					{
-						msgToRmto.clearField(Integer.parseInt(item));
-					}
-				}
-			}
-			
-			if(deleteFieldsRequest.containsKey(PCode))
-			{
-				String[] parts=deleteFieldsRequest.get(PCode).split("-");
-				for(String item:parts)
-				{
-					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
-					{
+
+			String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+			Set<String> set = deleteFieldsRequest.keySet().stream().filter(s -> s.length() <= 3)
+					.collect(Collectors.toSet());
+
+			if (set.size() > 0) {
+				for (String item : set) {
+					if (msgToRmto.isFieldSet(Integer.parseInt(item))) {
 						msgToRmto.clearField(Integer.parseInt(item));
 					}
 				}
 			}
 
-			
-		}
-		catch (Exception e) {
-			try {
-				msgToRmto=null;
-				EventRecorder.recordEvent(new TryCatchException(
-						new String[] { this.nameInterface, MessageTranslator.class.getName(), "Method: [constructBase24Request]",
-								Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method: constructBase24Request " + Utils.getStringMessageException(e), "LOG",
-						this.nameInterface));
-			} catch (XPostilion e1) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface, MessageTranslator.class.getName(),
-						"Method: [constructBase24Request]", Utils.getStringMessageException(e), "Unknown" }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-						"Exception in Method: constructBase24Request " + Utils.getStringMessageException(e), "LOG",
-						this.nameInterface));
+			if (deleteFieldsRequest.containsKey(PCode)) {
+				String[] parts = deleteFieldsRequest.get(PCode).split("-");
+				for (String item : parts) {
+					if (msgToRmto.isFieldSet(Integer.parseInt(item))) {
+						msgToRmto.clearField(Integer.parseInt(item));
+					}
+				}
 			}
+
+		} catch (XPostilion e) {
+			msgToRmto = null;
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"constructBase24Request", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			msgToRmto = null;
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e1, retRefNumber,
+					"constructBase24Request", this.udpClient, "of type Exception");
 		}
-		
+
 		return msgToRmto;
 	}
-	
-	public Base24Ath constructBase24(Iso8583Post msg)
-	{
-		Base24Ath msgToRmto=new Base24Ath(this.kwa);
-		String strTypeMsg=msg.getMessageType();
-		
-		try
-		{
+
+	public Base24Ath constructBase24(Iso8583Post msg) {
+		Base24Ath msgToRmto = new Base24Ath(this.kwa);
+		String strTypeMsg = msg.getMessageType();
+		String retRefNumber = "N/D";
+		try {
+			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			msgToRmto.putHeader(constructAtmHeaderSourceNode(msgToRmto));
 			msgToRmto.putMsgType(msg.getMsgType());
 			Iso8583Post msgOriginal = null;
 			StructuredData sd = new StructuredData();
-			
-			InvokeMethodByConfig invoke=new InvokeMethodByConfig(params);			
+
+			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 
 			if (msg.getResponseCode().equals(Iso8583.RspCode._00_SUCCESSFUL)) {// si la respuesta es exitosa
 				sd = msg.getStructuredData();
-				msgOriginal = (Iso8583Post) this.sourceTranToTmHashtable
-						.get(msg.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR));
-				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+				msgOriginal = (Iso8583Post) this.sourceTranToTmHashtable.get(retRefNumber);
+				this.udpClient.sendData(Client.getMsgKeyValue(retRefNumber,
 						"VA A ENTRAR .... A SACAR EL SD DEL MENSAJE ORIGINAL", "LOG", this.nameInterface));
 				if ((sd == null && msgOriginal != null)) {
 //				if (msgOriginal != null) {
-					this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					this.udpClient.sendData(Client.getMsgKeyValue(retRefNumber,
 							"ENTRO A SACAR EL SD DEL MENSAJE ORIGINAL", "LOG", this.nameInterface));
 					sd = msgOriginal.getStructuredData();
 				}
 
 			} else {
 //				if (!msg.getMessageType().equals(Iso8583.MsgTypeStr._0430_ACQUIRER_REV_ADV_RSP)) {//respuesta no exitosa !=430
-				msgOriginal = (Iso8583Post) this.sourceTranToTmHashtable
-						.get(msg.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR));
+				msgOriginal = (Iso8583Post) this.sourceTranToTmHashtable.get(retRefNumber);
 				if (msgOriginal != null) {
 					sd = msgOriginal.getStructuredData();
 				}
 //				}
 			}
-			
-			
+
 			Map<String, String> copyFieldsResponse = null;
 			Map<String, String> deleteFieldsResponse = null;
 			Map<String, String> createFieldsResponse = null;
 			Map<String, String> transformFieldsResponse = null;
-			String pCode126=null;
-			
-			switch(strTypeMsg)
-			{
-				case "0210":
-					
-					copyFieldsResponse=GenericInterface.copyFieldsResponse;
-					deleteFieldsResponse=GenericInterface.deleteFieldsResponse;
-					createFieldsResponse=GenericInterface.createFieldsResponse;
-					transformFieldsResponse=GenericInterface.transformFieldsResponse;
-					pCode126=sd.get("B24_Field_126")!=null? sd.get("B24_Field_126").substring(22, 28):null;
-					
-					break;
-				case "0230":
-					
-					copyFieldsResponse=GenericInterface.copyFieldsResponseAdv;
-					deleteFieldsResponse=GenericInterface.deleteFieldsResponseAdv;
-					createFieldsResponse=GenericInterface.createFieldsResponseAdv;
-					transformFieldsResponse=GenericInterface.transformFieldsResponseAdv;
-					
-					break;
-					
-				case "0430":
-					
-					copyFieldsResponse=GenericInterface.copyFieldsResponseRev;
-					deleteFieldsResponse=GenericInterface.deleteFieldsResponseRev;
-					createFieldsResponse=GenericInterface.createFieldsResponseRev;
-					transformFieldsResponse=GenericInterface.transformFieldsResponseRev;
-					
-					break;
-				default:
-					
-					break;
+			String pCode126 = null;
+
+			switch (strTypeMsg) {
+			case "0210":
+
+				copyFieldsResponse = GenericInterface.copyFieldsResponse;
+				deleteFieldsResponse = GenericInterface.deleteFieldsResponse;
+				createFieldsResponse = GenericInterface.createFieldsResponse;
+				transformFieldsResponse = GenericInterface.transformFieldsResponse;
+				pCode126 = sd.get("B24_Field_126") != null ? sd.get("B24_Field_126").substring(22, 28) : null;
+
+				break;
+			case "0230":
+
+				copyFieldsResponse = GenericInterface.copyFieldsResponseAdv;
+				deleteFieldsResponse = GenericInterface.deleteFieldsResponseAdv;
+				createFieldsResponse = GenericInterface.createFieldsResponseAdv;
+				transformFieldsResponse = GenericInterface.transformFieldsResponseAdv;
+
+				break;
+
+			case "0430":
+
+				copyFieldsResponse = GenericInterface.copyFieldsResponseRev;
+				deleteFieldsResponse = GenericInterface.deleteFieldsResponseRev;
+				createFieldsResponse = GenericInterface.createFieldsResponseRev;
+				transformFieldsResponse = GenericInterface.transformFieldsResponseRev;
+
+				break;
+			default:
+
+				break;
 			}
-			
-			
-			//Copia los campos en el mensaje B24
-			for(String key : copyFieldsResponse.keySet())
-			{
-				
-				int intKey=Integer.parseInt(key);
-				if(msg.isFieldSet(intKey))
-				{
+
+			// Copia los campos en el mensaje B24
+			for (String key : copyFieldsResponse.keySet()) {
+
+				int intKey = Integer.parseInt(key);
+				if (msg.isFieldSet(intKey)) {
 					msgToRmto.putField(intKey, msg.getField(intKey));
 				}
-				
+
 			}
-			
+
 			if (sd != null) {
 				msgToRmto = constructFieldsFromSd(msgToRmto, sd);
 			}
 			sd = msg.getStructuredData();
-			
+
 			if (sd != null) {
 				msgToRmto = constructFieldsFromSd(msgToRmto, sd);
 			}
-			
+
 			if (!msgToRmto.getField(Iso8583.Bit._039_RSP_CODE).equals(Iso8583.RspCode._00_SUCCESSFUL)
 					&& msgToRmto.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)) {
 
 				msgToRmto.putField(Iso8583.Bit._102_ACCOUNT_ID_1, Pack.resize(Constants.Account.ACCOUNT_DEFAULT,
 						msgToRmto.getFieldLength(Iso8583.Bit._102_ACCOUNT_ID_1), '0', false));
 			}
-			
-			//SKIP-TRANSFORM y TRANSFORM
-			 
-			
-			for(int i=3;i<127;i++)
-			{
-				
-				String key1=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE)+"_"+ pCode126;
-				String key2=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-				String key3=String.valueOf(i);
-				
 
-				
-				String methodName=null;
-				
-				if(createFieldsResponse.containsKey(key1))
-				{
-					methodName=createFieldsResponse.get(key1);
-					if(!methodName.equals("N/A"))
-						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, i));
-					
+			// SKIP-TRANSFORM y TRANSFORM
+
+			for (int i = 3; i < 127; i++) {
+
+				String key1 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE) + "_" + pCode126;
+				String key2 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+				String key3 = String.valueOf(i);
+
+				String methodName = null;
+
+				if (createFieldsResponse.containsKey(key1)) {
+					methodName = createFieldsResponse.get(key1);
+					if (!methodName.equals("N/A"))
+						msgToRmto.putField(i,
+								invoke.invokeMethodConfig(
+										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+										methodName, msg, i));
+
+				} else if (createFieldsResponse.containsKey(key2)) {
+					methodName = createFieldsResponse.get(key2);
+					if (!methodName.equals("N/A"))
+						msgToRmto.putField(i,
+								invoke.invokeMethodConfig(
+										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+										methodName, msg, i));
+				} else if (createFieldsResponse.containsKey(key3)) {
+					methodName = createFieldsResponse.get(key3);
+					if (!methodName.equals("N/A"))
+						msgToRmto.putField(i,
+								invoke.invokeMethodConfig(
+										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+										methodName, msg, i));
 				}
-				else if(createFieldsResponse.containsKey(key2))
-				{
-					methodName=createFieldsResponse.get(key2);
-					if(!methodName.equals("N/A"))
-						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, i));
-				}
-				else if(createFieldsResponse.containsKey(key3))
-				{
-					methodName=createFieldsResponse.get(key3);
-					if(!methodName.equals("N/A"))
-						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, i));
-				}
-				if(transformFieldsResponse.containsKey(key1))
-				{
-					methodName=transformFieldsResponse.get(key1);
-					if(!methodName.equals("N/A"))
-						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, i));
-					
-				}
-				else if(transformFieldsResponse.containsKey(key2))
-				{
-					methodName=transformFieldsResponse.get(key2);
-					if(!methodName.equals("N/A"))
-						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, i));
-				}
-				else if(transformFieldsResponse.containsKey(key3))
-				{
-					methodName=transformFieldsResponse.get(key3);
-					if(!methodName.equals("N/A"))
-						msgToRmto.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, i));
+				if (transformFieldsResponse.containsKey(key1)) {
+					methodName = transformFieldsResponse.get(key1);
+					if (!methodName.equals("N/A"))
+						msgToRmto.putField(i,
+								invoke.invokeMethodConfig(
+										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+										methodName, msg, i));
+
+				} else if (transformFieldsResponse.containsKey(key2)) {
+					methodName = transformFieldsResponse.get(key2);
+					if (!methodName.equals("N/A"))
+						msgToRmto.putField(i,
+								invoke.invokeMethodConfig(
+										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+										methodName, msg, i));
+				} else if (transformFieldsResponse.containsKey(key3)) {
+					methodName = transformFieldsResponse.get(key3);
+					if (!methodName.equals("N/A"))
+						msgToRmto.putField(i,
+								invoke.invokeMethodConfig(
+										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+										methodName, msg, i));
 				}
 			}
-			
-			//Busca si hay que eliminar campos dado el processingCode
-			
-			String PCode=msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-			Set<String> set=deleteFieldsResponse.keySet().stream().filter(s->s.length()<=3).collect(Collectors.toSet());
-			
-			if(set.size()>0)
-			{
-				for(String item:set)
-				{
-					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
-					{
+
+			// Busca si hay que eliminar campos dado el processingCode
+
+			String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+			Set<String> set = deleteFieldsResponse.keySet().stream().filter(s -> s.length() <= 3)
+					.collect(Collectors.toSet());
+
+			if (set.size() > 0) {
+				for (String item : set) {
+					if (msgToRmto.isFieldSet(Integer.parseInt(item))) {
 						msgToRmto.clearField(Integer.parseInt(item));
 					}
 				}
 			}
-			
-			if(deleteFieldsResponse.containsKey(PCode))
-			{
-				String[] parts=deleteFieldsResponse.get(PCode).split("-");
-				for(String item:parts)
-				{
-					if(msgToRmto.isFieldSet(Integer.parseInt(item)))
-					{
+
+			if (deleteFieldsResponse.containsKey(PCode)) {
+				String[] parts = deleteFieldsResponse.get(PCode).split("-");
+				for (String item : parts) {
+					if (msgToRmto.isFieldSet(Integer.parseInt(item))) {
 						msgToRmto.clearField(Integer.parseInt(item));
 					}
 				}
 			}
-			
-			
-			
+
+		} catch (XPostilion e) {
+			msgToRmto = null;
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"constructBase24", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			msgToRmto = null;
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e1, retRefNumber,
+					"constructBase24", this.udpClient, "of type Exception");
 		}
-		catch (Exception e) {
-			try {
-				msgToRmto=null;
-				EventRecorder.recordEvent(new TryCatchException(
-						new String[] { this.nameInterface, MessageTranslator.class.getName(), "Method: [constructBase24]",
-								Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method: constructBase24 " + Utils.getStringMessageException(e), "LOG",
-						this.nameInterface));
-			} catch (XPostilion e1) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface, MessageTranslator.class.getName(),
-						"Method: [constructBase24]", Utils.getStringMessageException(e), "Unknown" }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-						"Exception in Method: constructBase24 " + Utils.getStringMessageException(e), "LOG",
-						this.nameInterface));
-			}
-		}
-		
-		
+
 		return msgToRmto;
 	}
 
-	public Iso8583Post constructIso8583(Base24Ath msgFromRemote,HashMap<String, String> returnInfoValidations) 
-	{
-		Iso8583Post Iso=new Iso8583Post();
+	// public Iso8583Post constructIso8583(Base24Ath msgFromRemote, HashMap<String,
+	// String> returnInfoValidations) {
+	public Iso8583Post constructIso8583(Base24Ath msgFromRemote, Super objectValidations) {
+		Iso8583Post Iso = new Iso8583Post();
 		tStart = System.currentTimeMillis();
-		String strTypeMsg=msgFromRemote.getMessageType();
-		
+		String strTypeMsg = msgFromRemote.getMessageType();
+		HashMap<String, String> inforCollectedForStructData = objectValidations.getInforCollectedForStructData();
+		String retRefNumber = "N/D";
+
 		try {
-			
+
 			Iso.setMessageType(msgFromRemote.getMessageType());
-			String strBitmap=this.getBitMap(msgFromRemote);
-			StructuredData sd=new StructuredData();
-			
-			char[] chars=strBitmap.toCharArray();
-			
-			for(int i=0;i<chars.length;i++)
-			{
-				if(chars[i]=='1')
-				{
-					processField(msgFromRemote,Iso,i+1,sd);				
-				}
-				else
-				{
-					processCreateField(msgFromRemote,Iso,i+1);
+			String strBitmap = this.getBitMap(msgFromRemote);
+			StructuredData sd = new StructuredData();
+			retRefNumber = msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
+
+			char[] chars = strBitmap.toCharArray();
+
+			for (int i = 0; i < chars.length; i++) {
+				if (chars[i] == '1') {
+					processField(msgFromRemote, Iso, i + 1, sd);
+				} else {
+					processCreateField(msgFromRemote, Iso, i + 1);
 				}
 			}
-			
-			
-			
-			
-			InvokeMethodByConfig invoke=new InvokeMethodByConfig(params);
+
+			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 			ConstructFieldMessage constructor = new ConstructFieldMessage(this.params);
-			Iso.putField(Iso8583Post.Bit._123_POS_DATA_CODE, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-					"constructPosDataCode", msgFromRemote, Iso8583Post.Bit._123_POS_DATA_CODE));
-			
-			if(msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0220_TRAN_ADV))
-			{
-				Iso.putField(Iso8583Post.Bit._039_RSP_CODE, constructor.constructP39For0220NotiBloq(msgFromRemote, Iso8583Post.Bit._039_RSP_CODE));
+			Iso.putField(Iso8583Post.Bit._123_POS_DATA_CODE,
+					invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
+							"constructPosDataCode", msgFromRemote, Iso8583Post.Bit._123_POS_DATA_CODE));
+
+			if (msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0220_TRAN_ADV)) {
+				Iso.putField(Iso8583Post.Bit._039_RSP_CODE,
+						constructor.constructP39For0220NotiBloq(msgFromRemote, Iso8583Post.Bit._039_RSP_CODE));
 				Iso.putField(63, constructor.constructResponseCodeField63(msgFromRemote, 63));
-			}
-			else
-			{
-				Iso.putField(Iso8583Post.Bit._026_POS_PIN_CAPTURE_CODE, constructor.constructPosPinCaptureCode(Iso, Iso8583Post.Bit._026_POS_PIN_CAPTURE_CODE));
-				
-			}
-			
+			} else {
+				Iso.putField(Iso8583Post.Bit._026_POS_PIN_CAPTURE_CODE,
+						constructor.constructPosPinCaptureCode(Iso, Iso8583Post.Bit._026_POS_PIN_CAPTURE_CODE));
 
-			
+			}
+
 			Iso.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
-								constructor.constructSwitchKey(msgFromRemote, this.nameInterface));
-			
-			
+					constructor.constructSwitchKey(msgFromRemote, this.nameInterface));
+
 			sd.put(TagNameStructuredData.REQ_TIME, String.valueOf(System.currentTimeMillis() - tStart));
-			
-			if(strTypeMsg.equals("0420"))
-			{
-				Iso.putPrivField(Iso8583Post.PrivBit._011_ORIGINAL_KEY, msgFromRemote.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0,32));
-				//Iso.putField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS, msgFromRemote.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS));
+
+			if (strTypeMsg.equals("0420")) {
+				Iso.putPrivField(Iso8583Post.PrivBit._011_ORIGINAL_KEY,
+						msgFromRemote.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0, 32));
+				// Iso.putField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS,
+				// msgFromRemote.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS));
 			}
-			
-			if (!(returnInfoValidations == null)) {
-				this.udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Entro poner hashmap si trae algo el map" + returnInfoValidations.toString(), "LOG",
+
+			if (msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE).equals("012000")) {
+				Iso.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "90");
+			}
+
+			sd.put("CHANNEL_TX", BussinesRules.channelIdentifier(msgFromRemote, this.nameInterface, this.udpClient));
+
+			SettlementDate date = new SettlementDate(this.params.getCalendarInfo().getCalendar());
+			date.calculateDate((Iso8583) msgFromRemote);
+			sd.put("CURRENT_TX", !date.isNextDay() ? "S" : "N");
+
+			sd.put("CHANNEL", Constants.DefaultATM.ATM_CHANNEL_NAME);
+			sd.put("Identificacion_Canal", Constants.DefaultATM.ATM_ID_CHANNEL);
+			sd.put("Canal", Constants.DefaultATM.ATM_CHANNEL);
+			sd.put("VIEW_ROUTER", Constants.DefaultATM.ATM_VIEW_ROUTER);
+			sd.put("TRANSACTION_INPUT", Constants.DefaultATM.ATM_TRANSACTION_INPUT);
+			sd.put("Codigo_Transaccion", Constants.DefaultATM.ATM_COD_TRANSACTION);
+
+			sd.put("CARD_NUMBER", msgFromRemote.getTrack2Data().getPan());
+
+			String strCut = ConstructFieldMessage.createfieldCut(msgFromRemote, this.nameInterface, this.cutValues,
+					this.udpClient);
+			sd.put("CUT_origen_de_la_transaccion", strCut);
+			sd.put("CUT_propio_de_la_transaccion", strCut);
+
+			sd.put("Indicador_De_Aceptacion_O_De_No_Preaprobado",
+					BussinesRules.getIndicador_De_Aceptacion_O_De_No_Preaprobado(msgFromRemote));
+
+			sd.put("Entidad",
+					msgFromRemote.isFieldSet(Iso8583.Bit._048_ADDITIONAL_DATA)
+							? msgFromRemote.getField(Iso8583.Bit._048_ADDITIONAL_DATA).substring(0, 4)
+							: "0001");
+
+			DBHandler account = new DBHandler(this.params);
+			account.accountsClienteCNB(retRefNumber, msgFromRemote.getProcessingCode().toString(),
+					msgFromRemote.getTrack2Data().getPan(), msgFromRemote.getProcessingCode().getFromAccount(),
+					msgFromRemote.getTrack2Data().getExpiryDate(),
+					msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
+							? msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1)
+							: "0000000",
+					objectValidations);
+
+			if (!(inforCollectedForStructData == null)) {
+				this.udpClient.sendData(Client.getMsgKeyValue(retRefNumber,
+						"Entro poner hashmap si trae algo el map" + objectValidations.toString(), "LOG",
 						this.nameInterface));
-
-				for (Map.Entry<String, String> info : returnInfoValidations.entrySet()) {
-
+				for (Map.Entry<String, String> info : inforCollectedForStructData.entrySet()) {
 					sd.put(info.getKey(), info.getValue());
-
-		
-
-					this.udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"Entro poner hashmap si trae algo el map Key: " + info.getKey() + " Value: "
-									+ info.getValue(),
-							"LOG", this.nameInterface));
+					this.udpClient.sendData(
+							Client.getMsgKeyValue(retRefNumber, "Entro poner hashmap si trae algo el map Key: "
+									+ info.getKey() + " Value: " + info.getValue(), "LOG", this.nameInterface));
 				}
 			}
-			if(msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE).equals("012000")) {
-				Iso.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE,"90");
+
+			if (msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0200_TRAN_REQ)) {
+				// Se invoca al metodo getTransactionConsecutive a fin de obtener el consecutivo
+				// para la transaación
+				String cons = constructor.getTransactionConsecutive(
+						msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).substring(5, 9), "00",
+						this.params.getTermConsecutiveSection());
+				sd.put("REFERENCE_KEY", msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).concat("|")
+						.concat(cons.split(",")[0].trim().concat(cons.split(",")[1].trim())));
 			}
-			
+
+			sd.put("Codigo_Transaccion_Producto", sd.get("CLIENT_ACCOUNT_TYPE").equals("10") ? "05" : "04");
+			sd.put("Tipo_de_Cuenta_Debitada", sd.get("CLIENT_ACCOUNT_TYPE").equals("10") ? "AHO" : "CTE");
+			sd.put("DEBIT_ACCOUNT_NR", sd.get("CLIENT_ACCOUNT_NR"));
+			sd.put("DEBIT_ACCOUNT_TYPE", sd.get("CLIENT_ACCOUNT_TYPE"));
+			sd.put("DEBIT_CARD_CLASS", sd.get("CLIENT_CARD_CLASS"));
+			sd.put("DEBIT_CARD_NR", sd.get("CLIENT_CARD_NR"));
 			Iso.putStructuredData(sd);
-					
-			
-		} catch (Exception e) {
-			try {
-				Iso=null;
-				EventRecorder.recordEvent(new TryCatchException(
-						new String[] { this.nameInterface, MessageTranslator.class.getName(), "Method: [constructIso8583]",
-								Utils.getStringMessageException(e), msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method: constructIso8583 " + Utils.getStringMessageException(e), "LOG",
-						this.nameInterface));
-			} catch (XPostilion e1) {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface, MessageTranslator.class.getName(),
-						"Method: [constructIso8583]", Utils.getStringMessageException(e), "Unknown" }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-						"Exception in Method: constructIso8583 " + Utils.getStringMessageException(e), "LOG",
-						this.nameInterface));
-			}
+
+		} catch (XPostilion e) {
+			Iso = null;
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"constructIso8583", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			Iso = null;
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e1, retRefNumber,
+					"constructIso8583", this.udpClient, "of type Exception");
 		}
-		
+
 		return Iso;
 	}
-	
-	public void processField(Base24Ath msg,Iso8583Post isoMsg,int numField,StructuredData sd)
-	{
-		InvokeMethodByConfig invoke=new InvokeMethodByConfig(params);
+
+	public void processField(Base24Ath msg, Iso8583Post isoMsg, int numField, StructuredData sd) {
+		InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 		try {
-			
-			if(GenericInterface.structuredDataFields.containsKey(String.valueOf(numField)))
-			{
+
+			if (GenericInterface.structuredDataFields.containsKey(String.valueOf(numField))) {
 				sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 						msg.getField(numField));
-			}
-			else if(GenericInterface.transformFields.containsKey(String.valueOf(numField)))
-			{
-				if(GenericInterface.transformFieldsMultipleCases.containsKey(String.valueOf(numField)))
-				{
+			} else if (GenericInterface.transformFields.containsKey(String.valueOf(numField))) {
+				if (GenericInterface.transformFieldsMultipleCases.containsKey(String.valueOf(numField))) {
 					sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 							msg.getField(numField));
-					
-					String key = String.valueOf(numField)+"-"+msg.getField(3);
-					
-					//si el methodName es null, significa que no tiene método para transformar por lo tanto se copia el campo
-					
-					String methodName=GenericInterface.transformFields.get(key);
-					
-					
-					String fieldValue=null;
-					
-					
-					if(methodName!=null && !methodName.equals("N/A"))
-					{
-						fieldValue=invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, numField);
+
+					String key = String.valueOf(numField) + "-" + msg.getField(3);
+
+					// si el methodName es null, significa que no tiene método para transformar por
+					// lo tanto se copia el campo
+
+					String methodName = GenericInterface.transformFields.get(key);
+
+					String fieldValue = null;
+
+					if (methodName != null && !methodName.equals("N/A")) {
+						fieldValue = invoke.invokeMethodConfig(
+								"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg,
+								numField);
+					} else {
+						fieldValue = msg.getField(numField);
 					}
-					else
-					{
-						fieldValue= msg.getField(numField);
-					}
-					
-					
+
 					isoMsg.putField(numField, fieldValue);
-					
-				}
-				else
-				{
-					String methodName=GenericInterface.transformFields.get(String.valueOf(numField));
-					if(!methodName.equals("N/A"))
-					{
-					String fieldValue=invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-							methodName, msg, numField);
-					
-					
-					isoMsg.putField(numField, fieldValue);
-					sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
-							msg.getField(numField));
+
+				} else {
+					String methodName = GenericInterface.transformFields.get(String.valueOf(numField));
+					if (!methodName.equals("N/A")) {
+						String fieldValue = invoke.invokeMethodConfig(
+								"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg,
+								numField);
+
+						isoMsg.putField(numField, fieldValue);
+						sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
+								msg.getField(numField));
 					}
 				}
-				
-			}
-			else if(GenericInterface.skipCopyFields.containsKey(String.valueOf(numField)))
-			{
+
+			} else if (GenericInterface.skipCopyFields.containsKey(String.valueOf(numField))) {
 				isoMsg.putField(numField, msg.getField(numField));
 				sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 						msg.getField(numField));
-			}
-			else
-			{
+			} else {
 				isoMsg.putField(numField, msg.getField(numField));
 			}
-			
-			
+
 		} catch (XPostilion e) {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	public void processFieldResponse(Base24Ath msg,Iso8583Post isoMsg,int numField,StructuredData sd) throws XPostilion
-	{
-		InvokeMethodByConfig invoke=new InvokeMethodByConfig(params);
+
+	public void processFieldResponse(Base24Ath msg, Iso8583Post isoMsg, int numField, StructuredData sd)
+			throws XPostilion {
+		InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
+		String retRefNumber = "N/D";
 		try {
-			
-			if(GenericInterface.structuredDataFields.containsKey(String.valueOf(numField)))
-			{
+			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
+			if (GenericInterface.structuredDataFields.containsKey(String.valueOf(numField))) {
 				sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 						msg.getField(numField));
-			}
-			else if(GenericInterface.transformFields.containsKey(String.valueOf(numField)))
-			{
-				if(GenericInterface.transformFieldsMultipleCases.containsKey(String.valueOf(numField)))
-				{
+			} else if (GenericInterface.transformFields.containsKey(String.valueOf(numField))) {
+				if (GenericInterface.transformFieldsMultipleCases.containsKey(String.valueOf(numField))) {
 					sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 							msg.getField(numField));
-					
-					String key = String.valueOf(numField)+"-"+msg.getField(3);
-					
-					//si el methodName es null, significa que no tiene método para transformar por lo tanto se copia el campo
-					
-					String methodName=GenericInterface.transformFields.get(key);
-					
-					
-					String fieldValue=null;
-					
-					
-					if(methodName!=null && !methodName.equals("N/A"))
-					{
-						fieldValue=invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-								methodName, msg, numField);
+
+					String key = String.valueOf(numField) + "-" + msg.getField(3);
+
+					// si el methodName es null, significa que no tiene método para transformar por
+					// lo tanto se copia el campo
+
+					String methodName = GenericInterface.transformFields.get(key);
+
+					String fieldValue = null;
+
+					if (methodName != null && !methodName.equals("N/A")) {
+						fieldValue = invoke.invokeMethodConfig(
+								"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg,
+								numField);
+					} else {
+						fieldValue = msg.getField(numField);
 					}
-					else
-					{
-						fieldValue= msg.getField(numField);
-					}
-					
-					
+
 					isoMsg.putField(numField, fieldValue);
-					
-				}
-				else
-				{
-					String methodName=GenericInterface.transformFields.get(String.valueOf(numField));
-					
-					if(!methodName.equals("N/A"))
-					{
-					String fieldValue=invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-							methodName, msg, numField);
-					
-					
-					isoMsg.putField(numField, fieldValue);
-					sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
-							msg.getField(numField));
+
+				} else {
+					String methodName = GenericInterface.transformFields.get(String.valueOf(numField));
+
+					if (!methodName.equals("N/A")) {
+						String fieldValue = invoke.invokeMethodConfig(
+								"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg,
+								numField);
+
+						isoMsg.putField(numField, fieldValue);
+						sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
+								msg.getField(numField));
 					}
 				}
-				
-			}
-			else if(GenericInterface.skipCopyFields.containsKey(String.valueOf(numField)))
-			{
+
+			} else if (GenericInterface.skipCopyFields.containsKey(String.valueOf(numField))) {
 				isoMsg.putField(numField, msg.getField(numField));
 				sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 						msg.getField(numField));
-			}
-			else
-			{
+			} else {
 				isoMsg.putField(numField, msg.getField(numField));
 			}
-			
-			
+
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					MessageTranslator.class.getName(), "Method: [processFieldResponse]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"processFieldResponse", this.udpClient);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	public void processCreateField(Base24Ath msg,Iso8583Post isoMsg,int numField) throws XPostilion
-	{
-		InvokeMethodByConfig invoke=new InvokeMethodByConfig(params);
-		
+
+	public void processCreateField(Base24Ath msg, Iso8583Post isoMsg, int numField) throws XPostilion {
+		InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
+		String retRefNumber = "N/D";
 		try {
-			
-			
-			if(GenericInterface.createFields.containsKey(String.valueOf(numField)))
-			{
-				String methodName=GenericInterface.createFields.get(String.valueOf(numField));
-				GenericInterface.getLogger().logLine("methodName:"+methodName);
-				if(!methodName.equals("N/A"))
-				{
-				
-				String fieldValue=invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-						methodName, msg, numField);
-				GenericInterface.getLogger().logLine("fieldValue:"+fieldValue);
-				
-				isoMsg.putField(numField, fieldValue);
+			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
+			if (GenericInterface.createFields.containsKey(String.valueOf(numField))) {
+				String methodName = GenericInterface.createFields.get(String.valueOf(numField));
+				GenericInterface.getLogger().logLine("methodName:" + methodName);
+				if (!methodName.equals("N/A")) {
+
+					String fieldValue = invoke.invokeMethodConfig(
+							"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg,
+							numField);
+					GenericInterface.getLogger().logLine("fieldValue:" + fieldValue);
+
+					isoMsg.putField(numField, fieldValue);
 				}
 			}
-			
-			
+
 		} catch (XPostilion e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					MessageTranslator.class.getName(), "Method: [processCreateField]",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"processCreateField", this.udpClient);
 		}
 	}
-	
+
 	private Base24Ath constructFieldsFromSd(Base24Ath msg, StructuredData sd) {
 		Base24Ath msgToRemote = msg;
+		String retRefNumber = "N/D";
 		try {
+			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			if (sd != null) {
 				Enumeration<?> sdFields = sd.getTypeNames();
 				while (sdFields.hasMoreElements()) {
 					String element = sdFields.nextElement().toString();
 					String[] fieldNum = element.split(Constants.Config.UNDERSCORE);
-					if (element.contains(Constants.Config.TAGNAMESD)) {
+					if (element.contains(Constants.Config.TAGNAMESD)
+							&& !element.contains(Constants.Config.TAGNAMESD + Constants.General.NUMBER_128)) {
 						msgToRemote.putField(Integer.parseInt(fieldNum[2]), sd.get(element));
 					}
 				}
 			}
-		} catch (Exception e) {
-			try {
-				EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-						MessageTranslator.class.getName(), "Method: [constructFieldsFromSd]",
-						Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method: constructFieldsFromSd " + e.getMessage(), "LOG", this.nameInterface));
-			} catch (XPostilion e1) {
-				this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-						"Exception in Method:  constructFieldsFromSd: " + Utils.getStringMessageException(e), "LOG",
-						this.nameInterface));
-			}
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"constructFieldsFromSd", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e1, retRefNumber,
+					"constructFieldsFromSd", this.udpClient, "of type Exception");
 		}
+
 		return msgToRemote;
 	}
 
@@ -790,7 +717,9 @@ public class MessageTranslator extends GenericInterface {
 	 * @return Objeto Header.
 	 */
 	private Header constructAtmHeaderSourceNode(Base24Ath msgFromRemote) {
+		String retRefNumber = "N/D";
 		try {
+			retRefNumber = msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			Header atmHeader = new Header(msgFromRemote.getHeader());
 			atmHeader.putField(Header.Field.ISO_LITERAL, Header.Iso.ISO);
 			atmHeader.putField(Header.Field.RESPONDER_CODE, Header.SystemCode.HOST);
@@ -799,25 +728,15 @@ public class MessageTranslator extends GenericInterface {
 			atmHeader.putField(Header.Field.STATUS, Header.Status.OK);
 			atmHeader.putField(Header.Field.ORIGINATOR_CODE, Header.OriginatorCode.CINCO);
 			return atmHeader;
-		} catch (Exception e) {
-			try {
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { this.nameInterface, MessageTranslator.class.getName(),
-								"Method: [constructAtmHeaderSourceNode]", Utils.getStringMessageException(e),
-								msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"Exception in Method: constructAtmHeaderSourceNode " + e.getMessage(), "LOG",
-						this.nameInterface));
-			} catch (XPostilion e1) {
-				this.udpClient.sendData(Client.getMsgKeyValue("Unknown",
-						"Exception in Method:  constructAtmHeaderSourceNode: " + Utils.getStringMessageException(e),
-						"LOG", this.nameInterface));
-			}
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"constructAtmHeaderSourceNode", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e1, retRefNumber,
+					"constructAtmHeaderSourceNode", this.udpClient, "of type Exception");
 		}
 		return null;
 	}
-
 
 	/**
 	 * Method to construct Iso8583Post error message for to send to TM
@@ -835,23 +754,20 @@ public class MessageTranslator extends GenericInterface {
 		StructuredData sd = new StructuredData();
 		this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				"ENTRO A  construct0220ToTm", "LOG", this.nameInterface));
-		
 
 		Iso8583Post msgToTm = new Iso8583Post();
 		msgToTm.putMsgType(Iso8583.MsgType._0220_TRAN_ADV);
-		//this.structureMap = this.structureContent.get(keyHash.toString());
+		// this.structureMap = this.structureContent.get(keyHash.toString());
 		this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				"structureMap:" + this.structureMap, "LOG", this.nameInterface));
 		try {
-			
-			ConstructFieldMessage cfm=new ConstructFieldMessage(params);
-			//Crea los campos 
-			for(String key : GenericInterface.createFields220ToTM.keySet())
-			{
-				
-				int intKey=Integer.parseInt(key);
-				switch(intKey)
-				{
+
+			ConstructFieldMessage cfm = new ConstructFieldMessage(params);
+			// Crea los campos
+			for (String key : GenericInterface.createFields220ToTM.keySet()) {
+
+				int intKey = Integer.parseInt(key);
+				switch (intKey) {
 				case 15:
 					msgToTm.putField(intKey, cfm.compensationDateValidationP17ToP15(msg, intKey));
 					break;
@@ -862,31 +778,25 @@ public class MessageTranslator extends GenericInterface {
 					msgToTm.putField(intKey, cfm.construct0220ErrorFields(msg, intKey));
 					break;
 				}
-				
-				
-				
+
 			}
-			
+
 			msgToTm.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
 					new ConstructFieldMessage(this.params).constructSwitchKey(msgToTm, nameInterchange));
-			GenericInterface.getLogger().logLine("EXception message:"+GenericInterface.exceptionMessage);
-			
-			
+			GenericInterface.getLogger().logLine("EXception message:" + GenericInterface.exceptionMessage);
+
 			sd.put("ERROR_MESSAGE:", GenericInterface.exceptionMessage);
 			msgToTm.putStructuredData(sd);
-			
 
-			//msg.putField(Iso8583.Bit._039_RSP_CODE, error.getErrorCodeISO());
+			// msg.putField(Iso8583.Bit._039_RSP_CODE, error.getErrorCodeISO());
 
 		} catch (XPostilion e1) {
 			e1.printStackTrace();
 		}
 
-		
 		return msgToTm;
 	}
-	
-	
+
 	public void constructAutra0800Message(Base24Ath msg, Iso8583Post msgToTM) throws XPostilion {
 		msgToTM.putMsgType(Iso8583.MsgType._0800_NWRK_MNG_REQ);
 
@@ -934,7 +844,7 @@ public class MessageTranslator extends GenericInterface {
 		msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
 				new ConstructFieldMessage(this.params).constructSwitchKey(msg, "ATM"));
 	}
-	
+
 	public void constructAutra0810ResponseMessage(Base24Ath msg, Iso8583Post msgToTM) throws XPostilion {
 
 		msgToTM.putMsgType(Iso8583.MsgType._0810_NWRK_MNG_REQ_RSP);
@@ -987,34 +897,20 @@ public class MessageTranslator extends GenericInterface {
 		try {
 			responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(), allCodesIsoToB24TM);
 		} catch (NoSuchElementException e) {
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines "
-							+ Utils.getStringMessageException(e),
-					"LOG", this.nameInterface));
-			if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1",responseCodesVersion)) {
+			if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1", responseCodesVersion)) {
 				try {
-					allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false, "1",responseCodesVersion);
+					allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false, "1",
+							responseCodesVersion);
 				} catch (SQLException e1) {
-					EventRecorder.recordEvent(new TryCatchException(new String[] { nameInterface,
-							ConstructFieldMessage.class.getName(),
-							"Method: [constructMsgRspToRem0210DeclinedRegExBussines]",
-							Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-					EventRecorder.recordEvent(e);
+					EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e1,
+							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
 				}
 				responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(), allCodesIsoToB24TM);
 			} else {
 				responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
-						error.getErrorCodeISO(), error.getErrorCodeISO());
-				EventRecorder.recordEvent(
-						new TryCatchException(new String[] { nameInterface, ConstructFieldMessage.class.getName(),
-								"Method: [constructMsgRspToRem0210DeclinedRegExBussines]",
-								Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-				EventRecorder.recordEvent(e);
-				this.udpClient
-						.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-								"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines value"
-										+ error.getErrorCodeISO() + " is not in the table.",
-								"LOG", this.nameInterface));
+						error.getErrorCodeISO(), error.getErrorCodeISO(), "10002");
+				EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
 			}
 		}
 
@@ -1022,8 +918,8 @@ public class MessageTranslator extends GenericInterface {
 		Map<String, String> deleteFieldsResponse = null;
 		Map<String, String> createFieldsResponse = null;
 		Map<String, String> transformFieldsResponse = null;
-		String pCode126=null;
-		InvokeMethodByConfig invoke=new InvokeMethodByConfig(params);
+		String pCode126 = null;
+		InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 		switch (resposeMessageType) {
 		case "0210":
 
@@ -1031,7 +927,7 @@ public class MessageTranslator extends GenericInterface {
 			deleteFieldsResponse = GenericInterface.deleteFieldsResponse;
 			createFieldsResponse = GenericInterface.createFieldsResponse;
 			transformFieldsResponse = GenericInterface.transformFieldsResponse;
-			pCode126=msg.getField(126)!=null? msg.getField(126).substring(22, 28):null;
+			pCode126 = msg.getField(126) != null ? msg.getField(126).substring(22, 28) : null;
 
 			msgToRem.putMsgType(Iso8583.MsgType._0210_TRAN_REQ_RSP);
 
@@ -1081,81 +977,57 @@ public class MessageTranslator extends GenericInterface {
 			}
 
 		}
-		
-		
-		
-		//SKIP-TRANSFORM y TRANSFORM
-		 
-		
-		for(int i=3;i<127;i++)
-		{
-			
-			String key1=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE)+"_"+ pCode126;
-			String key2=String.valueOf(i)+"-"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-			String key3=String.valueOf(i);
-			
 
-			
-			String methodName=null;
-			
-			if(createFieldsResponse.containsKey(key1))
-			{
-				methodName=createFieldsResponse.get(key1);
-				if(!methodName.equals("N/A"))
-					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-							methodName, msg, i));
-				
+		// SKIP-TRANSFORM y TRANSFORM
+
+		for (int i = 3; i < 127; i++) {
+
+			String key1 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE) + "_" + pCode126;
+			String key2 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+			String key3 = String.valueOf(i);
+
+			String methodName = null;
+
+			if (createFieldsResponse.containsKey(key1)) {
+				methodName = createFieldsResponse.get(key1);
+				if (!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig(
+							"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg, i));
+
+			} else if (createFieldsResponse.containsKey(key2)) {
+				methodName = createFieldsResponse.get(key2);
+				if (!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig(
+							"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg, i));
+			} else if (createFieldsResponse.containsKey(key3)) {
+				methodName = createFieldsResponse.get(key3);
+				if (!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig(
+							"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg, i));
 			}
-			else if(createFieldsResponse.containsKey(key2))
-			{
-				methodName=createFieldsResponse.get(key2);
-				if(!methodName.equals("N/A"))
-					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-							methodName, msg, i));
-			}
-			else if(createFieldsResponse.containsKey(key3))
-			{
-				methodName=createFieldsResponse.get(key3);
-				if(!methodName.equals("N/A"))
-					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-							methodName, msg, i));
-			}
-			if(transformFieldsResponse.containsKey(key1))
-			{
-				methodName=transformFieldsResponse.get(key1);
-				if(!methodName.equals("N/A"))
-					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-							methodName, msg, i));
-				
-			}
-			else if(transformFieldsResponse.containsKey(key2))
-			{
-				methodName=transformFieldsResponse.get(key2);
-				if(!methodName.equals("N/A"))
-					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-							methodName, msg, i));
-			}
-			else if(transformFieldsResponse.containsKey(key3))
-			{
-				methodName=transformFieldsResponse.get(key3);
-				if(!methodName.equals("N/A"))
-					msgToRem.putField(i, invoke.invokeMethodConfig("postilion.realtime.genericinterface.translate.ConstructFieldMessage",
-							methodName, msg, i));
+			if (transformFieldsResponse.containsKey(key1)) {
+				methodName = transformFieldsResponse.get(key1);
+				if (!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig(
+							"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg, i));
+
+			} else if (transformFieldsResponse.containsKey(key2)) {
+				methodName = transformFieldsResponse.get(key2);
+				if (!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig(
+							"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg, i));
+			} else if (transformFieldsResponse.containsKey(key3)) {
+				methodName = transformFieldsResponse.get(key3);
+				if (!methodName.equals("N/A"))
+					msgToRem.putField(i, invoke.invokeMethodConfig(
+							"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg, i));
 			}
 		}
-		
-		
-		
-		
-		
-		
-		
+
 		// Busca si hay que eliminar campos dado el processingCode
 
 		String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-		
-		
-		
+
 		Set<String> set = deleteFieldsResponse.keySet().stream().filter(s -> s.length() <= 3)
 				.collect(Collectors.toSet());
 
@@ -1183,27 +1055,16 @@ public class MessageTranslator extends GenericInterface {
 				responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(),
 						this.allCodesIsoToB24TM);
 			} catch (NoSuchElementException e) {
-				this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-						"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines "
-								+ Utils.getStringMessageException(e),
-						"LOG", this.nameInterface));
-				if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1",responseCodesVersion)) {
+				if (new DBHandler(this.params).updateResgistry(error.getErrorCodeISO(), "1", responseCodesVersion)) {
 					this.allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false,
-							"1",responseCodesVersion);
+							"1", responseCodesVersion);
 					responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(),
 							this.allCodesIsoToB24TM);
 				} else {
 					responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
-							error.getErrorCodeISO(), error.getErrorCodeISO());
-					EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-							ConstructFieldMessage.class.getName(),
-							"Method: [constructMsgRspToRem0210DeclinedRegExBussines]",
-							Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-					EventRecorder.recordEvent(e);
-					this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-							"NoSuchElementException in Method: constructMsgRspToRem0210DeclinedRegExBussines value"
-									+ error.getErrorCodeISO() + " is not in the table.",
-							"LOG", this.nameInterface));
+							error.getErrorCodeISO(), error.getErrorCodeISO(), "10002");
+					EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e,
+							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
 				}
 			}
 			msgToRem.putField(Base24Ath.Bit.ENTITY_ERROR,
@@ -1212,20 +1073,16 @@ public class MessageTranslator extends GenericInterface {
 							.append(error.getDescriptionError()).toString(), General.LENGTH_44, General.SPACE, true));
 
 			msgToRem.putField(Iso8583.Bit._039_RSP_CODE, error.getErrorCodeISO());
-			msgToRem.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID));
+			msgToRem.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID,
+					msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID));
 		} catch (Exception e) {
 			msgToRem.putField(Base24Ath.Bit.ENTITY_ERROR, Pack.resize(
 					"10002" + "Error Code could not extracted from message", General.LENGTH_44, General.SPACE, true));
-			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
-					MessageTranslator.class.getName(), "constructMsgRspToRem0210DeclinedRegExBussines",
-					Utils.getStringMessageException(e), msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) }));
-			EventRecorder.recordEvent(e);
-			this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
-					"Exception in Method: constructMsgRspToRem0210DeclinedRegExBussines "
-							+ Utils.getStringMessageException(e),
-					"LOG", this.nameInterface));
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
+
 		}
 		return msgToRem;
 	}
-	
+
 }

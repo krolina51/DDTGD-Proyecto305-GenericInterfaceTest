@@ -1,7 +1,6 @@
 package postilion.realtime.genericinterface.translate.util;
 
-import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
-import postilion.realtime.sdk.eventrecorder.EventRecorder;
+import postilion.realtime.genericinterface.translate.util.udp.Client;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -24,7 +23,7 @@ public class Logger {
 	 * 
 	 * @param msg a escribir en el archivo.
 	 */
-	public static void logLine(String msg) {
+	public static void logLine(String msg, String nameInterface, Client udpClient) {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(Constants.OPEN_BRAKET).append(new Date().toString()).append(Constants.CLOSE_BRAKET);
@@ -35,17 +34,15 @@ public class Logger {
 			bf = new BufferedWriter(new FileWriter(filePath, true));
 			bf.append(sb.toString());
 		} catch (IOException e) {
-			EventRecorder.recordEvent(new TryCatchException(new String[] { "Unknown", Logger.class.getName(),
-					"Method: [logLine]", Utils.getStringMessageException(e), "N/A" }));
-			EventRecorder.recordEvent(e);
+			EventReporter.reportGeneralEvent(nameInterface, Logger.class.getName(), e, "N/D",
+					"logLine", udpClient);
 		} finally {
 			if (bf != null)
 				try {
 					bf.close();
 				} catch (IOException e) {
-					EventRecorder.recordEvent(new TryCatchException(new String[] { "Unknown", Logger.class.getName(),
-							"Method: [logLine]", Utils.getStringMessageException(e), "N/A" }));
-					EventRecorder.recordEvent(e);
+					EventReporter.reportGeneralEvent(nameInterface, Logger.class.getName(), e, "N/D",
+							"logLine", udpClient);					
 				}
 		}
 

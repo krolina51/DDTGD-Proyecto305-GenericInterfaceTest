@@ -3,10 +3,12 @@ package postilion.realtime.genericinterface;
 import java.util.HashMap;
 import java.util.Map;
 
+import postilion.realtime.date.CalendarDTO;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
 import postilion.realtime.library.common.model.ConfigAllTransaction;
 import postilion.realtime.library.common.model.ResponseCode;
 import postilion.realtime.sdk.crypto.DesKwa;
+import postilion.realtime.sdk.env.calendar.BusinessCalendar;
 import postilion.realtime.sdk.util.TimedHashtable;
 
 public class Parameters {
@@ -47,6 +49,8 @@ public class Parameters {
 	private String ipCryptoValidation = "10.86.82.119";
 	private int portCryptoValidation = 7000;
 	private HashMap<String, DesKwa> keys = new HashMap<>();
+	private CalendarDTO calendarInfo = null;
+	private String termConsecutiveSection = "";
 
 	public DesKwa getKwa() {
 		return kwa;
@@ -239,6 +243,7 @@ public class Parameters {
 	public void setPortCryptoValidation(int portCryptoValidation) {
 		this.portCryptoValidation = portCryptoValidation;
 	}
+
 	public HashMap<String, DesKwa> getKeys() {
 		return keys;
 	}
@@ -247,9 +252,28 @@ public class Parameters {
 		this.keys = keys;
 	}
 
+	public CalendarDTO getCalendarInfo() {
+		return calendarInfo;
+	}
+
+	public void setCalendarInfo(CalendarDTO calendarInfo) {
+		this.calendarInfo = calendarInfo;
+	}	
+
+	public String getTermConsecutiveSection() {
+		return termConsecutiveSection;
+	}
+
+	public void setTermConsecutiveSection(String termConsecutiveSection) {
+		this.termConsecutiveSection = termConsecutiveSection;
+	}
+
 	public Parameters(DesKwa kwa, TimedHashtable sourceTranToTmHashtable, TimedHashtable sourceTranToTmHashtableB24,
 			String issuerId, Client udpClient, String nameInterface, String ipCryptoValidation,
-			int portCryptoValidation, HashMap<String, DesKwa> keys, String routingField100) {
+			int portCryptoValidation, HashMap<String, DesKwa> keys, String routingField100,
+			Map<String, ResponseCode> allCodesIsoToB24, Map<String, ResponseCode> allCodesIscToIso,
+			Map<String, ResponseCode> allCodesIsoToB24TM, Map<String, ResponseCode> allCodesB24ToIso,
+			CalendarDTO calendarInfo, String termConsecutiveSection) {
 		this.kwa = kwa;
 		this.sourceTranToTmHashtable = sourceTranToTmHashtable;
 		this.sourceTranToTmHashtableB24 = sourceTranToTmHashtableB24;
@@ -260,6 +284,16 @@ public class Parameters {
 		this.portCryptoValidation = portCryptoValidation;
 		this.keys = keys;
 		this.routingField100 = routingField100;
+		this.allCodesIsoToB24 = allCodesIsoToB24;
+		this.allCodesIscToIso = allCodesIscToIso;
+		this.allCodesIsoToB24TM = allCodesIsoToB24TM;
+		this.allCodesB24ToIso = allCodesB24ToIso;
+		this.calendarInfo = calendarInfo;
+		this.termConsecutiveSection = termConsecutiveSection;
+	}
+
+	public Parameters() {
+
 	}
 
 }
