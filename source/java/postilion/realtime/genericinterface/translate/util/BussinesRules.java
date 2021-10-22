@@ -9,9 +9,11 @@ import java.util.Arrays;
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
+import postilion.realtime.library.common.util.constants.General;
 import postilion.realtime.sdk.eventrecorder.EventRecorder;
 import postilion.realtime.sdk.jdbc.JdbcManager;
 import postilion.realtime.sdk.message.bitmap.Iso8583;
+import postilion.realtime.sdk.node.XNodeParameterValueInvalid;
 import postilion.realtime.sdk.util.XPostilion;
 
 /**
@@ -136,4 +138,55 @@ public class BussinesRules {
 
 		return consecutive;
 	}
+	
+	/**
+	 * 
+	 * Validate parameter for connection to udp server
+	 * 
+	 * @param cfgIpUdpServer server's ip
+	 * @throws XNodeParameterValueInvalid if parameter is invalid
+	 */
+	public static String validateIpUdpServerParameter(String cfgIpUdpServer) throws XNodeParameterValueInvalid {
+		String ip = null;
+		if (cfgIpUdpServer != null && !cfgIpUdpServer.equals("0")) {
+			if (Client.validateIp(cfgIpUdpServer)) {
+				ip = cfgIpUdpServer;
+			} else {
+				EventRecorder.recordEvent(
+						new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, cfgIpUdpServer));
+				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, cfgIpUdpServer);
+			}
+		} else {
+			EventRecorder.recordEvent(
+					new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, General.NULLSTRING));
+			throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, General.NULLSTRING);
+		}
+		return ip;
+	}
+
+	/**
+	 * 
+	 * Validate parameter for connection to udp server
+	 * 
+	 * @param cfgPortUdpServer server's port
+	 * @throws XNodeParameterValueInvalid if parameter is invalid
+	 */
+	public static String validatePortUdpServerParameter(String cfgPortUdpServer) throws XNodeParameterValueInvalid {
+		String port = null;
+		if (cfgPortUdpServer != null && !cfgPortUdpServer.equals("0")) {
+			if (Client.validatePort(cfgPortUdpServer)) {
+				port = cfgPortUdpServer;
+			} else {
+				EventRecorder.recordEvent(new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER,
+						cfgPortUdpServer));
+				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER, cfgPortUdpServer);
+			}
+		} else {
+			EventRecorder.recordEvent(
+					new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER, General.NULLSTRING));
+			throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER, General.NULLSTRING);
+		}
+		return port;
+	}
+
 }

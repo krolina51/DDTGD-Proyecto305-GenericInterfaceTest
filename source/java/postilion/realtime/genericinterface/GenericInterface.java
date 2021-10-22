@@ -1,16 +1,17 @@
 package postilion.realtime.genericinterface;
 
-import postilion.realtime.library.common.db.DBHandler;
-import postilion.realtime.library.common.model.ConfigAllTransaction;
-import postilion.realtime.library.common.util.Logger;
-import postilion.realtime.library.common.util.constants.MsgTypeCsm;
-import postilion.realtime.sdk.crypto.*;
+import java.io.FileReader;
+import java.nio.charset.Charset;
+import java.sql.SQLException;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import postilion.realtime.sdk.eventrecorder.AContext;
-import postilion.realtime.sdk.eventrecorder.EventRecorder;
-import postilion.realtime.sdk.eventrecorder.contexts.ApplicationContext;
-import postilion.realtime.library.common.util.constants.General;
-import postilion.realtime.library.common.model.ResponseCode;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 import postilion.realtime.date.CalendarDTO;
 import postilion.realtime.date.CalendarLoader;
 import postilion.realtime.genericinterface.channels.Super;
@@ -25,32 +26,46 @@ import postilion.realtime.genericinterface.eventrecorder.events.InvalidMacRdbnNt
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidSinkKeyLoaded;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidSourceKeyLoaded;
 import postilion.realtime.genericinterface.eventrecorder.events.InvalidTypeKey;
+import postilion.realtime.genericinterface.eventrecorder.events.KeyExchangeReqFailed;
 import postilion.realtime.genericinterface.eventrecorder.events.MissingField053SecurityInfo;
 import postilion.realtime.genericinterface.eventrecorder.events.MissingField_120KeyManagement;
 import postilion.realtime.genericinterface.eventrecorder.events.MissingKeyOnField_123CryptoServiceMsg;
+import postilion.realtime.genericinterface.eventrecorder.events.SignedOn;
 import postilion.realtime.genericinterface.eventrecorder.events.SinkNodeKeyNotConfigured;
 import postilion.realtime.genericinterface.eventrecorder.events.SinkNodeKeyReceivedByNonsinkNode;
-import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
 import postilion.realtime.genericinterface.eventrecorder.events.SourceKeyExchangeInitiated;
+import postilion.realtime.genericinterface.eventrecorder.events.SourceKeyGenerationFailed;
 import postilion.realtime.genericinterface.eventrecorder.events.SourceNodeKeyNotConfigured;
 import postilion.realtime.genericinterface.eventrecorder.events.SourceNodeKeyReceivedByNonsourceNode;
 import postilion.realtime.genericinterface.eventrecorder.events.SucessfullSinkKeyLoad;
 import postilion.realtime.genericinterface.eventrecorder.events.SucessfullSourceKeyLoad;
-import postilion.realtime.genericinterface.eventrecorder.events.SourceKeyGenerationFailed;
-import postilion.realtime.genericinterface.eventrecorder.events.KeyExchangeReqFailed;
-import postilion.realtime.genericinterface.eventrecorder.events.SignedOn;
+import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
 import postilion.realtime.genericinterface.eventrecorder.events.UnsupportedNmi;
-
 import postilion.realtime.genericinterface.translate.ConstructFieldMessage;
 import postilion.realtime.genericinterface.translate.MessageTranslator;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.stream.Header;
+import postilion.realtime.genericinterface.translate.util.BussinesRules;
 import postilion.realtime.genericinterface.translate.util.Constants;
 import postilion.realtime.genericinterface.translate.util.Constants.KeyExchange;
+import postilion.realtime.genericinterface.translate.util.EventReporter;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.util.udp.Client;
-import postilion.realtime.genericinterface.translate.util.EventReporter;
 import postilion.realtime.genericinterface.translate.validations.Validation;
+import postilion.realtime.library.common.db.DBHandler;
+import postilion.realtime.library.common.util.Logger;
+import postilion.realtime.library.common.util.constants.General;
+import postilion.realtime.library.common.util.constants.MsgTypeCsm;
+import postilion.realtime.sdk.crypto.CryptoCfgManager;
+import postilion.realtime.sdk.crypto.CryptoManager;
+import postilion.realtime.sdk.crypto.DesKeyLength;
+import postilion.realtime.sdk.crypto.DesKvc;
+import postilion.realtime.sdk.crypto.DesKwa;
+import postilion.realtime.sdk.crypto.DesKwp;
+import postilion.realtime.sdk.crypto.XCrypto;
+import postilion.realtime.sdk.eventrecorder.AContext;
+import postilion.realtime.sdk.eventrecorder.EventRecorder;
+import postilion.realtime.sdk.eventrecorder.contexts.ApplicationContext;
 import postilion.realtime.sdk.message.IMessage;
 import postilion.realtime.sdk.message.bitmap.BitmapMessage;
 import postilion.realtime.sdk.message.bitmap.Iso8583;
@@ -60,6 +75,8 @@ import postilion.realtime.sdk.message.bitmap.StructuredData;
 import postilion.realtime.sdk.node.AInterchangeDriver8583;
 import postilion.realtime.sdk.node.AInterchangeDriverEnvironment;
 import postilion.realtime.sdk.node.Action;
+import postilion.realtime.sdk.node.ActiveActiveKeySyncMsgHandler;
+import postilion.realtime.sdk.node.NodeDriverEnvAdapter;
 import postilion.realtime.sdk.node.XNodeParameterValueInvalid;
 import postilion.realtime.sdk.util.DateTime;
 import postilion.realtime.sdk.util.TimedHashtable;
@@ -67,21 +84,6 @@ import postilion.realtime.sdk.util.XPostilion;
 import postilion.realtime.sdk.util.convert.Pack;
 import postilion.realtime.sdk.util.convert.Transform;
 import postilion.realtime.validations.crypto.FactoryCommonRules;
-import postilion.realtime.sdk.node.ActiveActiveKeySyncMsgHandler;
-import postilion.realtime.sdk.node.NodeDriverEnvAdapter;
-
-import java.io.FileReader;
-import java.nio.charset.Charset;
-import java.sql.SQLException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimerTask;
-import java.util.Timer;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 /**
  *
@@ -96,114 +98,66 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	/** This is the key used to authenticate messages. */
 	protected DesKwa kwa = null;
 
+	protected long retentionPeriod = 0;
+
 	/**
 	 * Contiene los mensajes 0200 que llegan de la Interchange al NodoSource.
 	 */
 	public TimedHashtable sourceTranToTmHashtable = null;
-
 	public TimedHashtable sourceTranToTmHashtableB24 = null;
 
-	public Map<String, HashMap<String, ConfigAllTransaction>> structureContent = new HashMap<>();
-	public Map<String, String> covenantMap = new HashMap<>();
-	public Map<String, ConfigAllTransaction> structureMap = new HashMap<>();
-
-	protected long retentionPeriod = 0;
-
-	public Map<String, ResponseCode> allCodesIsoToB24 = new HashMap<>();
-	public Map<String, ResponseCode> allCodesIscToIso = new HashMap<>();
-	public Map<String, ResponseCode> allCodesIsoToB24TM = new HashMap<>();
-	public Map<String, ResponseCode> allCodesB24ToIso = new HashMap<>();
+	public boolean signed_on = false;
+	public boolean encodeData = false;
+	public boolean exeptionValidateExpiryDate = false;
 	public boolean consultCovenants; // to validate consult of covenants
 	public boolean businessValidation, create0220ToTM;
-	static Header default_header;
-	public String sSignOn; // 0 - Don't Send SignOn on connection with
-							// the remote entity. 1 - Send SignOn
-							// on connection with the remote entity
-
-	public static String exceptionMessage = null;
-	/** Inicia la variable keyExchangeState en inactivo. */
-	protected int keyExchangeState = Base24Ath.KeyExchangeState.IDLE;
-	public boolean signed_on = false;
-	public Map<String, String> institutionid = new HashMap<>();
-
-	public Map<String, String> cutValues = new HashMap<>();
-	public static Map<String, String> migratedOpCodes = new HashMap<>();
-	public static Map<String, String> migratedCards = new HashMap<>();
-	public static Map<String, String> migratedBins = new HashMap<>();
-	public static Map<String, String> migratedOpCodesAtm = new HashMap<>();
-
-	public static Map<String, String> structuredDataFields = new HashMap<>();
-	public static Map<String, String> createFields = new HashMap<>();
-	public static Map<String, String> transformFields = new HashMap<>();
-	public static Map<String, String> transformFieldsMultipleCases = new HashMap<>();
-	public static Map<String, String> skipCopyFields = new HashMap<>();
-
-	public static Map<String, String> createFieldsRev = new HashMap<>();
-	public static Map<String, String> transformFieldsRev = new HashMap<>();
-	public static Map<String, String> transformFieldsMultipleCasesRev = new HashMap<>();
-	public static Map<String, String> skipCopyFieldsRev = new HashMap<>();
-
-	public static Map<String, String> copyFieldsResponse = new HashMap<>();
-	public static Map<String, String> deleteFieldsResponse = new HashMap<>();
-	public static Map<String, String> createFieldsResponse = new HashMap<>();
-	public static Map<String, String> transformFieldsResponse = new HashMap<>();
-	public static Map<String, String> transformFieldsMultipleCasesResponse = new HashMap<>();
-
-	public static Map<String, String> copyFieldsResponseAdv = new HashMap<>();
-	public static Map<String, String> deleteFieldsResponseAdv = new HashMap<>();
-	public static Map<String, String> createFieldsResponseAdv = new HashMap<>();
-	public static Map<String, String> transformFieldsResponseAdv = new HashMap<>();
-	public static Map<String, String> transformFieldsMultipleCasesResponseAdv = new HashMap<>();
-
-	public static Map<String, String> copyFieldsResponseRev = new HashMap<>();
-	public static Map<String, String> deleteFieldsResponseRev = new HashMap<>();
-	public static Map<String, String> createFieldsResponseRev = new HashMap<>();
-	public static Map<String, String> transformFieldsResponseRev = new HashMap<>();
-	public static Map<String, String> transformFieldsMultipleCasesResponseRev = new HashMap<>();
-
-	public static Map<String, String> primerFiltroTest1 = new HashMap<>();
-	public static Map<String, String> primerFiltroTest2 = new HashMap<>();
-	public static Map<String, String> segundoFiltroTest2 = new HashMap<>();
-	public static Map<String, String> segundoFiltro = new HashMap<>();
-
-	public static Map<String, String> createFields220ToTM = new HashMap<>();
-
-	public static Map<String, String> deleteFieldsRequest = new HashMap<>();
-	public static Map<String, String> createFieldsRequest = new HashMap<>();
-
-	public String issuerId = null;
-
-	public String ipUdpServer = "0";
-	public String portUdpServer = "0";
-	public String ipServerAT = "0";
-	public String portServerAT = "0";
-
-	public Client udpClient = null;
-	public Client udpClientAT = null;
-	private static Logger logger = new Logger(Constants.Config.URL_LOG);
+	protected boolean validateCvv = false;
 
 	public String nameInterface = "";
-	public boolean encodeData = false;
-	public String routingField100 = "";
-	public boolean exeptionValidateExpiryDate = false;
+	public String issuerId = null;
 	public String urlCutWS = null;
 	public String responseCodesVersion = null;
 	public String ipCryptoValidation = "10.86.82.119";
-	public int portCryptoValidation = 7000;
-	public FactoryCommonRules factory;
-	public HashMap<String, DesKwa> keys = new HashMap<>();
-
+	public String routingField100 = "";
+	public String ipUdpServer = "0";
+	public String portUdpServer = "0";
+	public String portUdpClient = "0";
+	public String ipServerAT = "0";
+	public String portServerAT = "0";
 	public String routingFilter = "";
 	public String routingCreditPath = "";
 	public String routingTransitoriasPath = "";
 	public String routingFilterPath = "D:\\Apl\\postilion\\genericinterfacetest";
-	protected boolean validateCvv = false;
-	protected DesKvc kvc = null;
-	public Parameters params;
-	public CalendarDTO calendarInfo;
+	public String routingLoadHashMap = "D:\\Apl\\postilion\\genericinterfacetest";
+	public String termConsecutiveSection = "";
+	public String sSignOn; // 0 - Don't Send SignOn on connection with
+							// the remote entity. 1 - Send SignOn
+							// on connection with the remote entity
+	public static String exceptionMessage = null;
+
 	public long delay = 0;
 	public long period = 60_000;
-	public String termConsecutiveSection = "";	
+
+	public int portCryptoValidation = 7000;
+	/** Inicia la variable keyExchangeState en inactivo. */
+	protected int keyExchangeState = Base24Ath.KeyExchangeState.IDLE;
+
+	public Client udpClient = null;
+	public Client udpClientAT = null;
+
+	public Parameters params;
+
+	public CalendarDTO calendarInfo;
+
+	public FactoryCommonRules factory;
+
+	protected DesKvc kvc = null;
+
+	static Header default_header;
+
+	private static Logger logger = new Logger(Constants.Config.URL_LOG);
+
+	public static HashMapBusinessLogic fillMaps = new HashMapBusinessLogic();
 
 	/************************************************************************************
 	 * SDK Postilion method implementation, which serves to initialize interchange
@@ -221,8 +175,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 //						GRPCServer.runServer();
 //			}});
 //		grpcServer.start();
-
-		fillMaps();
 
 		getLogger().logLine("#=== Enter to [Init] Method Interchange " + interchange.getName() + " ===#");
 		this.calendarInfo = new CalendarDTO();
@@ -244,25 +196,27 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 
 		getParameters(userParams[0]);
-
+		
 		Timer timer = new Timer();
 		TimerTask task = new CalendarLoader(this.calendarInfo, this.nameInterface);
 		timer.schedule(task, this.delay, this.period);
 
-		udpClient = new Client(ipUdpServer, portUdpServer, nameInterface);
-
+		udpClient = new Client(ipUdpServer, portUdpServer, portUdpClient, nameInterface);
+        
+		fillMaps.loadHashMap(routingLoadHashMap, this.nameInterface, this.udpClient);
+		
 		switch (routingFilter) {
 		case "Test2":
 		case "Prod2":
-			fillFilters2();
+			fillMaps.fillFilters2(routingFilterPath, this.nameInterface, this.udpClient);
 			break;
 		default:
-			fillFilters();
+			fillMaps.fillFilters(routingFilterPath, this.nameInterface, this.udpClient);
 			break;
 		}
-
-		allCodesIsoToB24 = DBHandler.getResponseCodes(false, "0", responseCodesVersion);
-		if (allCodesIsoToB24.size() == 0) {
+		
+		fillMaps.setAllCodesIsoToB24(DBHandler.getResponseCodes(false, "0", responseCodesVersion));
+		if (fillMaps.getAllCodesIsoToB24().size() == 0) {
 			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 					GenericInterface.class.getName(), "Method: [init]",
 					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesIsoToB24",
@@ -271,8 +225,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
 		}
 
-		allCodesIscToIso = DBHandler.getResponseCodes(true, "0", responseCodesVersion);
-		if (allCodesIscToIso.size() == 0) {
+		fillMaps.setAllCodesIscToIso(DBHandler.getResponseCodes(true, "0", responseCodesVersion));
+		if (fillMaps.getAllCodesIscToIso().size() == 0) {
 			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 					GenericInterface.class.getName(), "Method: [init]",
 					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesIscToIso",
@@ -281,8 +235,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
 		}
 
-		allCodesIsoToB24TM = DBHandler.getResponseCodes(false, "1", responseCodesVersion);
-		if (allCodesIsoToB24TM.size() == 0) {
+		fillMaps.setAllCodesIsoToB24TM(DBHandler.getResponseCodes(false, "1", responseCodesVersion));
+		if (fillMaps.getAllCodesIsoToB24TM().size() == 0) {
 			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 					GenericInterface.class.getName(), "Method: [init]",
 					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesIsoToB24TM",
@@ -291,8 +245,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					new TryCatchException(new AContext[] { new ApplicationContext(interchange.getName()) }, logParms));
 		}
 
-		allCodesB24ToIso = DBHandler.getResponseCodesBase24("1", responseCodesVersion);
-		if (allCodesB24ToIso.size() == 0) {
+		fillMaps.setAllCodesB24ToIso(DBHandler.getResponseCodesBase24("1", responseCodesVersion));
+		if (fillMaps.getAllCodesB24ToIso().size() == 0) {
 			EventRecorder.recordEvent(new TryCatchException(new String[] { this.nameInterface,
 					GenericInterface.class.getName(), "Method: [init]",
 					"Error to load the database configuration. The interface not working without the messages configuration. Map allCodesB24ToIso",
@@ -303,903 +257,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		// udpClient = new Client(ipUdpServer, portUdpServer);
 		params = new Parameters(kwa, sourceTranToTmHashtable, sourceTranToTmHashtableB24, issuerId, udpClient,
-				nameInterface, ipCryptoValidation, portCryptoValidation, keys, routingField100, allCodesIsoToB24,
-				allCodesIscToIso, allCodesIsoToB24TM, allCodesB24ToIso, this.calendarInfo, this.termConsecutiveSection);
+				nameInterface, ipCryptoValidation, portCryptoValidation, fillMaps.getKeys(), routingField100,
+				fillMaps.getAllCodesIsoToB24(), fillMaps.getAllCodesIscToIso(), fillMaps.getAllCodesIsoToB24TM(),
+				fillMaps.getAllCodesB24ToIso(), this.calendarInfo, this.termConsecutiveSection);
 		factory = new FactoryCommonRules(params);
-
-	}
-
-	/**
-	 * Llenado hashMap para tratamiento de campos.
-	 */
-	private static void fillMaps() {
-
-		createFields220ToTM.put("3", "3");
-		createFields220ToTM.put("4", "4");
-		createFields220ToTM.put("7", "7");
-		createFields220ToTM.put("11", "11");
-		createFields220ToTM.put("12", "12");
-		createFields220ToTM.put("13", "13");
-		createFields220ToTM.put("15", "15");
-		createFields220ToTM.put("22", "22");
-		createFields220ToTM.put("25", "25");
-		createFields220ToTM.put("32", "32");
-		createFields220ToTM.put("35", "35");
-		createFields220ToTM.put("37", "37");
-		createFields220ToTM.put("39", "39");
-		createFields220ToTM.put("41", "41");
-		createFields220ToTM.put("42", "42");
-		createFields220ToTM.put("43", "43");
-		createFields220ToTM.put("48", "48");
-		createFields220ToTM.put("49", "49");
-		createFields220ToTM.put("98", "98");
-		createFields220ToTM.put("100", "100");
-		createFields220ToTM.put("102", "102");
-		createFields220ToTM.put("104", "104");
-		createFields220ToTM.put("123", "123");
-
-		deleteFieldsRequest.put("501030", "14-15-22-25-26-40-42-56-98-100-123");
-		deleteFieldsRequest.put("401010", "14-15-22-25-26-40-42-56-100-123");
-		deleteFieldsRequest.put("013000", "14-15-25-26-40-52-56-102-103-104-123");
-
-		createFieldsRequest.put("3-270110", "compensationDateValidationP17ToP15");
-
-		transformFieldsMultipleCases.put("3", "3");
-
-		transformFields.put("3", "N/A");
-		transformFields.put("3-270110", "transformField3ForDepositATM");
-		transformFields.put("3-270120", "transformField3ForDepositATM");
-		transformFields.put("3-270100", "transformField3ForCreditPaymentATM");
-		transformFields.put("3-270140", "transformField3ForCreditPaymentATM");
-		transformFields.put("3-270141", "transformField3ForCreditPaymentATM");
-		transformFields.put("3-890000", "constructProcessingCode");
-		transformFields.put("15", "compensationDateValidationP17ToP15");
-		transformFields.put("32", "constructAcquiringInstitutionIDCodeToTM");
-		transformFields.put("41", "constructCardAcceptorTermIdToTranmgr");
-		transformFields.put("52", "constructPinDataToTranmgr");
-		transformFields.put("54", "constructAdditionalAmounts");
-		transformFields.put("28", "transformAmountFeeFields");
-		transformFields.put("30", "transformAmountFeeFields");
-//		transformFields.put("35", "constructField35Oficinas");
-		transformFields.put("95", "constructReplacementAmounts");
-		transformFields.put("100", "constructField100");
-
-		skipCopyFields.put("48", "48");
-		skipCopyFields.put("102", "102");
-		skipCopyFields.put("103", "103");
-		skipCopyFields.put("104", "104");
-		skipCopyFields.put("105", "105");
-
-		structuredDataFields.put("17", "17");
-		structuredDataFields.put("46", "46");
-		structuredDataFields.put("60", "60");
-		structuredDataFields.put("61", "61");
-		structuredDataFields.put("62", "62");
-		structuredDataFields.put("126", "126");
-		structuredDataFields.put("128", "128");
-
-		createFields.put("15", "compensationDateValidationP17ToP15");
-		createFields.put("22", "constructField22");
-		createFields.put("25", "constructPosConditionCodeToTranmgr");
-		createFields.put("42", "constructDefaultCardAceptorCode");
-		createFields.put("43", "constructField43");
-		createFields.put("59", "constructEchoData");
-		createFields.put("98", "constructField98");
-		createFields.put("100", "constructField100");
-		createFields.put("123", "constructPosDataCode");
-
-		copyFieldsResponse.put("3", "3");
-		copyFieldsResponse.put("4", "4");
-		copyFieldsResponse.put("7", "7");
-		copyFieldsResponse.put("11", "11");
-		copyFieldsResponse.put("12", "12");
-		copyFieldsResponse.put("13", "13");
-		copyFieldsResponse.put("15", "15");
-		copyFieldsResponse.put("22", "22");
-		copyFieldsResponse.put("32", "32");
-		copyFieldsResponse.put("35", "35");
-		copyFieldsResponse.put("37", "37");
-		copyFieldsResponse.put("38", "38");
-		copyFieldsResponse.put("39", "39");
-		copyFieldsResponse.put("48", "48");
-		copyFieldsResponse.put("49", "49");
-		copyFieldsResponse.put("103", "103");
-
-		transformFieldsMultipleCasesResponse.put("3", "3");
-		transformFieldsMultipleCasesResponse.put("44", "44");
-		transformFieldsMultipleCasesResponse.put("48", "48");
-		transformFieldsMultipleCasesResponse.put("63", "63");
-		transformFieldsMultipleCasesResponse.put("102", "102");
-		transformFieldsMultipleCasesResponse.put("103", "103");
-
-		transformFieldsResponse.put("3", "N/A");
-		transformFieldsResponse.put("3-210110", "transformField3ForDepositATM");
-		transformFieldsResponse.put("3-210120", "transformField3ForDepositATM");
-		transformFieldsResponse.put("3-320100_270100", "transformField3ForCreditPaymentATM");
-		transformFieldsResponse.put("3-320100_270140", "transformField3ForCreditPaymentATM");
-		transformFieldsResponse.put("3-320100_270141", "transformField3ForCreditPaymentATM");
-		transformFieldsResponse.put("3-510100", "transformField3ForCreditPaymentATM");
-		transformFieldsResponse.put("3-510140", "transformField3ForCreditPaymentATM");
-		transformFieldsResponse.put("3-510141", "transformField3ForCreditPaymentATM");
-		transformFieldsResponse.put("3-320100_270120", "constructProcessingCode");
-		transformFieldsResponse.put("3-320100_270130", "constructProcessingCode");
-		transformFieldsResponse.put("3-320000", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_011000", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_311000", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_321000", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_381000", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_401000", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_401010", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_401020", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501000", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501030", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501040", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501041", "constructProcessingCode");
-		transformFieldsResponse.put("3-321000_501042", "constructProcessingCode");
-		transformFieldsResponse.put("3-320100_270110", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_012000", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_312000", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_322000", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_382000", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_402000", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_402010", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_402020", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502000", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502030", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502040", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502041", "constructProcessingCode");
-		transformFieldsResponse.put("3-322000_502042", "constructProcessingCode");
-		transformFieldsResponse.put("3-324000_314000", "constructProcessingCode");
-		transformFieldsResponse.put("3-324000_404010", "constructProcessingCode");
-		transformFieldsResponse.put("3-324000_404020", "constructProcessingCode");
-		transformFieldsResponse.put("38-011000", "constructField38DefaultOrCopy");
-		transformFieldsResponse.put("38-012000", "constructField38DefaultOrCopy");
-		transformFieldsResponse.put("38-222222", "constructField38DefaultOrCopy");
-		transformFieldsResponse.put("38-314000", "constructField38DefaultOrCopy");
-		transformFieldsResponse.put("38-404010", "constructField38DefaultOrCopy");
-		transformFieldsResponse.put("38-404020", "constructField38DefaultOrCopy");
-		transformFieldsResponse.put("40-011000", "constructServiceRestrictionCode");
-		transformFieldsResponse.put("40-012000", "constructServiceRestrictionCode");
-		transformFieldsResponse.put("40-222222", "constructServiceRestrictionCode");
-		transformFieldsResponse.put("40-321000_321000", "constructServiceRestrictionCode");
-		transformFieldsResponse.put("40-322000_322000", "constructServiceRestrictionCode");
-		transformFieldsResponse.put("44", "N/A");
-		transformFieldsResponse.put("44-011000", "constructField44");
-		transformFieldsResponse.put("44-012000", "constructField44");
-		transformFieldsResponse.put("44-222222", "constructField44");
-		transformFieldsResponse.put("44-311000", "constructField44");
-		transformFieldsResponse.put("44-312000", "constructField44");
-		transformFieldsResponse.put("44-314000", "constructField44");
-		transformFieldsResponse.put("44-320100_270100", "constructField44");
-		transformFieldsResponse.put("44-320100_270140", "constructField44");
-		transformFieldsResponse.put("44-501000", "constructField44");
-		transformFieldsResponse.put("44-501030", "constructField44");
-		transformFieldsResponse.put("44-501040", "constructField44");
-		transformFieldsResponse.put("44-501041", "constructField44");
-		transformFieldsResponse.put("44-501042", "constructField44");
-		transformFieldsResponse.put("44-502000", "constructField44");
-		transformFieldsResponse.put("44-502030", "constructField44");
-		transformFieldsResponse.put("44-502040", "constructField44");
-		transformFieldsResponse.put("44-502041", "constructField44");
-		transformFieldsResponse.put("44-502042", "constructField44");
-		transformFieldsResponse.put("44-510100", "constructField44");
-		transformFieldsResponse.put("44-510140", "constructField44");
-		transformFieldsResponse.put("44-510141", "constructField44");
-		transformFieldsResponse.put("44-321000_321000", "constuctServiceRspData");
-		transformFieldsResponse.put("44-322000_012000", "constuctServiceRspData");
-		transformFieldsResponse.put("44-322000_322000", "constuctServiceRspData");
-		transformFieldsResponse.put("44-381000", "constuctServiceRspData");
-		transformFieldsResponse.put("44-382000", "constuctServiceRspData");
-		transformFieldsResponse.put("48", "N/A");
-		transformFieldsResponse.put("48-321000_011000", "constructField048InRspCostInquiry");
-		transformFieldsResponse.put("48-321000_381000", "constructField048InRspCostInquiry");
-		transformFieldsResponse.put("48-322000_012000", "constructField048InRspCostInquiry");
-		transformFieldsResponse.put("48-322000_382000", "constructField048InRspCostInquiry");
-		transformFieldsResponse.put("48-011000", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-012000", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-210110", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-210120", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-222222", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270100", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270110", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270120", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270130", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270140", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-320100_270141", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-321000_321000", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-322000_322000", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-324000_314000", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-324000_404010", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-324000_404020", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-510100", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-510140", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("48-510141", "constructFieldFromStructuredDataP48");
-		transformFieldsResponse.put("54-011000", "constructField54");
-		transformFieldsResponse.put("54-012000", "constructField54");
-		transformFieldsResponse.put("63", "N/A");
-		transformFieldsResponse.put("63-011000", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-012000", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-222222", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-321000_011000", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-321000_401000", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-321000_501030", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-322000_012000", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-322000_402000", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-322000_502030", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-401000", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-401010", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-401020", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-402000", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-402010", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-402020", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501000", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501030", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501040", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501041", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-501042", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-502030", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-502040", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-502041", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-502042", "constuctCodeResponseInIsc");
-		transformFieldsResponse.put("63-210110", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-210120", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-314000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-320000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270100", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270110", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270120", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270130", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270140", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-320100_270141", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_321000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_401010", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_401020", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_501000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_501040", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_501041", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-321000_501042", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_322000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_402010", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_402020", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_502000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_502040", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_502041", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-322000_502042", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-324000_314000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-324000_404010", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-324000_404020", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-404010", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-404020", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-502000", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-510100", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-510140", "constructResponseCodeField63");
-		transformFieldsResponse.put("63-510141", "constructResponseCodeField63");
-		transformFieldsResponse.put("100-321000_401010", "constructField100ACH");
-		transformFieldsResponse.put("100-321000_401020", "constructField100ACH");
-		transformFieldsResponse.put("100-322000_402010", "constructField100ACH");
-		transformFieldsResponse.put("100-322000_402020", "constructField100ACH");
-		transformFieldsResponse.put("102", "N/A");
-		transformFieldsResponse.put("102-314000", "constructField102ConsultaCreditoRotativo");
-		transformFieldsResponse.put("102-311000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-312000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-320000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-321000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-321000_311000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-321000_381000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-322000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-322000_312000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-322000_382000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-381000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-382000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("102-011000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-012000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-222222", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-321000_011000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-321000_321000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-321000_401000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-322000_012000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-322000_322000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-322000_402000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-324000_314000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-324000_404010", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-324000_404020", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-401010", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-401020", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-402010", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-402020", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-404010", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-404020", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501000", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501030", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501040", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501041", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-501042", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-502030", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-502040", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-502041", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-502042", "constructField102DefaultOrCopy");
-		transformFieldsResponse.put("102-321000_401010", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_401020", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501000", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501030", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501040", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501041", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-321000_501042", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_402010", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_402020", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502000", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502030", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502040", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502041", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("102-322000_502042", "constructField102ConsultaCostoTransferencia");
-		transformFieldsResponse.put("103", "N/A");
-		transformFieldsResponse.put("103-311000", "transformField103");
-		transformFieldsResponse.put("103-312000", "transformField103");
-		transformFieldsResponse.put("103-314000", "transformField103");
-		transformFieldsResponse.put("103-322000_322000", "transformField103");
-		transformFieldsResponse.put("103-324000_314000", "transformField103");
-		transformFieldsResponse.put("103-381000", "transformField103");
-		transformFieldsResponse.put("103-382000", "transformField103");
-		transformFieldsResponse.put("103-320000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_011000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_311000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_321000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_381000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-322000_012000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-322000_312000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-322000_382000", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-322000_502030", "constructField102_103ConsultaCosto");
-		transformFieldsResponse.put("103-321000_401010", "constructField104Deposito");
-		transformFieldsResponse.put("103-321000_401020", "constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501000", "constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501030", "constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501040", "constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501041", "constructField104Deposito");
-		transformFieldsResponse.put("103-321000_501042", "constructField104Deposito");
-		transformFieldsResponse.put("103-322000_402010", "constructField104Deposito");
-		transformFieldsResponse.put("103-322000_402020", "constructField104Deposito");
-		transformFieldsResponse.put("103-322000_502000", "constructField104Deposito");
-		transformFieldsResponse.put("103-322000_502040", "constructField104Deposito");
-		transformFieldsResponse.put("103-322000_502041", "constructField104Deposito");
-		transformFieldsResponse.put("103-322000_502042", "constructField104Deposito");
-		transformFieldsResponse.put("105-321000_401000", "constructField105DefaultOrCopy");
-		transformFieldsResponse.put("105-322000_402000", "constructField105DefaultOrCopy");
-		transformFieldsResponse.put("126-011000", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-012000", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-320100_270100", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-320100_270130", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-320100_270140", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-320100_270141", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-321000_011000", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-322000_012000", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-510100", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-510140", "constructField126IsoTranslate");
-		transformFieldsResponse.put("126-510141", "constructField126IsoTranslate");
-		transformFieldsResponse.put("128-401010", "constructField128");
-
-		createFieldsResponse.put("17-321000_321000", "constructDateCapture");
-		createFieldsResponse.put("17-321000_401010", "constructDateCapture");
-		createFieldsResponse.put("17-321000_401020", "constructDateCapture");
-		createFieldsResponse.put("17-321000_501030", "constructDateCapture");
-		createFieldsResponse.put("17-322000_322000", "constructDateCapture");
-		createFieldsResponse.put("17-322000_402010", "constructDateCapture");
-		createFieldsResponse.put("17-322000_402020", "constructDateCapture");
-		createFieldsResponse.put("17-322000_502030", "constructDateCapture");
-		createFieldsResponse.put("17-501000", "constructDateCapture");
-		createFieldsResponse.put("17-502000", "constructDateCapture");
-		createFieldsResponse.put("17-011000", "constructDateCapture");
-		createFieldsResponse.put("17-012000", "constructDateCapture");
-		createFieldsResponse.put("17-210110", "constructDateCapture");
-		createFieldsResponse.put("17-210120", "constructDateCapture");
-		createFieldsResponse.put("17-320100_270100", "constructDateCapture");
-		createFieldsResponse.put("17-320100_270110", "constructDateCapture");
-		createFieldsResponse.put("17-320100_270120", "constructDateCapture");
-		createFieldsResponse.put("17-320100_270130", "constructDateCapture");
-		createFieldsResponse.put("17-320100_270140", "constructDateCapture");
-		createFieldsResponse.put("17-320100_270141", "constructDateCapture");
-		createFieldsResponse.put("17-321000_011000", "constructDateCapture");
-		createFieldsResponse.put("17-321000_501000", "constructDateCapture");
-		createFieldsResponse.put("17-321000_501040", "constructDateCapture");
-		createFieldsResponse.put("17-321000_501041", "constructDateCapture");
-		createFieldsResponse.put("17-321000_501042", "constructDateCapture");
-		createFieldsResponse.put("17-322000_012000", "constructDateCapture");
-		createFieldsResponse.put("17-322000_502000", "constructDateCapture");
-		createFieldsResponse.put("17-322000_502040", "constructDateCapture");
-		createFieldsResponse.put("17-322000_502041", "constructDateCapture");
-		createFieldsResponse.put("17-322000_502042", "constructDateCapture");
-		createFieldsResponse.put("17-324000_314000", "constructDateCapture");
-		createFieldsResponse.put("17-324000_404010", "constructDateCapture");
-		createFieldsResponse.put("17-324000_404020", "constructDateCapture");
-		createFieldsResponse.put("17-510100", "constructDateCapture");
-		createFieldsResponse.put("17-510140", "constructDateCapture");
-		createFieldsResponse.put("17-510141", "constructDateCapture");
-		createFieldsResponse.put("38-011000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-012000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-210110", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-210120", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-314000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-320000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-320100_270130", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_311000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_381000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_401010", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_401020", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_501000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_501030", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_501041", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000_312000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000_382000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000_402010", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000_402020", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000_502000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000_502030", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-324000_314000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-381000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-382000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-401000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-401010", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-401020", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-402000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-402010", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-402020", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-404010", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-404020", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-501000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-501030", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-501040", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-501041", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-501042", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-502000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-502030", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-502040", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-502041", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-502042", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-510141", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-320100_270100", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-320100_270110", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-320100_270120", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-320100_270140", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-320100_270141", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_011000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_321000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-321000_401000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000_012000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000_322000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-322000_402000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-324000_404010", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-324000_404020", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-510100", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-510140", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-311000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("38-312000", "constructField38DefaultOrCopy");
-		createFieldsResponse.put("44-222222", "constructField44");
-		createFieldsResponse.put("44-314000", "constructField44");
-		createFieldsResponse.put("44-501030", "constructField44");
-		createFieldsResponse.put("44-501040", "constructField44");
-		createFieldsResponse.put("44-501041", "constructField44");
-		createFieldsResponse.put("44-501042", "constructField44");
-		createFieldsResponse.put("44-502030", "constructField44");
-		createFieldsResponse.put("44-502040", "constructField44");
-		createFieldsResponse.put("44-502041", "constructField44");
-		createFieldsResponse.put("44-502042", "constructField44");
-		createFieldsResponse.put("44-011000", "constuctServiceRspData");
-		createFieldsResponse.put("44-311000", "constructField44");
-		createFieldsResponse.put("44-312000", "constructField44");
-		createFieldsResponse.put("44-320100_270100", "constructField44");
-		createFieldsResponse.put("44-320100_270140", "constructField44");
-		createFieldsResponse.put("44-502000", "constructField44");
-		createFieldsResponse.put("44-510100", "constructField44");
-		createFieldsResponse.put("44-510140", "constructField44");
-		createFieldsResponse.put("44-510141", "constructField44");
-		createFieldsResponse.put("44-501000", "constructField44");
-		createFieldsResponse.put("52-210110", "constructPinDataToBase24Response");
-		createFieldsResponse.put("52-210120", "constructPinDataToBase24Response");
-		createFieldsResponse.put("52-320100_270100", "constructPinDataToBase24Response");
-		createFieldsResponse.put("52-320100_270140", "constructPinDataToBase24Response");
-		createFieldsResponse.put("52-510100", "constructPinDataToBase24Response");
-		createFieldsResponse.put("52-510140", "constructPinDataToBase24Response");
-		createFieldsResponse.put("52-510141", "constructPinDataToBase24Response");
-		createFieldsResponse.put("54-321000_501030", "constructField54");
-		createFieldsResponse.put("54-322000_502030", "constructField54");
-//		createFieldsResponse.put("54-401000", "constructField54");
-//		createFieldsResponse.put("54-402000", "constructField54");
-		createFieldsResponse.put("61-321000_381000", "constructField61");
-		createFieldsResponse.put("61-322000_382000", "constructField61");
-		createFieldsResponse.put("61-381000", "constructField61");
-		createFieldsResponse.put("61-382000", "constructField61");
-		createFieldsResponse.put("61-210110", "constructField61ByDefault");
-		createFieldsResponse.put("61-210120", "constructField61ByDefault");
-		createFieldsResponse.put("61-320100_270100", "constructField61ByDefault");
-		createFieldsResponse.put("61-320100_270110", "constructField61ByDefault");
-		createFieldsResponse.put("61-320100_270120", "constructField61ByDefault");
-		createFieldsResponse.put("61-320100_270130", "constructField61ByDefault");
-		createFieldsResponse.put("61-320100_270140", "constructField61ByDefault");
-		createFieldsResponse.put("61-320100_270141", "constructField61ByDefault");
-		createFieldsResponse.put("61-321000_401010", "constructField61ByDefault");
-		createFieldsResponse.put("61-321000_401020", "constructField61ByDefault");
-		createFieldsResponse.put("61-321000_401000", "constructField61ByDefault");
-		createFieldsResponse.put("61-322000_402000", "constructField61ByDefault");
-		createFieldsResponse.put("61-321000_501000", "constructField61ByDefault");
-		createFieldsResponse.put("61-321000_501030", "constructField61ByDefault");
-		createFieldsResponse.put("61-321000_501040", "constructField61ByDefault");
-		createFieldsResponse.put("61-321000_501041", "constructField61ByDefault");
-		createFieldsResponse.put("61-321000_501042", "constructField61ByDefault");
-		createFieldsResponse.put("61-322000_402010", "constructField61ByDefault");
-		createFieldsResponse.put("61-322000_402020", "constructField61ByDefault");
-		createFieldsResponse.put("61-322000_502000", "constructField61ByDefault");
-		createFieldsResponse.put("61-322000_502030", "constructField61ByDefault");
-		createFieldsResponse.put("61-322000_502040", "constructField61ByDefault");
-		createFieldsResponse.put("61-322000_502041", "constructField61ByDefault");
-		createFieldsResponse.put("61-322000_502042", "constructField61ByDefault");
-		createFieldsResponse.put("61-324000_404010", "constructField61ByDefault");
-		createFieldsResponse.put("61-324000_404020", "constructField61ByDefault");
-		createFieldsResponse.put("61-401000", "constructField61ByDefault");
-		createFieldsResponse.put("61-401010", "constructField61ByDefault");
-		createFieldsResponse.put("61-401020", "constructField61ByDefault");
-		createFieldsResponse.put("61-402000", "constructField61ByDefault");
-		createFieldsResponse.put("61-402010", "constructField61ByDefault");
-		createFieldsResponse.put("61-402020", "constructField61ByDefault");
-		createFieldsResponse.put("61-404010", "constructField61ByDefault");
-		createFieldsResponse.put("61-404020", "constructField61ByDefault");
-		createFieldsResponse.put("61-501030", "constructField61ByDefault");
-		createFieldsResponse.put("61-501040", "constructField61ByDefault");
-		createFieldsResponse.put("61-501041", "constructField61ByDefault");
-		createFieldsResponse.put("61-501042", "constructField61ByDefault");
-		createFieldsResponse.put("61-502000", "constructField61ByDefault");
-		createFieldsResponse.put("61-502030", "constructField61ByDefault");
-		createFieldsResponse.put("61-502040", "constructField61ByDefault");
-		createFieldsResponse.put("61-502041", "constructField61ByDefault");
-		createFieldsResponse.put("61-502042", "constructField61ByDefault");
-		createFieldsResponse.put("61-510100", "constructField61ByDefault");
-		createFieldsResponse.put("61-510140", "constructField61ByDefault");
-		createFieldsResponse.put("61-510141", "constructField61ByDefault");
-		createFieldsResponse.put("61-501000", "constructField61ByDefault");
-		createFieldsResponse.put("61-321000_401000", "constructField61ByDefault");
-		createFieldsResponse.put("61-322000_402000", "constructField61ByDefault");
-//		createFieldsResponse.put("62-401000", "constructFieldFromStructuredData");
-//		createFieldsResponse.put("62-402000", "constructFieldFromStructuredData");
-		createFieldsResponse.put("62-210110", "constructField62InDeclinedResponse");
-		createFieldsResponse.put("62-210120", "constructField62InDeclinedResponse");
-		createFieldsResponse.put("62-320100_270100", "constructField62InDeclinedResponse");
-		createFieldsResponse.put("62-320100_270140", "constructField62InDeclinedResponse");
-		createFieldsResponse.put("62-510100", "constructField62InDeclinedResponse");
-		createFieldsResponse.put("62-510140", "constructField62InDeclinedResponse");
-		createFieldsResponse.put("62-510141", "constructField62InDeclinedResponse");
-		createFieldsResponse.put("62-381000", "constructField62Last5Mov");
-		createFieldsResponse.put("62-382000", "constructField62Last5Mov");
-		createFieldsResponse.put("63-011000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000_011000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000_321000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000_501030", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000_012000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000_322000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000_502030", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000_401010", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000_401020", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000_501040", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000_501042", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000_402010", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000_402020", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000_502040", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000_502041", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000_502042", "constructResponseCodeField63");
-		createFieldsResponse.put("63-501000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-502000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000_501000", "constructResponseCodeField63");
-		createFieldsResponse.put("63-321000_501041", "constructResponseCodeField63");
-		createFieldsResponse.put("63-322000_502000", "constructResponseCodeField63");
-		createFieldsResponse.put("100-401010", "constructField100ACH");
-		createFieldsResponse.put("100-401020", "constructField100ACH");
-		createFieldsResponse.put("100-402010", "constructField100ACH");
-		createFieldsResponse.put("100-402020", "constructField100ACH");
-		createFieldsResponse.put("100-210110", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-210120", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-320100_270100", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-320100_270110", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-320100_270120", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-320100_270130", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-320100_270140", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-320100_270141", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-321000_501000", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-321000_501030", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-321000_501040", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-321000_501041", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-321000_501042", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-322000_502000", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-322000_502030", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-322000_502040", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-322000_502041", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-322000_502042", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-324000_404010", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-324000_404020", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-401000", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-401010", "constructField100DefaultInstitutionIDMasiva");
-		createFieldsResponse.put("100-402000", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-404010", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-404020", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-501030", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-501040", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-501041", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-501042", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-502000", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-502030", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-502040", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-502041", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-502042", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-510100", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-510140", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-510141", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-501000", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-321000_401000", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("100-322000_402000", "constructField100DefaultInstitutionID");
-		createFieldsResponse.put("102-321000_321000", "constructField102DefaultOrCopy");
-		createFieldsResponse.put("102-322000_322000", "constructField102DefaultOrCopy");
-		createFieldsResponse.put("102-320000", "constructField102_103ConsultaCosto");
-		createFieldsResponse.put("102-321000", "constructField102_103ConsultaCosto");
-		createFieldsResponse.put("102-322000", "constructField102_103ConsultaCosto");
-		createFieldsResponse.put("102-321000_311000", "constructField102_103ConsultaCosto");
-		createFieldsResponse.put("102-322000_312000", "constructField102_103ConsultaCosto");
-		createFieldsResponse.put("102-322000_402000", "constructField102DefaultOrCopy");
-		createFieldsResponse.put("102-321000_401000", "constructField102DefaultOrCopy");
-		createFieldsResponse.put("102-401000", "constructField102toB24");
-		createFieldsResponse.put("102-402000", "constructField102toB24");
-		createFieldsResponse.put("104-314000", "constructDefaultField104");
-		createFieldsResponse.put("104-320000", "constructDefaultField104");
-		createFieldsResponse.put("104-404010", "constructDefaultField104");
-		createFieldsResponse.put("104-404020", "constructDefaultField104");
-		createFieldsResponse.put("104-314000", "constructField104Credit");
-		createFieldsResponse.put("104-404010", "constructField104Credit");
-		createFieldsResponse.put("104-404020", "constructField104Credit");
-		createFieldsResponse.put("104-321000_401010", "construct0210ErrorFields");
-		createFieldsResponse.put("104-321000_401020", "construct0210ErrorFields");
-		createFieldsResponse.put("104-322000_402010", "construct0210ErrorFields");
-		createFieldsResponse.put("104-322000_402020", "construct0210ErrorFields");
-		createFieldsResponse.put("104-324000_314000", "constructDefaultField104");
-		createFieldsResponse.put("104-324000_404010", "constructDefaultField104");
-		createFieldsResponse.put("104-324000_404020", "constructDefaultField104");
-		createFieldsResponse.put("104-320100_270130", "constructField104Credit");
-		createFieldsResponse.put("105-321000_501000", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-321000_501030", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-321000_501040", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-321000_501041", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-321000_501042", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-322000_502000", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-322000_502030", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-322000_502040", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-322000_502041", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-322000_502042", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-401000", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-402000", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-501030", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-501040", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-501041", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-501042", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-502000", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-502030", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-502040", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-502041", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-502042", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-501000", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-321000_401000", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("105-322000_402000", "constructField105DefaultOrCopy");
-		createFieldsResponse.put("128-401010", "constructField128");
-
-		deleteFieldsResponse.put("011000", "104-49-52");
-		deleteFieldsResponse.put("012000", "104-49-52");
-		deleteFieldsResponse.put("401000", "15-40-44");
-		deleteFieldsResponse.put("402000", "15-40-44");
-		deleteFieldsResponse.put("321000", "44-54-62-100-104-105");
-		deleteFieldsResponse.put("322000", "44-54-62-100-104-105");
-		deleteFieldsResponse.put("501041", "15");
-		deleteFieldsResponse.put("401010", "15-22-52");
-		deleteFieldsResponse.put("501030", "15-22-44-52-105");
-		
-		copyFieldsResponseRev.put("3", "3");
-		copyFieldsResponseRev.put("4", "4");
-		copyFieldsResponseRev.put("7", "7");
-		copyFieldsResponseRev.put("11", "11");
-		copyFieldsResponseRev.put("22", "22");
-		copyFieldsResponseRev.put("32", "32");
-		copyFieldsResponseRev.put("35", "35");
-		copyFieldsResponseRev.put("37", "37");
-		copyFieldsResponseRev.put("39", "39");
-		// copyFieldsResponseRev.put("41", "41");
-		copyFieldsResponseRev.put("48", "48");
-		copyFieldsResponseRev.put("49", "49");
-		copyFieldsResponseRev.put("54", "54");
-		copyFieldsResponseRev.put("90", "90");
-		copyFieldsResponseRev.put("95", "95");		
-
-//		createFieldsResponseRev.put("48-401000", "constructFieldFromTimedHashTable");
-//		createFieldsResponseRev.put("48-402000", "constructFieldFromTimedHashTable");
-//		createFieldsResponseRev.put("54-401000", "constructDefaultField54");
-//		createFieldsResponseRev.put("54-402000", "constructDefaultField54");
-//		createFieldsResponseRev.put("95-510100", "constructReplacementAmounts");
-//		createFieldsResponseRev.put("95-510140", "constructReplacementAmounts");
-//		createFieldsResponseRev.put("95-510141", "constructReplacementAmounts");
-		createFieldsResponseRev.put("112-501043", "constructField112");
-		createFieldsResponseRev.put("112-502043", "constructField112");
-		createFieldsResponseRev.put("17-401010", "constructField17");
-		createFieldsResponseRev.put("104-401010", "constructDefaultField104");
-
-		transformFieldsResponseRev.put("3-510100", "transformField3ForCreditPaymentATM");
-		transformFieldsResponseRev.put("3-510140", "transformField3ForCreditPaymentATM");
-		transformFieldsResponseRev.put("3-510100", "transformField3ForDepositATM");
-		transformFieldsResponseRev.put("3-510140", "transformField3ForDepositATM");
-		transformFieldsResponseRev.put("3-210110", "transformField3ForDepositATM");
-		transformFieldsResponseRev.put("3-210120", "transformField3ForDepositATM");
-		transformFieldsResponseRev.put("3-510141", "transformField3ForDepositATM");
-//		transformFieldsResponseRev.put("41-011000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-012000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-401000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-402000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-502000", "constructAdditionalRspData");
-//		transformFieldsResponseRev.put("41-501000", "constructAdditionalRspData");
-		transformFieldsResponseRev.put("41-501043", "constructAdditionalRspData");
-		transformFieldsResponseRev.put("41-502043", "constructAdditionalRspData");
-		transformFieldsResponseRev.put("95-012000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-401000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-402000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-011000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-501000", "constructReplacementAmountsZero");
-		transformFieldsResponseRev.put("95-502000", "constructReplacementAmountsZero");
-
-		// deleteFieldsResponseRev.put("17", "17");
-		// deleteFieldsResponseRev.put("102", "102");
-		// deleteFieldsResponseRev.put("103", "103");
-		// deleteFieldsResponseRev.put("104", "104");
-        
-		deleteFieldsResponseRev.put("011000", "15-17-49-102");
-		deleteFieldsResponseRev.put("401000", "100-61-60");
-		deleteFieldsResponseRev.put("402000", "100-61-60");
-		deleteFieldsResponseRev.put("401010", "22-61-95");
-		deleteFieldsResponseRev.put("401020", "61");
-		deleteFieldsResponseRev.put("402010", "61");
-		deleteFieldsResponseRev.put("402020", "61");		
-
-		createFieldsResponseAdv.put("17", "constructOriginalFieldMsg");
-		createFieldsResponseAdv.put("38", "constructAuthorizationIdResponse");
-		createFieldsResponseAdv.put("48", "constructOriginalFieldMsg");
-		createFieldsResponseAdv.put("100", "construct0210ErrorFields");
-		
-		copyFieldsResponseAdv.put("3", "3");
-		copyFieldsResponseAdv.put("4", "4");
-		copyFieldsResponseAdv.put("7", "7");
-		copyFieldsResponseAdv.put("11", "11");
-		copyFieldsResponseAdv.put("12", "12");
-		copyFieldsResponseAdv.put("13", "13");
-		copyFieldsResponseAdv.put("15", "15");
-		copyFieldsResponseAdv.put("22", "22");
-		copyFieldsResponseAdv.put("32", "32");
-		copyFieldsResponseAdv.put("35", "35");
-		copyFieldsResponseAdv.put("37", "37");
-		copyFieldsResponseAdv.put("39", "39");
-		copyFieldsResponseAdv.put("49", "49");
-		copyFieldsResponseAdv.put("90", "90");
-		copyFieldsResponseAdv.put("102", "102");		
-
-		deleteFieldsResponseAdv.put("28", "28");
-		deleteFieldsResponseAdv.put("30", "30");
-
-	}
-
-	/**
-	 *
-	 */
-	public void fillFilters2() {
-
-		try (FileReader fr = new FileReader(routingFilterPath)) {
-			JSONParser parser = new JSONParser();
-			org.json.simple.JSONArray jsonArray = (org.json.simple.JSONArray) parser.parse(fr);
-			for (Object object : jsonArray) {
-				StringBuilder sbKey = new StringBuilder();
-				StringBuilder sbKey2 = new StringBuilder();
-				org.json.simple.JSONObject canal = (org.json.simple.JSONObject) object;
-				String strCanal = (String) canal.get("Canal");
-				String strCodProc = (String) canal.get("Codigo_Proceso");
-				String strEntryMode = (String) canal.get("Modo_Entrada");
-				sbKey.append(strCanal);
-				sbKey.append(strCodProc);
-				sbKey.append(strEntryMode);
-				sbKey2.append(strCanal);
-				sbKey2.append(strCodProc);
-
-				if (!primerFiltroTest2.containsKey(sbKey.toString()))
-					primerFiltroTest2.put(sbKey.toString(), sbKey.toString());
-
-				String strBin = (String) canal.get("BIN");
-				String strCuenta = (String) canal.get("Cuenta");
-
-				// iteracion sobre bines
-				if (!strBin.equals("0")) {
-					String[] strBines = strBin.split(",");
-					for (int i = 0; i < strBines.length; i++) {
-						if (!segundoFiltroTest2.containsKey(sbKey2.toString() + strBines[i]))
-							segundoFiltroTest2.put(sbKey2.toString() + strBines[i], sbKey2.toString() + strBines[i]);
-					}
-				}
-
-				// iteracion sobre tarjetas
-				if (!strCuenta.equals("0")) {
-					String[] strCuentas = strCuenta.split(",");
-					for (int i = 0; i < strCuentas.length; i++) {
-						if (!segundoFiltroTest2.containsKey(sbKey2.toString() + strCuentas[i]))
-							segundoFiltroTest2.put(sbKey2.toString() + strCuentas[i],
-									sbKey2.toString() + strCuentas[i]);
-					}
-				}
-
-			}
-			fr.close();
-		} catch (Exception e) {
-			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
-					"fillFilters2", this.udpClient);
-		}
-
-	}
-
-	/**
-	 * Llena HashMap deacuerdo a lo encontrado en el archivo Json ubicado en la ruta
-	 * routingFilterPath
-	 */
-	public void fillFilters() {
-
-		try (FileReader fr = new FileReader(routingFilterPath)) {
-			JSONParser parser = new JSONParser();
-			org.json.simple.JSONArray jsonArray = (org.json.simple.JSONArray) parser.parse(fr);
-			for (Object object : jsonArray) {
-				StringBuilder sbKey = new StringBuilder();
-				org.json.simple.JSONObject canal = (org.json.simple.JSONObject) object;
-				String strCanal = (String) canal.get("Canal");
-				String strCodProc = (String) canal.get("Codigo_Proceso");
-				sbKey.append(strCanal);
-				sbKey.append(strCodProc);
-
-				String strBin = (String) canal.get("BIN");
-				String strTarjeta = (String) canal.get("Numero_Tarjeta");
-				String strCuenta = (String) canal.get("Cuenta");
-
-				// iteracion sobre bines
-				if (!strBin.equals("0")) {
-					String[] strBines = strBin.split(",");
-					for (int i = 0; i < strBines.length; i++) {
-						if (!primerFiltroTest1.containsKey(sbKey.toString() + strBines[i]))
-							primerFiltroTest1.put(sbKey.toString() + strBines[i], sbKey.toString() + strBines[i]);
-					}
-				}
-
-				// iteracion sobre tarjetas
-				if (!strTarjeta.equals("0")) {
-					String[] strTarjetas = strTarjeta.split(",");
-					for (int i = 0; i < strTarjetas.length; i++) {
-						if (!primerFiltroTest1.containsKey(sbKey.toString() + strTarjetas[i]))
-							primerFiltroTest1.put(sbKey.toString() + strTarjetas[i], sbKey.toString() + strTarjetas[i]);
-					}
-				}
-
-				// iteracion sobre cuentas
-				if (!strCuenta.equals("0")) {
-					String[] strCuentas = strCuenta.split(",");
-					for (int i = 0; i < strCuentas.length; i++) {
-						if (!primerFiltroTest1.containsKey(sbKey.toString() + strCuentas[i]))
-							primerFiltroTest1.put(sbKey.toString() + strCuentas[i], sbKey.toString() + strCuentas[i]);
-					}
-				}
-
-			}
-			fr.close();
-		} catch (Exception e) {
-			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
-					"fillFilters", this.udpClient);
-		}
 
 	}
 
@@ -1223,12 +284,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				issuerId = parameters.get("issuerId").toString();
 				String cfgIpUdpServer = parameters.get("cfgIpUdpServer").toString();
 				String cfgPortUdpServer = parameters.get("cfgPortUdpServer").toString();
+				String cfgPortUdpClient = parameters.get("cfgPortUdpClient").toString();
 				boolean create0220ToTM = (boolean) parameters.get("create0220ToTM");
 				String cfgIpCryptoValidation = parameters.get("ipCryptoValidation").toString();
 				String cfgPortCryptoValidation = parameters.get("portCryptoValidation").toString();
 				JSONArray channelsIds = (JSONArray) parameters.get("channelIds");
 				this.routingFilter = parameters.get("routing_filter").toString();
 				this.routingFilterPath = parameters.get("routing_filter_path").toString();
+				this.routingLoadHashMap = parameters.get("routing_load_hashMap").toString();
 				this.routingField100 = parameters.get("routing_field_100").toString();
 				businessValidation = (boolean) parameters.get("bussinessValidation");
 				try {
@@ -1282,21 +345,23 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_MAC, General.NULLSTRING);
 				}
 
-				this.ipUdpServer = validateIpUdpServerParameter(cfgIpUdpServer);
-				this.portUdpServer = validatePortUdpServerParameter(cfgPortUdpServer);
+				this.ipUdpServer = BussinesRules.validateIpUdpServerParameter(cfgIpUdpServer);
+				this.portUdpServer = BussinesRules.validatePortUdpServerParameter(cfgPortUdpServer);
+				this.portUdpClient = BussinesRules.validatePortUdpServerParameter(cfgPortUdpClient);
 				this.create0220ToTM = create0220ToTM;
-				this.ipCryptoValidation = validateIpUdpServerParameter(cfgIpCryptoValidation);
-				this.portCryptoValidation = Integer.valueOf(validatePortUdpServerParameter(cfgPortCryptoValidation));
-				this.termConsecutiveSection =  parameters.get("terminal_consecutive_section").toString();
+				this.ipCryptoValidation = BussinesRules.validateIpUdpServerParameter(cfgIpCryptoValidation);
+				this.portCryptoValidation = Integer
+						.valueOf(BussinesRules.validatePortUdpServerParameter(cfgPortCryptoValidation));
+				this.termConsecutiveSection = parameters.get("terminal_consecutive_section").toString();
 
 				if (channelsIds.size() != 0) {
 					CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
-					this.keys.put("VBK", crypcfgman.getKwa(this.nameInterface + "_VBK"));
+					fillMaps.putKeys("VBK", crypcfgman.getKwa(this.nameInterface + "_VBK"));
 					channelsIds.stream().forEach(s -> {
 						try {
 							GenericInterface.getLogger()
 									.logLine("Looking pbk " + this.nameInterface + "_" + s.toString() + "_PBK");
-							this.keys.put(s.toString(),
+							fillMaps.putKeys(s.toString(),
 									crypcfgman.getKwa(this.nameInterface + "_" + s.toString() + "_PBK"));
 						} catch (XCrypto e) { // PARA MEJORAR
 							GenericInterface.getLogger().logLine(Utils.getStringMessageException(e));
@@ -1339,56 +404,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		return action;
 	}
 
-	/**
-	 * 
-	 * Validate parameter for connection to udp server
-	 * 
-	 * @param cfgIpUdpServer server's ip
-	 * @throws XNodeParameterValueInvalid if parameter is invalid
-	 */
-	public String validateIpUdpServerParameter(String cfgIpUdpServer) throws XNodeParameterValueInvalid {
-		String ip = null;
-		if (cfgIpUdpServer != null && !cfgIpUdpServer.equals("0")) {
-			if (Client.validateIp(cfgIpUdpServer)) {
-				ip = cfgIpUdpServer;
-			} else {
-				EventRecorder.recordEvent(
-						new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, cfgIpUdpServer));
-				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, cfgIpUdpServer);
-			}
-		} else {
-			EventRecorder.recordEvent(
-					new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, General.NULLSTRING));
-			throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, General.NULLSTRING);
-		}
-		return ip;
-	}
-
-	/**
-	 * 
-	 * Validate parameter for connection to udp server
-	 * 
-	 * @param cfgPortUdpServer server's port
-	 * @throws XNodeParameterValueInvalid if parameter is invalid
-	 */
-	public String validatePortUdpServerParameter(String cfgPortUdpServer) throws XNodeParameterValueInvalid {
-		String port = null;
-		if (cfgPortUdpServer != null && !cfgPortUdpServer.equals("0")) {
-			if (Client.validatePort(cfgPortUdpServer)) {
-				port = cfgPortUdpServer;
-			} else {
-				EventRecorder.recordEvent(new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER,
-						cfgPortUdpServer));
-				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER, cfgPortUdpServer);
-			}
-		} else {
-			EventRecorder.recordEvent(
-					new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER, General.NULLSTRING));
-			throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER, General.NULLSTRING);
-		}
-		return port;
-	}
-
 	/**************************************************************************************
 	 * This method returns an IMessage object constructed from the data received
 	 * from the interchange.
@@ -1429,8 +444,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			udpClient.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "ERR",
 					nameInterface));
 
-			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
-					"newMsg", this.udpClient);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D", "newMsg",
+					this.udpClient);
 
 		}
 		return null;
@@ -1586,24 +601,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 	}
 
-	/**
-	 * Valida si el String es una cadena Hexadecimal.
-	 *
-	 * @param hexString Cadena a validar.
-	 * @return True si la cadena es una cadena hexadecimal.
-	 */
-	public static boolean isHexadecimal(String hexString) {
-		if ((hexString.length() & 2) == 1)
-			return false;
-		char c;
-		for (int i = 0; i < hexString.length(); i++) {
-			c = hexString.charAt(i);
-			if (!('0' <= c && c <= '9' || 'a' <= c && c <= 'f' || 'A' <= c && c <= 'F'))
-				return false;
-		}
-		return true;
-	}
-
 	/************************************************************************************
 	 * Processes a Transaction Request (0200/0201) from a remote interchange.
 	 * Drivers capable of handling this message should implement this method.
@@ -1645,6 +642,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			Base24Ath msgFromRemote = (Base24Ath) msg;
 
 			putRecordIntoSourceToTmHashtableB24(retRefNumber, msgFromRemote);
+
+			udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
 
 //			Base24Ath msgFromRemoteT = new Base24Ath(kwa);
 			Iso8583Post msgToTm = new Iso8583Post();
@@ -1744,8 +744,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				// Iso8583Post msg220=translator.construct0220ToTm(msg, nameInterface);
 				// action.putMsgToTranmgr( );
 				e.printStackTrace();
-				EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
-						retRefNumber, "processTranReqFromInterchange", this.udpClient);
+				EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, retRefNumber,
+						"processTranReqFromInterchange", this.udpClient);
 				udpClient.sendData(Client.getMsgKeyValue(retRefNumber, "Exception in message: " + exceptionMessage,
 						"ERR", nameInterface));
 
@@ -1903,8 +903,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			msg0200ToRev.putMsgType(Iso8583.MsgType._0420_ACQUIRER_REV_ADV);
 
 			msg0200ToRev.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgIsoPost210.getField(Iso8583.Bit._038_AUTH_ID_RSP));
+
 			msg0200ToRev.putField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS,
-					constructField90AutraRevResponse(msgIsoPost210, msg));
+					new ConstructFieldMessage(params).constructField90AutraRevResponse(msgIsoPost210, msg));
 
 			msg0200ToRev.putField(Iso8583.Bit._039_RSP_CODE, msg.getField(Iso8583.Bit._039_RSP_CODE));
 
@@ -1922,24 +923,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			GenericInterface.getLogger().logLine("Base24Ath Rev: " + msg0200ToRev.toString());
 		} catch (XPostilion e) {
-			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
-					retRefNumber, "constructRevAdvToRemote", this.udpClient);
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, retRefNumber,
+					"constructRevAdvToRemote", this.udpClient);
 
 		}
 		return msg0200ToRev;
-	}
-
-	public String constructField90AutraRevResponse(Iso8583Post msg210fromTM, Iso8583Post msg) throws XPostilion {
-
-		StringBuilder sb = new StringBuilder();
-		sb.append(msg.getField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0, 4));
-		sb.append((msg210fromTM.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)));
-		sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
-		sb.append((msg210fromTM.getField(Iso8583.Bit._012_TIME_LOCAL) + "00"));
-		sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
-		sb.append("0000000000");
-
-		return sb.toString();
 	}
 
 	@Override
@@ -2116,7 +1104,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote, objectValidations);
 					GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
 					action.putMsgToTranmgr(Isomsg);
-					putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);					
+					putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
 					break;
 
 				default:
@@ -2181,7 +1169,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			} else {
 				MessageTranslator translator = new MessageTranslator(params);
 
-				Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg); 
+				Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
 				udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
 				GenericInterface.getLogger().logLine("430CONSTRUCTISO8583:" + msgToRemote2);
@@ -2286,15 +1274,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processTranAdvFromInterchange", this.udpClient);
 		}
 		return action;
-	}
-
-	public static String hexToAscci(String hexString) {
-		StringBuilder output = new StringBuilder();
-		for (int i = 0; i < hexString.length(); i += 2) {
-			String str = hexString.substring(i, i + 2);
-			output.append((char) Integer.parseInt(str, 16));
-		}
-		return output.toString();
 	}
 
 	/**************************************************************************************
@@ -2520,7 +1499,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 
 		checkDigits = checkDigits.substring(0, Base24Ath.Length.CHECK_DIGIT);
-		if (!isHexadecimal(checkDigits)) {
+		if (!Utils.isHexadecimal(checkDigits)) {
 			action.putMsgToRemote(constructRspMsgExchangePIN(msgToRemote, Constants.ErrorTypeCsm.INT_CSM_ERROR_GRAL_SRC,
 					Base24Ath.RspCode._17_CUSTOMER_CANCEL, checkDigits));
 			reportEvent(EventId.INVALID_DATA_FIELD_120_KEY_MANAGEMENT, interchange, null);
@@ -2589,11 +1568,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	}
 
 	/**
-	 * Compara el tamaÃ±o de la llave actual con el tamaÃ±o de la llave que
-	 * estÃ¡ entrando.
+	 * Compara el tamano de la llave actual con el tamano de la llave que estÃ¡
+	 * entrando.
 	 * 
 	 * @param keyUnderParent Llave cifrada con la llave padre.
-	 * @param interchange    InfomraciÃ³n de la interchange en Postilion.
+	 * @param interchange    Infomracion de la interchange en Postilion.
 	 * @return True si la llave es vÃ¡lida.
 	 */
 	public final boolean isLoadableKeyLength(String keyUnderParent, AInterchangeDriverEnvironment interchange) {

@@ -3368,5 +3368,19 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 		return strCut;
 	}
+	
+	public String constructField90AutraRevResponse(Iso8583Post msg210fromTM, Iso8583Post msg) throws XPostilion {
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(msg.getField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0, 4));
+		sb.append((msg210fromTM.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)));
+		sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
+		sb.append((msg210fromTM.getField(Iso8583.Bit._012_TIME_LOCAL) + "00"));
+		sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
+		sb.append("0000000000");
+
+		return sb.toString();
+	}
+	
 
 }

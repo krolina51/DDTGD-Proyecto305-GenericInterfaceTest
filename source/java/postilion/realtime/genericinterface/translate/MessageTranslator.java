@@ -148,24 +148,24 @@ public class MessageTranslator extends GenericInterface {
 				String key3 = String.valueOf(i);
 
 				String methodName = null;
-
-				if (createFieldsRequest.containsKey(key1)) {
-					methodName = createFieldsRequest.get(key1);
+                				
+				if (fillMaps.getCreateFieldsRequest().containsKey(key1)) {
+					methodName = fillMaps.getCreateFieldsRequest().get(key1);
 					if (!methodName.equals("N/A"))
 						msgToRmto.putField(i,
 								invoke.invokeMethodConfig(
 										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
 										methodName, msg, i));
 
-				} else if (createFieldsRequest.containsKey(key2)) {
-					methodName = createFieldsRequest.get(key2);
+				} else if (fillMaps.getCreateFieldsRequest().containsKey(key2)) {
+					methodName = fillMaps.getCreateFieldsRequest().get(key2);
 					if (!methodName.equals("N/A"))
 						msgToRmto.putField(i,
 								invoke.invokeMethodConfig(
 										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
 										methodName, msg, i));
-				} else if (createFieldsRequest.containsKey(key3)) {
-					methodName = createFieldsRequest.get(key3);
+				} else if (fillMaps.getCreateFieldsRequest().containsKey(key3)) {
+					methodName = fillMaps.getCreateFieldsRequest().get(key3);
 					if (!methodName.equals("N/A"))
 						msgToRmto.putField(i,
 								invoke.invokeMethodConfig(
@@ -176,7 +176,7 @@ public class MessageTranslator extends GenericInterface {
 			}
 
 			String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-			Set<String> set = deleteFieldsRequest.keySet().stream().filter(s -> s.length() <= 3)
+			Set<String> set = fillMaps.getDeleteFieldsRequest().keySet().stream().filter(s -> s.length() <= 3)
 					.collect(Collectors.toSet());
 
 			if (set.size() > 0) {
@@ -186,9 +186,9 @@ public class MessageTranslator extends GenericInterface {
 					}
 				}
 			}
-
-			if (deleteFieldsRequest.containsKey(PCode)) {
-				String[] parts = deleteFieldsRequest.get(PCode).split("-");
+			
+			if (fillMaps.getDeleteFieldsRequest().containsKey(PCode)) {
+				String[] parts = fillMaps.getDeleteFieldsRequest().get(PCode).split("-");
 				for (String item : parts) {
 					if (msgToRmto.isFieldSet(Integer.parseInt(item))) {
 						msgToRmto.clearField(Integer.parseInt(item));
@@ -251,30 +251,23 @@ public class MessageTranslator extends GenericInterface {
 
 			switch (strTypeMsg) {
 			case "0210":
-
-				copyFieldsResponse = GenericInterface.copyFieldsResponse;
-				deleteFieldsResponse = GenericInterface.deleteFieldsResponse;
-				createFieldsResponse = GenericInterface.createFieldsResponse;
-				transformFieldsResponse = GenericInterface.transformFieldsResponse;
+				copyFieldsResponse = GenericInterface.fillMaps.getCopyFieldsResponse();
+				deleteFieldsResponse = GenericInterface.fillMaps.getDeleteFieldsResponse();
+				createFieldsResponse = GenericInterface.fillMaps.getCreateFieldsResponse();
+				transformFieldsResponse = GenericInterface.fillMaps.getTransformFieldsResponse();
 				pCode126 = sd.get("B24_Field_126") != null ? sd.get("B24_Field_126").substring(22, 28) : null;
-
 				break;
 			case "0230":
-
-				copyFieldsResponse = GenericInterface.copyFieldsResponseAdv;
-				deleteFieldsResponse = GenericInterface.deleteFieldsResponseAdv;
-				createFieldsResponse = GenericInterface.createFieldsResponseAdv;
-				transformFieldsResponse = GenericInterface.transformFieldsResponseAdv;
-
+				copyFieldsResponse = GenericInterface.fillMaps.getCopyFieldsResponseAdv();
+				deleteFieldsResponse = GenericInterface.fillMaps.getDeleteFieldsResponseAdv();
+				createFieldsResponse = GenericInterface.fillMaps.getCreateFieldsResponseAdv();
+				transformFieldsResponse = GenericInterface.fillMaps.getTransformFieldsResponseAdv();
 				break;
-
 			case "0430":
-
-				copyFieldsResponse = GenericInterface.copyFieldsResponseRev;
-				deleteFieldsResponse = GenericInterface.deleteFieldsResponseRev;
-				createFieldsResponse = GenericInterface.createFieldsResponseRev;
-				transformFieldsResponse = GenericInterface.transformFieldsResponseRev;
-
+				copyFieldsResponse = GenericInterface.fillMaps.getCopyFieldsResponseRev();
+				deleteFieldsResponse = GenericInterface.fillMaps.getDeleteFieldsResponseRev();
+				createFieldsResponse = GenericInterface.fillMaps.getCreateFieldsResponseRev();
+				transformFieldsResponse = GenericInterface.fillMaps.getTransformFieldsResponseRev();
 				break;
 			default:
 
@@ -474,7 +467,7 @@ public class MessageTranslator extends GenericInterface {
 
 			sd.put("CARD_NUMBER", msgFromRemote.getTrack2Data().getPan());
 
-			String strCut = ConstructFieldMessage.createfieldCut(msgFromRemote, this.nameInterface, this.cutValues,
+			String strCut = ConstructFieldMessage.createfieldCut(msgFromRemote, this.nameInterface, fillMaps.getCutValues(),
 					this.udpClient);
 			sd.put("CUT_origen_de_la_transaccion", strCut);
 			sd.put("CUT_propio_de_la_transaccion", strCut);
@@ -541,13 +534,12 @@ public class MessageTranslator extends GenericInterface {
 
 	public void processField(Base24Ath msg, Iso8583Post isoMsg, int numField, StructuredData sd) {
 		InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
-		try {
-
-			if (GenericInterface.structuredDataFields.containsKey(String.valueOf(numField))) {
+		try {	
+			if (GenericInterface.fillMaps.getStructuredDataFields().containsKey(String.valueOf(numField))) {
 				sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 						msg.getField(numField));
-			} else if (GenericInterface.transformFields.containsKey(String.valueOf(numField))) {
-				if (GenericInterface.transformFieldsMultipleCases.containsKey(String.valueOf(numField))) {
+			} else if (GenericInterface.fillMaps.getTransformFields().containsKey(String.valueOf(numField))) {
+				if (GenericInterface.fillMaps.getTransformFieldsMultipleCases().containsKey(String.valueOf(numField))) {
 					sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 							msg.getField(numField));
 
@@ -556,7 +548,8 @@ public class MessageTranslator extends GenericInterface {
 					// si el methodName es null, significa que no tiene método para transformar por
 					// lo tanto se copia el campo
 
-					String methodName = GenericInterface.transformFields.get(key);
+					GenericInterface.getLogger().logLine("processField: 17  " + GenericInterface.fillMaps.getTransformFields());//**
+					String methodName = GenericInterface.fillMaps.getTransformFields().get(key);
 
 					String fieldValue = null;
 
@@ -571,7 +564,7 @@ public class MessageTranslator extends GenericInterface {
 					isoMsg.putField(numField, fieldValue);
 
 				} else {
-					String methodName = GenericInterface.transformFields.get(String.valueOf(numField));
+					String methodName = GenericInterface.fillMaps.getTransformFields().get(String.valueOf(numField));
 					if (!methodName.equals("N/A")) {
 						String fieldValue = invoke.invokeMethodConfig(
 								"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg,
@@ -583,7 +576,7 @@ public class MessageTranslator extends GenericInterface {
 					}
 				}
 
-			} else if (GenericInterface.skipCopyFields.containsKey(String.valueOf(numField))) {
+			} else if (GenericInterface.fillMaps.getSkipCopyFields().containsKey(String.valueOf(numField))) {
 				isoMsg.putField(numField, msg.getField(numField));
 				sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 						msg.getField(numField));
@@ -602,11 +595,11 @@ public class MessageTranslator extends GenericInterface {
 		String retRefNumber = "N/D";
 		try {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
-			if (GenericInterface.structuredDataFields.containsKey(String.valueOf(numField))) {
+			if (GenericInterface.fillMaps.getStructuredDataFields().containsKey(String.valueOf(numField))) {
 				sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 						msg.getField(numField));
-			} else if (GenericInterface.transformFields.containsKey(String.valueOf(numField))) {
-				if (GenericInterface.transformFieldsMultipleCases.containsKey(String.valueOf(numField))) {
+			} else if (GenericInterface.fillMaps.getTransformFields().containsKey(String.valueOf(numField))) {
+				if (GenericInterface.fillMaps.getTransformFieldsMultipleCases().containsKey(String.valueOf(numField))) {
 					sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 							msg.getField(numField));
 
@@ -614,8 +607,7 @@ public class MessageTranslator extends GenericInterface {
 
 					// si el methodName es null, significa que no tiene método para transformar por
 					// lo tanto se copia el campo
-
-					String methodName = GenericInterface.transformFields.get(key);
+					String methodName = GenericInterface.fillMaps.getTransformFields().get(key);
 
 					String fieldValue = null;
 
@@ -630,7 +622,7 @@ public class MessageTranslator extends GenericInterface {
 					isoMsg.putField(numField, fieldValue);
 
 				} else {
-					String methodName = GenericInterface.transformFields.get(String.valueOf(numField));
+					String methodName = GenericInterface.fillMaps.getTransformFields().get(String.valueOf(numField));
 
 					if (!methodName.equals("N/A")) {
 						String fieldValue = invoke.invokeMethodConfig(
@@ -643,7 +635,7 @@ public class MessageTranslator extends GenericInterface {
 					}
 				}
 
-			} else if (GenericInterface.skipCopyFields.containsKey(String.valueOf(numField))) {
+			} else if (GenericInterface.fillMaps.getSkipCopyFields().containsKey(String.valueOf(numField))) {
 				isoMsg.putField(numField, msg.getField(numField));
 				sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 						msg.getField(numField));
@@ -662,8 +654,8 @@ public class MessageTranslator extends GenericInterface {
 		String retRefNumber = "N/D";
 		try {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
-			if (GenericInterface.createFields.containsKey(String.valueOf(numField))) {
-				String methodName = GenericInterface.createFields.get(String.valueOf(numField));
+			if (GenericInterface.fillMaps.getCreateFields().containsKey(String.valueOf(numField))) {
+				String methodName = GenericInterface.fillMaps.getCreateFields().get(String.valueOf(numField));
 				GenericInterface.getLogger().logLine("methodName:" + methodName);
 				if (!methodName.equals("N/A")) {
 
@@ -763,8 +755,9 @@ public class MessageTranslator extends GenericInterface {
 		try {
 
 			ConstructFieldMessage cfm = new ConstructFieldMessage(params);
+			
 			// Crea los campos
-			for (String key : GenericInterface.createFields220ToTM.keySet()) {
+			for (String key : GenericInterface.fillMaps.getCreateFields220ToTM().keySet()) {
 
 				int intKey = Integer.parseInt(key);
 				switch (intKey) {
@@ -922,11 +915,10 @@ public class MessageTranslator extends GenericInterface {
 		InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 		switch (resposeMessageType) {
 		case "0210":
-
-			copyFieldsResponse = GenericInterface.copyFieldsResponse;
-			deleteFieldsResponse = GenericInterface.deleteFieldsResponse;
-			createFieldsResponse = GenericInterface.createFieldsResponse;
-			transformFieldsResponse = GenericInterface.transformFieldsResponse;
+			copyFieldsResponse = GenericInterface.fillMaps.getCopyFieldsResponse();
+			deleteFieldsResponse = GenericInterface.fillMaps.getDeleteFieldsResponse();
+			createFieldsResponse = GenericInterface.fillMaps.getCreateFieldsResponse();
+			transformFieldsResponse = GenericInterface.fillMaps.getTransformFieldsResponse();
 			pCode126 = msg.getField(126) != null ? msg.getField(126).substring(22, 28) : null;
 
 			msgToRem.putMsgType(Iso8583.MsgType._0210_TRAN_REQ_RSP);
@@ -938,11 +930,10 @@ public class MessageTranslator extends GenericInterface {
 
 			break;
 		case "0230":
-
-			copyFieldsResponse = GenericInterface.copyFieldsResponseAdv;
-			deleteFieldsResponse = GenericInterface.deleteFieldsResponseAdv;
-			createFieldsResponse = GenericInterface.createFieldsResponseAdv;
-			transformFieldsResponse = GenericInterface.transformFieldsResponseAdv;
+			copyFieldsResponse = GenericInterface.fillMaps.getCopyFieldsResponseAdv();
+			deleteFieldsResponse = GenericInterface.fillMaps.getDeleteFieldsResponseAdv();
+			createFieldsResponse = GenericInterface.fillMaps.getCreateFieldsResponseAdv();
+			transformFieldsResponse = GenericInterface.fillMaps.getTransformFieldsResponseAdv();
 
 			msgToRem.putMsgType(Iso8583.MsgType._0230_TRAN_ADV_RSP);
 
@@ -954,14 +945,11 @@ public class MessageTranslator extends GenericInterface {
 			break;
 
 		case "0430":
-
-			copyFieldsResponse = GenericInterface.copyFieldsResponseRev;
-			deleteFieldsResponse = GenericInterface.deleteFieldsResponseRev;
-			createFieldsResponse = GenericInterface.createFieldsResponseRev;
-			transformFieldsResponse = GenericInterface.transformFieldsResponseRev;
-
+			copyFieldsResponse = GenericInterface.fillMaps.getCopyFieldsResponseRev();
+			deleteFieldsResponse = GenericInterface.fillMaps.getDeleteFieldsResponseRev();
+			createFieldsResponse = GenericInterface.fillMaps.getCreateFieldsResponseRev();
+			transformFieldsResponse = GenericInterface.fillMaps.getTransformFieldsResponseRev();
 			msgToRem.putMsgType(Iso8583.MsgType._0430_ACQUIRER_REV_ADV_RSP);
-
 			break;
 		default:
 

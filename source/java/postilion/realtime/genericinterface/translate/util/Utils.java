@@ -69,7 +69,7 @@ public class Utils {
 	public static String getClearAccount(String encryptedAccId) throws XEncryptionKeyError {
 		return securityManager.decryptToString(encryptedAccId);
 	}
-	
+
 	/**
 	 * Obtiene el id de cuenta en claro.
 	 * 
@@ -78,7 +78,7 @@ public class Utils {
 	 * @throws XEncryptionKeyError En caso de error.
 	 */
 	public static String getEncryptAccount(String clearAccId) throws XEncryptionKeyError {
-		 return securityManager.encrypt(clearAccId);
+		return securityManager.encrypt(clearAccId);
 	}
 
 	/**
@@ -148,13 +148,13 @@ public class Utils {
 	}
 
 	/*
-	 * obtinen el código de respuesta según el tipo de cuenta en el processing code.
+	 * obtinene el codigo de respuesta segun el tipo de cuenta en el processing code.
 	 * Ene el caso de que la tarjeta no tenga una cuenta relacionada en postcard
 	 *
-	 * @param accountType tipo de cuenta obtenido del campo from account delñ
+	 * @param accountType tipo de cuenta obtenido del campo from account del
 	 * processing code
 	 * 
-	 * @return código de respuesta.
+	 * @return codigo de respuesta.
 	 */
 	public static String getRspCodeToCardWithoutAccount(String accountType) {
 		String rspCode;
@@ -204,4 +204,32 @@ public class Utils {
 		}
 		return rows;
 	}
+
+	/**
+	 * Valida si el String es una cadena Hexadecimal.
+	 *
+	 * @param hexString Cadena a validar.
+	 * @return True si la cadena es una cadena hexadecimal.
+	 */
+	public static boolean isHexadecimal(String hexString) {
+		if ((hexString.length() & 2) == 1)
+			return false;
+		char c;
+		for (int i = 0; i < hexString.length(); i++) {
+			c = hexString.charAt(i);
+			if (!('0' <= c && c <= '9' || 'a' <= c && c <= 'f' || 'A' <= c && c <= 'F'))
+				return false;
+		}
+		return true;
+	}
+
+	public static String hexToAscci(String hexString) {
+		StringBuilder output = new StringBuilder();
+		for (int i = 0; i < hexString.length(); i += 2) {
+			String str = hexString.substring(i, i + 2);
+			output.append((char) Integer.parseInt(str, 16));
+		}
+		return output.toString();
+	}
+
 }

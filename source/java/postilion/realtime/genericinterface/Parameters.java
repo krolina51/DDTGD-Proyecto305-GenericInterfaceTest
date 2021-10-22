@@ -8,7 +8,6 @@ import postilion.realtime.genericinterface.translate.util.udp.Client;
 import postilion.realtime.library.common.model.ConfigAllTransaction;
 import postilion.realtime.library.common.model.ResponseCode;
 import postilion.realtime.sdk.crypto.DesKwa;
-import postilion.realtime.sdk.env.calendar.BusinessCalendar;
 import postilion.realtime.sdk.util.TimedHashtable;
 
 public class Parameters {

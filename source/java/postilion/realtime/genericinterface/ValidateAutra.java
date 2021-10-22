@@ -48,9 +48,9 @@ public class ValidateAutra {
 				switch (filtro) {
 				case "Test1":
 				case "Prod1":
-					if (GenericInterface.primerFiltroTest1.containsKey(keyBin)
-							|| GenericInterface.primerFiltroTest1.containsKey(keyTarjeta)
-							|| GenericInterface.primerFiltroTest1.containsKey(keyCuenta.toString()))
+					if (GenericInterface.fillMaps.getPrimerFiltroTest1().containsKey(keyBin)
+							|| GenericInterface.fillMaps.getPrimerFiltroTest1().containsKey(keyTarjeta)
+							|| GenericInterface.fillMaps.getPrimerFiltroTest1().containsKey(keyCuenta.toString()))
 						routingTo = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
 					else
 						routingTo = Constants.TransactionRouting.INT_AUTRA;
@@ -85,17 +85,17 @@ public class ValidateAutra {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13);
 			if (channel.equals("7") || channel.equals("1")) {
-				if ((GenericInterface.migratedCards.containsKey(pan) || GenericInterface.migratedBins.containsKey(bin))
-						&& GenericInterface.migratedOpCodes.containsKey(procCode)) {
+				if ((GenericInterface.fillMaps.getMigratedCards().containsKey(pan) || GenericInterface.fillMaps.getMigratedBins().containsKey(bin))
+						&& GenericInterface.fillMaps.getMigratedOpCodes().containsKey(procCode)) {
 
-					String opCode = GenericInterface.migratedOpCodes.get(procCode);
+					String opCode = GenericInterface.fillMaps.getMigratedOpCodes().get(procCode);
 					switch (opCode) {
 
 					case "890000":// Consultas de costo, se valida si el codigo de procesamiento de la consulta se
 									// encuentra en la tabla de codigos migrados
 
 						String opCode126 = msg.getField(126).substring(22, 28);
-						if (GenericInterface.migratedOpCodes.containsKey(opCode126)) {
+						if (GenericInterface.fillMaps.getMigratedOpCodes().containsKey(opCode126)) {
 							routingTo = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
 						} else {
 							routingTo = Constants.TransactionRouting.INT_AUTRA;
@@ -158,7 +158,7 @@ public class ValidateAutra {
 
 			key1 = channel + procCode + entryMode;
 
-			if (GenericInterface.primerFiltroTest2.containsKey(key1)) {
+			if (GenericInterface.fillMaps.getPrimerFiltroTest2().containsKey(key1)) {
 
 				StringBuilder sb = new StringBuilder();
 				sb.append(channel);
@@ -179,7 +179,7 @@ public class ValidateAutra {
 
 				key2 = sb.toString();
 
-				if (GenericInterface.segundoFiltroTest2.containsKey(key2)) {
+				if (GenericInterface.fillMaps.getSegundoFiltroTest2().containsKey(key2)) {
 					routingTo = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
 				} else {
 					routingTo = Constants.TransactionRouting.INT_AUTRA;
