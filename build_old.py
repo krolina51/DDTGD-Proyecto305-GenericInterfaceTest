@@ -14,9 +14,9 @@ config = {}
 #------------------------------------------------------------------------------#
 config["Project"] = \
 {
-      "Name"                      : "GenericInterfaceSC",
-      "Version"                   : "v0.1-r5.6",
-      "BuildNumber"               : time.strftime("%y%m%d", time.localtime(time.time()))+"1"
+      "Name"                      : "GenericInterfaceTest",
+      "Version"                   : "v1.0-r5.6",
+      "BuildNumber"               : time.strftime("%y%m%d", time.localtime(time.time()))+"1",
 }
 
 #------------------------------------------------------------------------------#
@@ -27,29 +27,6 @@ config["BuildEnvironment"] = \
       "JDKHome"                   : "C:\\Program Files\\Postilion\\realtime\\jdk",
       "OutputDir"                 : ".\\build"
    }
-
-
-#------------------------------------------------------------------------------#
-# Tasks   
-#------------------------------------------------------------------------------#
-config["Tasks"] = \
-{
-      "GenericInterfaceSC"    :
-         {
-            "TaskType"            : RealtimeAppBuilder.TASK_TYPE_INTERCHANGE,
-            "Service"             : True,
-            "Description"         : "GenericInterface",
-            "MainClass"           : "postilion.realtime.sdk.env.App",
-            "ClassArguments"      : 
-               [
-                  "GenericInterfaceSC",
-                  0,
-                  "postilion.realtime.sdk.node.InterchangeProcessor",
-                  "postilion.realtime.sdk.node.Interchange",
-                  "postilion.realtime.genericinterface.GenericInterface"
-               ]
-         }
-}
 
 #------------------------------------------------------------------------------#
 # Events
@@ -69,9 +46,7 @@ config["Java"] = \
        "ClassPaths"                : \
         [
            ".\\resources\\lib\\commonclasslibrary.jar",
-		   ".\\resources\\lib\\json-simple-1.1.jar",
-		   ".\\resources\\lib\\accounts.jar",
-		   ".\\resources\\lib\\calendar.jar",
+		   ".\\resources\\lib\\json-simple-1.1",
         ],
       "SourceDirs"           : \
          [
@@ -105,6 +80,35 @@ config["Documentation"] = \
 				 "Depends"		: [("CommonClassInterface","0.1")]
 			 }
 	}
+
+#------------------------------------------------------------------------------#
+# Database																	   #
+#------------------------------------------------------------------------------#
+# config["Database"] = \
+   # [
+      # (
+         # "realtime",
+         # {	
+			# "SourceDirs"	      : \
+				# [
+					# (".\\source\\sql\\version2.5", RealtimeAppBuilder.INCLUDE_NO_RECURSE),
+				# ],
+			# "UpgradeObjects" : \
+				# [
+					# ("SQL", "realtime",
+						# [
+                            # ("FILE", ".\\build\\sql\\intermediate\\realtime_cust_equivalent_response_code_upgrade_data.*"),
+                            # ("FILE", ".\\build\\sql\\intermediate\\realtime_cust_tm_config_tran_1_upgrade_data.*"),
+                            # ("FILE", ".\\build\\sql\\intermediate\\realtime_cust_tm_config_tran_2_upgrade_data.*"),
+                            # ("FILE", ".\\build\\sql\\intermediate\\realtime_cust_tm_config_tran_3_upgrade_data.*"),
+                            # ("FILE", ".\\build\\sql\\intermediate\\realtime_cust_tm_config_tran_4_upgrade_data.*"),
+							# ("FILE", ".\\build\\sql\\intermediate\\realtime_cust_tm_config_tran_5_upgrade_data.*"),
+						# ]
+					# ),
+				# ],
+         # }
+      # )
+   # ]
 
 #------------------------------------------------------------------------------#
 # Release									 #

@@ -186,6 +186,7 @@ public class Constants {
         public static final int NUMBER_128 = 128;
 		public static final char SPACE = ' ';
 		public static final char ZERO = '0';
+		public static final String FOUR = "4";
 		public static final String SEVEN = "7";
 		public static final String TWO_ZEROS = "00";
 		public static final String THREE_ZEROS = "000";
@@ -323,6 +324,7 @@ public class Constants {
 		public static final String VTL= "VTL";
 		public static final String IVR= "IVR";
 		public static final String OFC= "OFC";
+		public static final String OFCAVAL= "OFCAVAL";
 		//CNB
 		//Retiro con tarjeta CNB
 		public static final String PCODE_RETIRO_CON_TARJETA_CNB_A = "501043";
@@ -528,7 +530,12 @@ public class Constants {
 		public static String ATM_CHANNEL = new String("01");
 		public static String ATM_VIEW_ROUTER = new String("V1");
 		public static String ATM_TRANSACTION_INPUT = new String("ATM_RETIRO");
-		public static String ATM_COD_TRANSACTION = new String("20");
-		
+		public static String ATM_COD_TRANSACTION = new String("20");	
+	}
+	
+	public static final class DefaultOficinasAVAL {
+		public static String OFC_TRANSACTION_INPUT= new String("CNB_PAGO_OBLIGACIONES");
+		public static String OFC_VIEW_ROUTER= new String("V2");
+	
 	}
 }

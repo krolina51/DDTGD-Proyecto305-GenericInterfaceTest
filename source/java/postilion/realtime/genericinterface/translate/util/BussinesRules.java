@@ -55,6 +55,8 @@ public class BussinesRules {
 			} else if ((p41.substring(0, 4).equals("0054") && p41.substring(12, 13).equals("1"))
 					|| (red.equals("1004") || red.equals("1005") || red.equals("1006")))
 				return Constants.Channels.ATM;
+			else if (p41.substring(12, 13).equals(Constants.General.FOUR))
+				channel = Constants.Channels.OFCAVAL;
 			else
 				channel = Constants.Channels.ATM;
 

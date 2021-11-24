@@ -50,6 +50,7 @@ public class Parameters {
 	private HashMap<String, DesKwa> keys = new HashMap<>();
 	private CalendarDTO calendarInfo = null;
 	private String termConsecutiveSection = "";
+	private String responseCodesVersion = null;
 
 	public DesKwa getKwa() {
 		return kwa;
@@ -266,13 +267,22 @@ public class Parameters {
 	public void setTermConsecutiveSection(String termConsecutiveSection) {
 		this.termConsecutiveSection = termConsecutiveSection;
 	}
+	
+
+	public String getResponseCodesVersion() {
+		return responseCodesVersion;
+	}
+
+	public void setResponseCodesVersion(String responseCodesVersion) {
+		this.responseCodesVersion = responseCodesVersion;
+	}
 
 	public Parameters(DesKwa kwa, TimedHashtable sourceTranToTmHashtable, TimedHashtable sourceTranToTmHashtableB24,
 			String issuerId, Client udpClient, String nameInterface, String ipCryptoValidation,
 			int portCryptoValidation, HashMap<String, DesKwa> keys, String routingField100,
 			Map<String, ResponseCode> allCodesIsoToB24, Map<String, ResponseCode> allCodesIscToIso,
 			Map<String, ResponseCode> allCodesIsoToB24TM, Map<String, ResponseCode> allCodesB24ToIso,
-			CalendarDTO calendarInfo, String termConsecutiveSection) {
+			CalendarDTO calendarInfo, String termConsecutiveSection, String responseCodesVersion) {
 		this.kwa = kwa;
 		this.sourceTranToTmHashtable = sourceTranToTmHashtable;
 		this.sourceTranToTmHashtableB24 = sourceTranToTmHashtableB24;
@@ -289,6 +299,7 @@ public class Parameters {
 		this.allCodesB24ToIso = allCodesB24ToIso;
 		this.calendarInfo = calendarInfo;
 		this.termConsecutiveSection = termConsecutiveSection;
+		this.responseCodesVersion = responseCodesVersion;
 	}
 
 	public Parameters() {

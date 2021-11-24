@@ -33,6 +33,7 @@ import postilion.realtime.sdk.message.bitmap.Iso8583;
 import postilion.realtime.sdk.message.bitmap.Iso8583Post;
 import postilion.realtime.sdk.message.bitmap.StructuredData;
 import postilion.realtime.sdk.message.bitmap.XBitmapUnableToConstruct;
+import postilion.realtime.sdk.message.bitmap.XFieldUnableToConstruct;
 import postilion.realtime.sdk.util.DateTime;
 import postilion.realtime.sdk.util.TimedHashtable;
 import postilion.realtime.sdk.util.XPostilion;
@@ -45,7 +46,7 @@ import postilion.realtime.sdk.util.convert.Pack;
  * @author Albert Medina y Fernando Castañeda
  */
 
-public class MessageTranslator extends GenericInterface {
+public class MessageTranslator {
 
 	private DesKwa kwa;
 	private TimedHashtable sourceTranToTmHashtable = null;
@@ -53,6 +54,7 @@ public class MessageTranslator extends GenericInterface {
 	private Map<String, ResponseCode> allCodesIsoToB24TM = new HashMap<>();
 	private Client udpClient = null;
 	private String nameInterface = "";
+	protected String responseCodesVersion = "1";
 	private Parameters params;
 
 	public MessageTranslator() {
@@ -62,9 +64,9 @@ public class MessageTranslator extends GenericInterface {
 	public MessageTranslator(Parameters params) {
 		this.kwa = params.getKwa();
 		this.sourceTranToTmHashtable = params.getSourceTranToTmHashtable();
-		this.sourceTranToTmHashtableB24 = params.getSourceTranToTmHashtableB24();
 		this.udpClient = params.getUdpClient();
 		this.nameInterface = params.getNameInterface();
+		this.responseCodesVersion = params.getResponseCodesVersion();
 		this.params = params;
 	}
 
@@ -148,24 +150,24 @@ public class MessageTranslator extends GenericInterface {
 				String key3 = String.valueOf(i);
 
 				String methodName = null;
-                				
-				if (fillMaps.getCreateFieldsRequest().containsKey(key1)) {
-					methodName = fillMaps.getCreateFieldsRequest().get(key1);
+
+				if (GenericInterface.fillMaps.getCreateFieldsRequest().containsKey(key1)) {
+					methodName = GenericInterface.fillMaps.getCreateFieldsRequest().get(key1);
 					if (!methodName.equals("N/A"))
 						msgToRmto.putField(i,
 								invoke.invokeMethodConfig(
 										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
 										methodName, msg, i));
 
-				} else if (fillMaps.getCreateFieldsRequest().containsKey(key2)) {
-					methodName = fillMaps.getCreateFieldsRequest().get(key2);
+				} else if (GenericInterface.fillMaps.getCreateFieldsRequest().containsKey(key2)) {
+					methodName = GenericInterface.fillMaps.getCreateFieldsRequest().get(key2);
 					if (!methodName.equals("N/A"))
 						msgToRmto.putField(i,
 								invoke.invokeMethodConfig(
 										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
 										methodName, msg, i));
-				} else if (fillMaps.getCreateFieldsRequest().containsKey(key3)) {
-					methodName = fillMaps.getCreateFieldsRequest().get(key3);
+				} else if (GenericInterface.fillMaps.getCreateFieldsRequest().containsKey(key3)) {
+					methodName = GenericInterface.fillMaps.getCreateFieldsRequest().get(key3);
 					if (!methodName.equals("N/A"))
 						msgToRmto.putField(i,
 								invoke.invokeMethodConfig(
@@ -176,8 +178,8 @@ public class MessageTranslator extends GenericInterface {
 			}
 
 			String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-			Set<String> set = fillMaps.getDeleteFieldsRequest().keySet().stream().filter(s -> s.length() <= 3)
-					.collect(Collectors.toSet());
+			Set<String> set = GenericInterface.fillMaps.getDeleteFieldsRequest().keySet().stream()
+					.filter(s -> s.length() <= 3).collect(Collectors.toSet());
 
 			if (set.size() > 0) {
 				for (String item : set) {
@@ -186,9 +188,9 @@ public class MessageTranslator extends GenericInterface {
 					}
 				}
 			}
-			
-			if (fillMaps.getDeleteFieldsRequest().containsKey(PCode)) {
-				String[] parts = fillMaps.getDeleteFieldsRequest().get(PCode).split("-");
+
+			if (GenericInterface.fillMaps.getDeleteFieldsRequest().containsKey(PCode)) {
+				String[] parts = GenericInterface.fillMaps.getDeleteFieldsRequest().get(PCode).split("-");
 				for (String item : parts) {
 					if (msgToRmto.isFieldSet(Integer.parseInt(item))) {
 						msgToRmto.clearField(Integer.parseInt(item));
@@ -391,16 +393,18 @@ public class MessageTranslator extends GenericInterface {
 					"constructBase24", this.udpClient, "of type Exception");
 		}
 
+		GenericInterface.getLogger().logLine("constructBase24:  return " + msgToRmto);
+
 		return msgToRmto;
 	}
 
 	// public Iso8583Post constructIso8583(Base24Ath msgFromRemote, HashMap<String,
 	// String> returnInfoValidations) {
+
 	public Iso8583Post constructIso8583(Base24Ath msgFromRemote, Super objectValidations) {
 		Iso8583Post Iso = new Iso8583Post();
 		tStart = System.currentTimeMillis();
 		String strTypeMsg = msgFromRemote.getMessageType();
-		HashMap<String, String> inforCollectedForStructData = objectValidations.getInforCollectedForStructData();
 		String retRefNumber = "N/D";
 
 		try {
@@ -433,7 +437,6 @@ public class MessageTranslator extends GenericInterface {
 			} else {
 				Iso.putField(Iso8583Post.Bit._026_POS_PIN_CAPTURE_CODE,
 						constructor.constructPosPinCaptureCode(Iso, Iso8583Post.Bit._026_POS_PIN_CAPTURE_CODE));
-
 			}
 
 			Iso.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
@@ -444,79 +447,172 @@ public class MessageTranslator extends GenericInterface {
 			if (strTypeMsg.equals("0420")) {
 				Iso.putPrivField(Iso8583Post.PrivBit._011_ORIGINAL_KEY,
 						msgFromRemote.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0, 32));
+
 				// Iso.putField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS,
 				// msgFromRemote.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS));
 			}
 
-			if (msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE).equals("012000")) {
-				Iso.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "90");
-			}
+			String channel = BussinesRules.channelIdentifier(msgFromRemote, this.nameInterface, this.udpClient);
 
-			sd.put("CHANNEL_TX", BussinesRules.channelIdentifier(msgFromRemote, this.nameInterface, this.udpClient));
+			switch (channel) {
 
-			SettlementDate date = new SettlementDate(this.params.getCalendarInfo().getCalendar());
-			date.calculateDate((Iso8583) msgFromRemote);
-			sd.put("CURRENT_TX", !date.isNextDay() ? "S" : "N");
+			case Constants.Channels.OFCAVAL:
 
-			sd.put("CHANNEL", Constants.DefaultATM.ATM_CHANNEL_NAME);
-			sd.put("Identificacion_Canal", Constants.DefaultATM.ATM_ID_CHANNEL);
-			sd.put("Canal", Constants.DefaultATM.ATM_CHANNEL);
-			sd.put("VIEW_ROUTER", Constants.DefaultATM.ATM_VIEW_ROUTER);
-			sd.put("TRANSACTION_INPUT", Constants.DefaultATM.ATM_TRANSACTION_INPUT);
-			sd.put("Codigo_Transaccion", Constants.DefaultATM.ATM_COD_TRANSACTION);
+				switch (msgFromRemote.getProcessingCode().toString()) {
 
-			sd.put("CARD_NUMBER", msgFromRemote.getTrack2Data().getPan());
+				case Constants.Channels.PCODE_RETIRO_ATM_A:
+				case Constants.Channels.PCODE_RETIRO_ATM_C:
 
-			String strCut = ConstructFieldMessage.createfieldCut(msgFromRemote, this.nameInterface, fillMaps.getCutValues(),
-					this.udpClient);
-			sd.put("CUT_origen_de_la_transaccion", strCut);
-			sd.put("CUT_propio_de_la_transaccion", strCut);
+					sd.put("CHANNEL_TX", channel);
+					SettlementDate date = new SettlementDate(this.params.getCalendarInfo().getCalendar());
+					date.calculateDate((Iso8583) msgFromRemote);
+					sd.put("CURRENT_TX", !date.isNextDay() ? "S" : "N");
 
-			sd.put("Indicador_De_Aceptacion_O_De_No_Preaprobado",
-					BussinesRules.getIndicador_De_Aceptacion_O_De_No_Preaprobado(msgFromRemote));
+					// sd.put("CHANNEL", Constants.DefaultATM.ATM_CHANNEL_NAME);
+					// sd.put("Identificacion_Canal", Constants.DefaultATM.ATM_ID_CHANNEL);
+					// sd.put("Canal", Constants.DefaultATM.ATM_CHANNEL);
+					// sd.put("VIEW_ROUTER", Constants.DefaultATM.ATM_VIEW_ROUTER);
+					sd.put("VIEW_ROUTER", Constants.DefaultOficinasAVAL.OFC_VIEW_ROUTER);
+					// sd.put("TRANSACTION_INPUT", Constants.DefaultATM.ATM_TRANSACTION_INPUT);
+					// sd.put("Codigo_Transaccion", Constants.DefaultATM.ATM_COD_TRANSACTION);
 
-			sd.put("Entidad",
-					msgFromRemote.isFieldSet(Iso8583.Bit._048_ADDITIONAL_DATA)
-							? msgFromRemote.getField(Iso8583.Bit._048_ADDITIONAL_DATA).substring(0, 4)
-							: "0001");
+					sd.put("CARD_NUMBER", msgFromRemote.getTrack2Data().getPan());
 
-			DBHandler account = new DBHandler(this.params);
-			account.accountsClienteCNB(retRefNumber, msgFromRemote.getProcessingCode().toString(),
-					msgFromRemote.getTrack2Data().getPan(), msgFromRemote.getProcessingCode().getFromAccount(),
-					msgFromRemote.getTrack2Data().getExpiryDate(),
-					msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
-							? msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1)
-							: "0000000",
-					objectValidations);
+					String strCut = ConstructFieldMessage.createfieldCut(msgFromRemote, this.nameInterface,
+							GenericInterface.fillMaps.getCutValues(), this.udpClient);
+					sd.put("CUT_origen_de_la_transaccion", strCut);
+					sd.put("CUT_propio_de_la_transaccion", strCut);
 
-			if (!(inforCollectedForStructData == null)) {
-				this.udpClient.sendData(Client.getMsgKeyValue(retRefNumber,
-						"Entro poner hashmap si trae algo el map" + objectValidations.toString(), "LOG",
-						this.nameInterface));
-				for (Map.Entry<String, String> info : inforCollectedForStructData.entrySet()) {
-					sd.put(info.getKey(), info.getValue());
-					this.udpClient.sendData(
-							Client.getMsgKeyValue(retRefNumber, "Entro poner hashmap si trae algo el map Key: "
-									+ info.getKey() + " Value: " + info.getValue(), "LOG", this.nameInterface));
+					sd.put("Indicador_De_Aceptacion_O_De_No_Preaprobado",
+							BussinesRules.getIndicador_De_Aceptacion_O_De_No_Preaprobado(msgFromRemote));
+
+					sd.put("Entidad",
+							msgFromRemote.isFieldSet(Iso8583.Bit._048_ADDITIONAL_DATA)
+									? msgFromRemote.getField(Iso8583.Bit._048_ADDITIONAL_DATA).substring(0, 4)
+									: "0001");
+
+					fillAccount(retRefNumber, msgFromRemote, objectValidations, new DBHandler(this.params));
+
+					sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append("103").toString(),
+							Constants.Account.ACCOUNT_DEFAULT);
+
+					if (strTypeMsg.equals("0420")) {
+						sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append("104").toString(),
+								Constants.Account.ACCOUNT_DEFAULT);
+					}
+
+					if (msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0200_TRAN_REQ)) {
+						// Se invoca al metodo getTransactionConsecutive a fin de obtener el consecutivo
+						// para la transaación
+						String cons = constructor.getTransactionConsecutive(
+								msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).substring(5, 9), "00",
+								this.params.getTermConsecutiveSection());
+						sd.put("REFERENCE_KEY", msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).concat("|")
+								.concat(cons.split(",")[0].trim().concat(cons.split(",")[1].trim())));
+					}
+
+					sd.put("Codigo_Transaccion_Producto",
+							objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE").equals("10")
+									? "05"
+									: "04");
+					sd.put("Tipo_de_Cuenta_Debitada",
+							objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE").equals("10")
+									? "AHO"
+									: "CTE");
+					sd.put("DEBIT_ACCOUNT_NR",
+							objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
+					sd.put("DEBIT_ACCOUNT_TYPE",
+							objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE"));
+					sd.put("DEBIT_CARD_CLASS",
+							objectValidations.getInforCollectedForStructData().get("CLIENT_CARD_CLASS"));
+					sd.put("DEBIT_CARD_NR", objectValidations.getInforCollectedForStructData().get("CLIENT_CARD_NR"));
+
+					break;
+
+				default:
+					break;
+
 				}
+			case Constants.Channels.OFC:
+
+				Super account = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
+						new HashMap<String, String>(), params) {
+
+					@Override
+					public void validations(Base24Ath msg, Super objectValidations) {
+
+					}
+				};
+
+				switch (msgFromRemote.getProcessingCode().toString()) {
+
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_CORRIENTE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_CORRIENTE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_CORRIENTE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_CORRIENTE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_CORRIENTE:
+
+					switch (msgFromRemote.getField(Iso8583.Bit._022_POS_ENTRY_MODE)) {
+
+					case "051":
+						// DEBITO
+						if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(2, 3).equals("0")) {
+
+							fillBasicSDtagsByPayment(sd, msgFromRemote, retRefNumber, account, true);
+
+							// viene solo cuenta corresponsal. CREDITO
+							// TAGS UNICOS
+							// *********************************************************************************
+
+//							Extract.tagsModelPaymentOfObligationsCredit(objectValidations, msgFromRemote);
+							// TAGS UNICOS
+							// **********************************************************************************
+
+//							sd.put("DEBIT_ACCOUNT_NR", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));							
+
+						}
+
+						// CREDITO
+						if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(2, 3).equals("1")) {
+							fillBasicSDtagsByPayment(sd, msgFromRemote, retRefNumber, account, false);
+							sd.put("DEBIT_ACCOUNT_NR", "000000000000");
+						}
+
+						// MIXTA
+						if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(2, 3).equals("2")) {
+							fillBasicSDtagsByPayment(sd, msgFromRemote, retRefNumber, account, true);
+							sd.put("CREDIT_ACCOUNT_TYPE", "2");
+							sd.put("CREDIT_ACCOUNT_NR",
+									msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7));
+						}
+
+						break;
+
+					default:
+						break;
+
+					}
+
+				default:
+					break;
+				}
+
+			default:
+				break;
 			}
 
-			if (msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0200_TRAN_REQ)) {
-				// Se invoca al metodo getTransactionConsecutive a fin de obtener el consecutivo
-				// para la transaación
-				String cons = constructor.getTransactionConsecutive(
-						msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).substring(5, 9), "00",
-						this.params.getTermConsecutiveSection());
-				sd.put("REFERENCE_KEY", msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).concat("|")
-						.concat(cons.split(",")[0].trim().concat(cons.split(",")[1].trim())));
+			if (msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0220_TRAN_ADV)) {
+				Iso.putField(Iso8583Post.Bit._100_RECEIVING_INST_ID_CODE,
+						constructor.constructField100(msgFromRemote, Iso8583Post.Bit._100_RECEIVING_INST_ID_CODE));
 			}
 
-			sd.put("Codigo_Transaccion_Producto", sd.get("CLIENT_ACCOUNT_TYPE").equals("10") ? "05" : "04");
-			sd.put("Tipo_de_Cuenta_Debitada", sd.get("CLIENT_ACCOUNT_TYPE").equals("10") ? "AHO" : "CTE");
-			sd.put("DEBIT_ACCOUNT_NR", sd.get("CLIENT_ACCOUNT_NR"));
-			sd.put("DEBIT_ACCOUNT_TYPE", sd.get("CLIENT_ACCOUNT_TYPE"));
-			sd.put("DEBIT_CARD_CLASS", sd.get("CLIENT_CARD_CLASS"));
-			sd.put("DEBIT_CARD_NR", sd.get("CLIENT_CARD_NR"));
+			fillStructuredData(retRefNumber, sd, objectValidations);
+
 			Iso.putStructuredData(sd);
 
 		} catch (XPostilion e) {
@@ -532,9 +628,75 @@ public class MessageTranslator extends GenericInterface {
 		return Iso;
 	}
 
+	public void fillBasicSDtagsByPayment(StructuredData sd, Base24Ath msgFromRemote, String retRefNumber, Super account,
+			boolean getAccount) {
+		sd.put("TRANSACTION_INPUT", Constants.DefaultOficinasAVAL.OFC_TRANSACTION_INPUT);
+		sd.put("VIEW_ROUTER", Constants.DefaultOficinasAVAL.OFC_VIEW_ROUTER);
+		sd.put("Mod_Credito", "3");
+		sd.put("Mod_CreditoX1", "3");
+		sd.put("TRANSACTION_CNB_TYPE", "OFC_POBLIG_" + "OTROS_CREDITOS");
+		try {
+			sd.put("B24_Field_41", msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID));
+			sd.put("B24_Field_102", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
+			sd.put("B24_Field_103", msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2));
+			sd.put("P_CODE", msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
+			if (getAccount) {
+				fillAccount(retRefNumber, msgFromRemote, account, new DBHandler(this.params));
+				sd.put("DEBIT_ACCOUNT_NR",
+						account.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
+				sd.put("DEBIT_ACCOUNT_TYPE",
+						account.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE"));							
+				sd.put("DEBIT_CARD_CLASS",
+						account.getInforCollectedForStructData().get("CLIENT_CARD_CLASS"));
+			}
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"getAccount", this.udpClient, "of type XPostilion");
+		}
+	}
+
+	public void fillAccount(String retRefNumber, Base24Ath msgFromRemote, Super objectValidations, DBHandler account) {
+		try {
+			account.accountsClienteCNB(retRefNumber, msgFromRemote.getProcessingCode().toString(),
+					msgFromRemote.getTrack2Data().getPan(), msgFromRemote.getProcessingCode().getFromAccount(),
+					msgFromRemote.getTrack2Data().getExpiryDate(),
+					msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
+							? msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1)
+							: "0000000",
+					objectValidations);
+
+		} catch (XFieldUnableToConstruct e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"getAccount", this.udpClient, "of type XFieldUnableToConstruct");
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"getAccount", this.udpClient, "of type XPostilion");
+		} catch (Exception e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"getAccount", this.udpClient, "of type Exception");
+		}
+	}
+
+	public void fillStructuredData(String retRefNumber, StructuredData sd, Super objectValidations) {
+
+		HashMap<String, String> inforCollectedForStructData = objectValidations.getInforCollectedForStructData();
+
+		if (!(inforCollectedForStructData == null)) {
+			this.udpClient.sendData(Client.getMsgKeyValue(retRefNumber,
+					"Entro poner hashmap si trae algo el map" + objectValidations.toString(), "LOG",
+					this.nameInterface));
+			for (Map.Entry<String, String> info : inforCollectedForStructData.entrySet()) {
+				sd.put(info.getKey(), info.getValue());
+				this.udpClient.sendData(Client.getMsgKeyValue(retRefNumber,
+						"Entro poner hashmap si trae algo el map Key: " + info.getKey() + " Value: " + info.getValue(),
+						"LOG", this.nameInterface));
+			}
+		}
+	}
+
 	public void processField(Base24Ath msg, Iso8583Post isoMsg, int numField, StructuredData sd) {
 		InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
-		try {	
+		try {
 			if (GenericInterface.fillMaps.getStructuredDataFields().containsKey(String.valueOf(numField))) {
 				sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append(numField).toString(),
 						msg.getField(numField));
@@ -548,7 +710,6 @@ public class MessageTranslator extends GenericInterface {
 					// si el methodName es null, significa que no tiene método para transformar por
 					// lo tanto se copia el campo
 
-					GenericInterface.getLogger().logLine("processField: 17  " + GenericInterface.fillMaps.getTransformFields());//**
 					String methodName = GenericInterface.fillMaps.getTransformFields().get(key);
 
 					String fieldValue = null;
@@ -656,14 +817,10 @@ public class MessageTranslator extends GenericInterface {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			if (GenericInterface.fillMaps.getCreateFields().containsKey(String.valueOf(numField))) {
 				String methodName = GenericInterface.fillMaps.getCreateFields().get(String.valueOf(numField));
-				GenericInterface.getLogger().logLine("methodName:" + methodName);
 				if (!methodName.equals("N/A")) {
-
 					String fieldValue = invoke.invokeMethodConfig(
 							"postilion.realtime.genericinterface.translate.ConstructFieldMessage", methodName, msg,
 							numField);
-					GenericInterface.getLogger().logLine("fieldValue:" + fieldValue);
-
 					isoMsg.putField(numField, fieldValue);
 				}
 			}
@@ -755,7 +912,7 @@ public class MessageTranslator extends GenericInterface {
 		try {
 
 			ConstructFieldMessage cfm = new ConstructFieldMessage(params);
-			
+
 			// Crea los campos
 			for (String key : GenericInterface.fillMaps.getCreateFields220ToTM().keySet()) {
 

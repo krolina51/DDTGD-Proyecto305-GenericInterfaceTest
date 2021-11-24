@@ -28,29 +28,6 @@ config["BuildEnvironment"] = \
       "OutputDir"                 : ".\\build"
    }
 
-
-#------------------------------------------------------------------------------#
-# Tasks   
-#------------------------------------------------------------------------------#
-config["Tasks"] = \
-{
-      "GenericInterfaceSC"    :
-         {
-            "TaskType"            : RealtimeAppBuilder.TASK_TYPE_INTERCHANGE,
-            "Service"             : True,
-            "Description"         : "GenericInterface",
-            "MainClass"           : "postilion.realtime.sdk.env.App",
-            "ClassArguments"      : 
-               [
-                  "GenericInterfaceSC",
-                  0,
-                  "postilion.realtime.sdk.node.InterchangeProcessor",
-                  "postilion.realtime.sdk.node.Interchange",
-                  "postilion.realtime.genericinterface.GenericInterface"
-               ]
-         }
-}
-
 #------------------------------------------------------------------------------#
 # Events
 #------------------------------------------------------------------------------#

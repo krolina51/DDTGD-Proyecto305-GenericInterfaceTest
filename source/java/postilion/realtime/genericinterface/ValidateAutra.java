@@ -33,7 +33,7 @@ public class ValidateAutra {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			String[] terminalsID = { "8354", "8110", "9631", "9632" };
 			String terminalId = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4, 8);
-
+     
 			if (Arrays.stream(terminalsID).anyMatch(terminalId::equals)) {
 				routingTo = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
 			} else {
@@ -52,9 +52,10 @@ public class ValidateAutra {
 							|| GenericInterface.fillMaps.getPrimerFiltroTest1().containsKey(keyTarjeta)
 							|| GenericInterface.fillMaps.getPrimerFiltroTest1().containsKey(keyCuenta.toString()))
 						routingTo = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
+					
 					else
 						routingTo = Constants.TransactionRouting.INT_AUTRA;
-
+										
 					break;
 				}
 

@@ -970,8 +970,9 @@ public class HashMapBusinessLogic {
 		 * deleteFieldsResponse.put("402000", "15-40-44");
 		 * deleteFieldsResponse.put("321000", "44-54-62-100-104-105");
 		 * deleteFieldsResponse.put("322000", "44-54-62-100-104-105");
-		 * deleteFieldsResponse.put("501041", "15"); deleteFieldsResponse.put("401010",
-		 * "15-22-52"); deleteFieldsResponse.put("501030", "15-22-44-52-105");
+		 * deleteFieldsResponse.put("501041", "15");
+		 * deleteFieldsResponse.put("401010", * * "15-22-52"); 
+		 * deleteFieldsResponse.put("501030", "15-22-44-52-105");
 		 * 
 		 * copyFieldsResponseRev.put("3", "3"); copyFieldsResponseRev.put("4", "4");
 		 * copyFieldsResponseRev.put("7", "7"); copyFieldsResponseRev.put("11", "11");

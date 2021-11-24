@@ -1,7 +1,7 @@
 [Global]
 CompilerVersion		=	1.0
 Language			=	English
-SupportInterfaces	=	GenericInterface1
+SupportInterfaces	=	GenericInterfaceSC
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------
 
