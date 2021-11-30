@@ -420,6 +420,12 @@ public class Constants {
 		public static final String PCODE_ANULACION_COMPRA_CREDIBANCO_A = "201000";
 		public static final String PCODE_ANULACION_COMPRA_CREDIBANCO_C = "202000";
 		
+		//Oficina Aval
+		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_CREDIBANCO_HIPOTECARIO = "230000";
+		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_TARJETA_CREDITO = "233000";
+		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_CUPO_ROTATIVO= "234000";
+		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_OTROS_CREDITOS = "234100";
+		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_CREDITO_MOTO_Y_VEHICULO = "234200";
 		
 	}
 	public static final class TransactionTypes

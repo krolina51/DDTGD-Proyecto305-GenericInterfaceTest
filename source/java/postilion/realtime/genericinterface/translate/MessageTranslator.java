@@ -17,6 +17,7 @@ import postilion.realtime.genericinterface.Parameters;
 import postilion.realtime.genericinterface.channels.Super;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.database.DBHandler;
+import postilion.realtime.genericinterface.translate.database.InfoRelatedToCard;
 import postilion.realtime.genericinterface.translate.stream.Header;
 import postilion.realtime.genericinterface.translate.util.BussinesRules;
 import postilion.realtime.genericinterface.translate.util.Constants;
@@ -31,9 +32,9 @@ import postilion.realtime.library.common.util.constants.TagNameStructuredData;
 import postilion.realtime.sdk.crypto.DesKwa;
 import postilion.realtime.sdk.message.bitmap.Iso8583;
 import postilion.realtime.sdk.message.bitmap.Iso8583Post;
+import postilion.realtime.sdk.message.bitmap.ProcessingCode;
 import postilion.realtime.sdk.message.bitmap.StructuredData;
 import postilion.realtime.sdk.message.bitmap.XBitmapUnableToConstruct;
-import postilion.realtime.sdk.message.bitmap.XFieldUnableToConstruct;
 import postilion.realtime.sdk.util.DateTime;
 import postilion.realtime.sdk.util.TimedHashtable;
 import postilion.realtime.sdk.util.XPostilion;
@@ -414,16 +415,6 @@ public class MessageTranslator {
 			StructuredData sd = new StructuredData();
 			retRefNumber = msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 
-			char[] chars = strBitmap.toCharArray();
-
-			for (int i = 0; i < chars.length; i++) {
-				if (chars[i] == '1') {
-					processField(msgFromRemote, Iso, i + 1, sd);
-				} else {
-					processCreateField(msgFromRemote, Iso, i + 1);
-				}
-			}
-
 			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 			ConstructFieldMessage constructor = new ConstructFieldMessage(this.params);
 			Iso.putField(Iso8583Post.Bit._123_POS_DATA_CODE,
@@ -452,6 +443,25 @@ public class MessageTranslator {
 				// msgFromRemote.getField(Iso8583Post.Bit._090_ORIGINAL_DATA_ELEMENTS));
 			}
 
+			if (msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0200_TRAN_REQ)) {
+				// Se invoca al metodo getTransactionConsecutive a fin de obtener el consecutivo
+				// para la transaación
+				String cons = constructor.getTransactionConsecutive(
+						msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).substring(5, 9), "00",
+						this.params.getTermConsecutiveSection());
+				sd.put("REFERENCE_KEY", msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).concat("|")
+						.concat(cons.split(",")[0].trim().concat(cons.split(",")[1].trim())));
+			}
+
+			Super account = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
+					new HashMap<String, String>(), params) {
+
+				@Override
+				public void validations(Base24Ath msg, Super objectValidations) {
+
+				}
+			};
+
 			String channel = BussinesRules.channelIdentifier(msgFromRemote, this.nameInterface, this.udpClient);
 
 			switch (channel) {
@@ -460,6 +470,7 @@ public class MessageTranslator {
 
 				switch (msgFromRemote.getProcessingCode().toString()) {
 
+				// RETIRO OFIAVAL
 				case Constants.Channels.PCODE_RETIRO_ATM_A:
 				case Constants.Channels.PCODE_RETIRO_ATM_C:
 
@@ -491,7 +502,7 @@ public class MessageTranslator {
 									? msgFromRemote.getField(Iso8583.Bit._048_ADDITIONAL_DATA).substring(0, 4)
 									: "0001");
 
-					fillAccount(retRefNumber, msgFromRemote, objectValidations, new DBHandler(this.params));
+					fillAccount(msgFromRemote, objectValidations, new DBHandler(this.params), retRefNumber);
 
 					sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append("103").toString(),
 							Constants.Account.ACCOUNT_DEFAULT);
@@ -499,16 +510,6 @@ public class MessageTranslator {
 					if (strTypeMsg.equals("0420")) {
 						sd.put(new StringBuilder().append(Constants.Config.TAGNAMESD).append("104").toString(),
 								Constants.Account.ACCOUNT_DEFAULT);
-					}
-
-					if (msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0200_TRAN_REQ)) {
-						// Se invoca al metodo getTransactionConsecutive a fin de obtener el consecutivo
-						// para la transaación
-						String cons = constructor.getTransactionConsecutive(
-								msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).substring(5, 9), "00",
-								this.params.getTermConsecutiveSection());
-						sd.put("REFERENCE_KEY", msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).concat("|")
-								.concat(cons.split(",")[0].trim().concat(cons.split(",")[1].trim())));
 					}
 
 					sd.put("Codigo_Transaccion_Producto",
@@ -526,26 +527,12 @@ public class MessageTranslator {
 					sd.put("DEBIT_CARD_CLASS",
 							objectValidations.getInforCollectedForStructData().get("CLIENT_CARD_CLASS"));
 					sd.put("DEBIT_CARD_NR", objectValidations.getInforCollectedForStructData().get("CLIENT_CARD_NR"));
+					
+					GenericInterface.getLogger().logLine("RETIRO 1");
 
 					break;
 
-				default:
-					break;
-
-				}
-			case Constants.Channels.OFC:
-
-				Super account = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING,
-						new HashMap<String, String>(), params) {
-
-					@Override
-					public void validations(Base24Ath msg, Super objectValidations) {
-
-					}
-				};
-
-				switch (msgFromRemote.getProcessingCode().toString()) {
-
+				// PAGO OBLIGACIONES OFIAVAL
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_AHORROS:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_AHORROS:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_AHORROS:
@@ -559,11 +546,14 @@ public class MessageTranslator {
 
 					switch (msgFromRemote.getField(Iso8583.Bit._022_POS_ENTRY_MODE)) {
 
+					// CHIP-TARJETA
 					case "051":
 						// DEBITO
 						if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(2, 3).equals("0")) {
+							
+							GenericInterface.getLogger().logLine("PAGOS 0");
 
-							fillBasicSDtagsByPayment(sd, msgFromRemote, retRefNumber, account, true);
+							fillBasicSDtagsByPayment(msgFromRemote, sd, account, retRefNumber, true);
 
 							// viene solo cuenta corresponsal. CREDITO
 							// TAGS UNICOS
@@ -579,13 +569,17 @@ public class MessageTranslator {
 
 						// CREDITO
 						if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(2, 3).equals("1")) {
-							fillBasicSDtagsByPayment(sd, msgFromRemote, retRefNumber, account, false);
+							
+							GenericInterface.getLogger().logLine("PAGOS 1");
+							fillBasicSDtagsByPayment(msgFromRemote, sd, account, retRefNumber, false);
 							sd.put("DEBIT_ACCOUNT_NR", "000000000000");
 						}
 
 						// MIXTA
 						if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(2, 3).equals("2")) {
-							fillBasicSDtagsByPayment(sd, msgFromRemote, retRefNumber, account, true);
+							
+							GenericInterface.getLogger().logLine("PAGOS 2");
+							fillBasicSDtagsByPayment(msgFromRemote, sd, account, retRefNumber, true);
 							sd.put("CREDIT_ACCOUNT_TYPE", "2");
 							sd.put("CREDIT_ACCOUNT_NR",
 									msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7));
@@ -598,6 +592,102 @@ public class MessageTranslator {
 
 					}
 
+					break;
+
+				// TRANSFERENCIAS OFIAVAL
+				case Constants.Channels.PCODE_TRANSFERENCIAS_AHORROS_A_AHORROS:
+					switch (msgFromRemote.getField(Iso8583.Bit._022_POS_ENTRY_MODE)) {
+
+					// CHIP-TARJETA
+					case "051":
+						// DEBITO
+						if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(2, 3).equals("0")) {
+
+							GenericInterface.getLogger().logLine("MIXTA 0");
+							
+							// TAGS ISC
+							// **********************************************************************************************************
+							fillAccount(msgFromRemote, objectValidations, new DBHandler(this.params), retRefNumber);
+							fillSDtagsInfoAccount(msgFromRemote, objectValidations, retRefNumber);
+							// TAGS ISC
+							// **********************************************************************************************************
+
+						}
+
+						// CREDITO
+						if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(2, 3).equals("1")) {
+
+							GenericInterface.getLogger().logLine("MIXTA 1");
+							
+							// TAGS ISC
+							// ****************************************************************************************************
+							fillInfoSDToTransactionByAccount(msgFromRemote, objectValidations,
+									new DBHandler(this.params), retRefNumber);
+							objectValidations.putInforCollectedForStructData("CREDIT_ACCOUNT_NR",
+									objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_NR"));
+							objectValidations.tagsEncodeSensitiveData("DEBIT_ACCOUNT_NR",
+									msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(
+											msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).length() - 18),
+									objectValidations);
+							objectValidations.putInforCollectedForStructData("CREDIT_ACCOUNT_TYPE",
+									objectValidations.getInforCollectedForStructData().get("CLIENT2_ACCOUNT_TYPE"));
+							objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_TYPE",
+									new ProcessingCode(msgFromRemote.getField(3)).getFromAccount());
+							fillAccount(msgFromRemote, account, new DBHandler(this.params), retRefNumber);
+							objectValidations.putInforCollectedForStructData("DEBIT_CARD_CLASS",
+									account.getInforCollectedForStructData().get("CLIENT_CARD_CLASS"));
+							objectValidations.putInforCollectedForStructData("P_CODE",
+									account.getInforCollectedForStructData().get("P_CODE"));
+							// TAGS ISC
+							// ****************************************************************************************************
+
+						}
+
+						// MIXTA
+						if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(2, 3).equals("2")) {
+							
+							GenericInterface.getLogger().logLine("MIXTA 2");
+
+							// TAGS ISC
+							// ****************************************************************************************************
+							fillAccount(msgFromRemote, objectValidations, new DBHandler(this.params), retRefNumber);
+							objectValidations.tagsEncodeSensitiveData("CLIENT2_ACCOUNT_NR",
+									msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7),
+									objectValidations);
+							objectValidations.putInforCollectedForStructData("CLIENT2_ACCOUNT_TYPE",
+									new ProcessingCode(msgFromRemote.getField(3)).getToAccount());
+							fillSDtagsInfoAccount(msgFromRemote, objectValidations, retRefNumber);
+							// TAGS ISC
+							// ****************************************************************************************************
+
+						}
+						break;
+					default:
+
+					}
+
+					break;
+
+				// DEVOLUCION CANJE
+				case Constants.Channels.PCODE_DEVOLUCION_CANJE_PAGO_A_CREDIBANCO_HIPOTECARIO:
+				case Constants.Channels.PCODE_DEVOLUCION_CANJE_PAGO_A_TARJETA_CREDITO:
+				case Constants.Channels.PCODE_DEVOLUCION_CANJE_PAGO_A_CUPO_ROTATIVO:
+				case Constants.Channels.PCODE_DEVOLUCION_CANJE_PAGO_A_OTROS_CREDITOS:
+				case Constants.Channels.PCODE_DEVOLUCION_CANJE_PAGO_A_CREDITO_MOTO_Y_VEHICULO:
+
+					GenericInterface.getLogger().logLine("ESTO ES DEVOLUCION CANJE");
+					
+					objectValidations.putInforCollectedForStructData("B24_Field_35",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
+					Iso.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+					Iso.putField(Iso8583.Bit._004_AMOUNT_TRANSACTION,
+							msgFromRemote.getField(Iso8583.Bit._054_ADDITIONAL_AMOUNTS).substring(30));
+					Iso.putField(Iso8583.Bit._017_DATE_CAPTURE, msgFromRemote.getField(Iso8583.Bit._015_DATE_SETTLE));
+					fillAccount(msgFromRemote, account, new DBHandler(this.params), retRefNumber);
+					objectValidations.putInforCollectedForStructData("P_CODE",
+							account.getInforCollectedForStructData().get("P_CODE"));
+					break;
+
 				default:
 					break;
 				}
@@ -605,13 +695,27 @@ public class MessageTranslator {
 			default:
 				break;
 			}
+			
+			GenericInterface.getLogger().logLine("SALE DE LOS CASE 1");
+
+			char[] chars = strBitmap.toCharArray();
+
+			for (int i = 0; i < chars.length; i++) {
+				if (chars[i] == '1') {
+					processField(msgFromRemote, Iso, i + 1, sd);
+				} else {
+					processCreateField(msgFromRemote, Iso, i + 1);
+				}
+			}
+
+			
 
 			if (msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0220_TRAN_ADV)) {
 				Iso.putField(Iso8583Post.Bit._100_RECEIVING_INST_ID_CODE,
 						constructor.constructField100(msgFromRemote, Iso8583Post.Bit._100_RECEIVING_INST_ID_CODE));
 			}
 
-			fillStructuredData(retRefNumber, sd, objectValidations);
+			fillStructuredData(objectValidations, sd, retRefNumber);
 
 			Iso.putStructuredData(sd);
 
@@ -628,8 +732,75 @@ public class MessageTranslator {
 		return Iso;
 	}
 
-	public void fillBasicSDtagsByPayment(StructuredData sd, Base24Ath msgFromRemote, String retRefNumber, Super account,
-			boolean getAccount) {
+	/**
+	 * llena informacion de cuenta relacionada en el track2 de cuenta
+	 *
+	 * @param Base24Ath Message from Interchange in Base24
+	 * @param Super     objectValidations to filling SD information
+	 * @param DBHandler handler to call accountsByNumberClientCNB method
+	 * 
+	 */
+	public void fillInfoSDToTransactionByAccount(Base24Ath msgFromRemote, Super objectValidations, DBHandler handler,
+			String retRefNumber) {
+
+		try {
+			InfoRelatedToCard infoCard = handler.accountsByNumberClientCNB(
+					msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"0" + msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7),
+					new ProcessingCode(msgFromRemote.getField(3)).getToAccount(), objectValidations);
+			infoCard.loadInfoToTransactionByAccount(objectValidations);
+		} catch (Exception e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"fillInfoSDToTransactionByAccount", this.udpClient, "of type Exception");
+		}
+
+	}
+
+	/**
+	 * llena informacion de cuenta debito, credito apartir de la informacion del
+	 * cliente
+	 *
+	 * @param Base24Ath Message from Interchange in Base24
+	 * @param Super     objectValidations to filling SD information
+	 * @param String    retRefNumber in case of exception
+	 * 
+	 */
+	public void fillSDtagsInfoAccount(Base24Ath msgFromRemote, Super objectValidations, String retRefNumber) {
+		try {
+			objectValidations.tagsEncodeSensitiveData("CREDIT_ACCOUNT_NR",
+					msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7), objectValidations);
+			objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
+					objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
+			objectValidations.putInforCollectedForStructData("CREDIT_ACCOUNT_TYPE",
+					new ProcessingCode(msgFromRemote.getField(3)).getToAccount());
+			objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_TYPE",
+					objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE"));
+			objectValidations.putInforCollectedForStructData("DEBIT_CARD_NR",
+					objectValidations.getInforCollectedForStructData().get("CLIENT_CARD_NR"));
+			objectValidations.putInforCollectedForStructData("DEBIT_CARD_CLASS",
+					objectValidations.getInforCollectedForStructData().get("CLIENT_CARD_CLASS"));
+			objectValidations.putInforCollectedForStructData("DEBIT_CUSTOMER_ID",
+					objectValidations.getInforCollectedForStructData().get("CUSTOMER_ID"));
+			objectValidations.putInforCollectedForStructData("DEBIT_CUSTOMER_NAME",
+					objectValidations.getInforCollectedForStructData().get("CUSTOMER_NAME"));
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"fillSDtagsInfoAccount", this.udpClient, "of type XPostilion");
+		}
+
+	}
+
+	/**
+	 * llena informacion basica en tags para pago de obligaciones
+	 *
+	 * @param Base24Ath      Message from Interchange in Base24
+	 * @param StructuredData sd to filling information
+	 * @param Super          account to filling SD information
+	 * @param String         retRefNumber in case of exception
+	 * 
+	 */
+	public void fillBasicSDtagsByPayment(Base24Ath msgFromRemote, StructuredData sd, Super account, String retRefNumber,
+			boolean getDebitAccount) {
 		sd.put("TRANSACTION_INPUT", Constants.DefaultOficinasAVAL.OFC_TRANSACTION_INPUT);
 		sd.put("VIEW_ROUTER", Constants.DefaultOficinasAVAL.OFC_VIEW_ROUTER);
 		sd.put("Mod_Credito", "3");
@@ -640,44 +811,59 @@ public class MessageTranslator {
 			sd.put("B24_Field_102", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
 			sd.put("B24_Field_103", msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2));
 			sd.put("P_CODE", msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
-			if (getAccount) {
-				fillAccount(retRefNumber, msgFromRemote, account, new DBHandler(this.params));
-				sd.put("DEBIT_ACCOUNT_NR",
-						account.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
-				sd.put("DEBIT_ACCOUNT_TYPE",
-						account.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE"));							
-				sd.put("DEBIT_CARD_CLASS",
-						account.getInforCollectedForStructData().get("CLIENT_CARD_CLASS"));
+			if (getDebitAccount) {
+				fillAccount(msgFromRemote, account, new DBHandler(this.params), retRefNumber);
+				sd.put("DEBIT_ACCOUNT_NR", account.getInforCollectedForStructData().get("CLIENT_ACCOUNT_NR"));
+				sd.put("DEBIT_ACCOUNT_TYPE", account.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE"));
+				sd.put("DEBIT_CARD_CLASS", account.getInforCollectedForStructData().get("CLIENT_CARD_CLASS"));
 			}
 		} catch (XPostilion e) {
 			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
-					"getAccount", this.udpClient, "of type XPostilion");
+					"fillBasicSDtagsByPayment", this.udpClient, "of type XPostilion");
 		}
 	}
 
-	public void fillAccount(String retRefNumber, Base24Ath msgFromRemote, Super objectValidations, DBHandler account) {
+	/**
+	 * llena informacion de la cuenta realacionada a la tarjeta
+	 *
+	 * @param Base24Ath Message from Interchange in Base24
+	 * @param Super     objectValidations to filling information
+	 * @param DBHandler handler to call accountsClienteCNB method
+	 * @param String    retRefNumber in case of exception
+	 * 
+	 */
+	public void fillAccount(Base24Ath msgFromRemote, Super objectValidations, DBHandler handler, String retRefNumber) {
 		try {
-			account.accountsClienteCNB(retRefNumber, msgFromRemote.getProcessingCode().toString(),
-					msgFromRemote.getTrack2Data().getPan(), msgFromRemote.getProcessingCode().getFromAccount(),
-					msgFromRemote.getTrack2Data().getExpiryDate(),
-					msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
-							? msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1)
-							: "0000000",
-					objectValidations);
 
-		} catch (XFieldUnableToConstruct e) {
-			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
-					"getAccount", this.udpClient, "of type XFieldUnableToConstruct");
-		} catch (XPostilion e) {
-			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
-					"getAccount", this.udpClient, "of type XPostilion");
+			InfoRelatedToCard infoCard = handler.accountsClienteCNB(
+					msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote.getTrack2Data().getPan(),
+					msgFromRemote.getTrack2Data().getExpiryDate(), objectValidations);
+			infoCard.chooseAccountWithDefault(
+					msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)
+							? "0" + msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1)
+									.substring(msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).length() - 17)
+							: Constants.General.SIXTEEN_ZEROS,
+					new ProcessingCode(msgFromRemote.getField(3)).getFromAccount());
+			infoCard.loadInfoToTransaction(objectValidations, new ProcessingCode(msgFromRemote.getField(3)).toString());
+
+//			account.accountsClienteCNB(retRefNumber, msgFromRemote.getTrack2Data().getPan(),
+//					msgFromRemote.getTrack2Data().getExpiryDate(), objectValidations);
+
 		} catch (Exception e) {
 			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
-					"getAccount", this.udpClient, "of type Exception");
+					"fillAccount", this.udpClient, "of type Exception");
 		}
 	}
 
-	public void fillStructuredData(String retRefNumber, StructuredData sd, Super objectValidations) {
+	/**
+	 * llena informacion que trae hash map de la clase super al Structured Data
+	 *
+	 * @param Super          objectValidations to write information
+	 * @param StructuredData sd to fill information
+	 * @param String         retRefNumber in case of exception
+	 * 
+	 */
+	public void fillStructuredData(Super objectValidations, StructuredData sd, String retRefNumber) {
 
 		HashMap<String, String> inforCollectedForStructData = objectValidations.getInforCollectedForStructData();
 
@@ -933,7 +1119,7 @@ public class MessageTranslator {
 
 			msgToTm.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
 					new ConstructFieldMessage(this.params).constructSwitchKey(msgToTm, nameInterchange));
-			GenericInterface.getLogger().logLine("EXception message:" + GenericInterface.exceptionMessage);
+			GenericInterface.getLogger().logLine("Exception message:" + GenericInterface.exceptionMessage);
 
 			sd.put("ERROR_MESSAGE:", GenericInterface.exceptionMessage);
 			msgToTm.putStructuredData(sd);
