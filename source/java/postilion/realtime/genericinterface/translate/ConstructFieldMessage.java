@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.Parameters;
 import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
@@ -3040,6 +3041,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 					.parse(new SimpleDateFormat("yyyy-MM-dd").format(objectBusinessCalendar.getCurrentBusinessDate()));
 
 			String dateCapture = msg.getField(Iso8583.Bit._017_DATE_CAPTURE);
+
+			GenericInterface.getLogger().logLine(dateCapture + " num campo " + num);
+
 			LocalDate DateCapture = LocalDate.parse(currentBusinessDate.getYear() + "-" + dateCapture.substring(0, 2)
 					+ "-" + dateCapture.substring(2, 4));
 
@@ -3313,10 +3317,10 @@ public class ConstructFieldMessage extends MessageTranslator {
 	/**
 	 * Validate field four of incoming message all transaction types
 	 * 
-	 * @param msg              message in base24
-	 * @param nameInterface    name of Interface where the event occurs
-	 * @param cutValues        Map
-	 * @param udpClient        Client object to report to monitor UDP
+	 * @param msg           message in base24
+	 * @param nameInterface name of Interface where the event occurs
+	 * @param cutValues     Map
+	 * @param udpClient     Client object to report to monitor UDP
 	 * @return CUT
 	 * @throws XPostilion
 	 * 
@@ -3377,7 +3381,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 		return strCut;
 	}
-	
+
 	public String constructField90AutraRevResponse(Iso8583Post msg210fromTM, Iso8583Post msg) throws XPostilion {
 
 		StringBuilder sb = new StringBuilder();
@@ -3390,6 +3394,55 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 		return sb.toString();
 	}
-	
+
+	/**************************************************************************************
+	 * return twenty five Zeros
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value field 44 for query OwnerShip
+	 * @throws XPostilion
+	 *************************************************************************************/
+	public static String constructField44QueryOwnerShip(Object object, Integer num) throws XPostilion {
+		return "0000000000000000000000000";
+	}
+
+	/**************************************************************************************
+	 * return four Zeros with right spaces
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value field 63 for query OwnerShip
+	 * @throws XPostilion
+	 *************************************************************************************/
+	public static String constructField63QueryOwnerShip(Object object, Integer num) throws XPostilion {
+		return Pack.resize("0000", General.LENGTH_44, General.SPACE, true);
+	}
+
+	/**************************************************************************************
+	 * return name and Id Account holder
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value field 125 for Account holder
+	 * @throws XPostilion
+	 *************************************************************************************/
+	public String constructField125QueryOwnerShip(Object object, Integer num) throws XPostilion {
+		Iso8583Post msg = (Iso8583Post) object;
+
+		String typIdeAccountHolder = "";
+		String idAccountHolder = "";
+		String nameAccountHolder = "CLIENTE ANONIMO";
+
+		if (msg.getStructuredData().get("TIT_TYPE") != null)
+			typIdeAccountHolder = msg.getStructuredData().get("TIT_TYPE");
+		if (msg.getStructuredData().get("TIT_IDEN") != null)
+			idAccountHolder = msg.getStructuredData().get("TIT_IDEN");
+		if (msg.getStructuredData().get("TIT_NOMBRE") != null)
+			nameAccountHolder = msg.getStructuredData().get("TIT_NOMBRE");
+
+		StringBuilder command = new StringBuilder(Pack.resize(typIdeAccountHolder, 1, General.SPACE, false))
+				.append(Pack.resize(nameAccountHolder, 30, General.SPACE, true))
+				.append(Pack.resize(idAccountHolder, 11, '0', false));
+
+		return command.toString();
+	}
 
 }

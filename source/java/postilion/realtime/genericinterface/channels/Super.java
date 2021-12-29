@@ -279,6 +279,8 @@ public abstract class Super {
 		if (msg.isFieldSet(Iso8583.Bit._004_AMOUNT_TRANSACTION))
 			msgToTM.putField(Iso8583.Bit._004_AMOUNT_TRANSACTION,
 					msg.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION).toString());
+		else
+			msgToTM.putField(Iso8583.Bit._004_AMOUNT_TRANSACTION, Constants.General.TWELVE_ZEROS);
 
 		if (msg.isFieldSet(Iso8583.Bit._007_TRANSMISSION_DATE_TIME))
 			msgToTM.putField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME,
@@ -307,7 +309,15 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE,
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
-		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
+		if (msg.getProcessingCode().toString().equals("333000")) { 
+
+			msgToTM.putField(Iso8583.Bit._003_PROCESSING_CODE,
+					Iso8583Post.TranType._32_GENERAL_INQUIRY
+							.concat(new ProcessingCode(msg.getField(3)).getFromAccount())
+							.concat(msg.getProcessingCode().getToAccount()).toString());
+			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+
+		} else if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
 			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
 			case "008823":
 			case "008802":
@@ -349,6 +359,8 @@ public abstract class Super {
 		if (msg.isFieldSet(Iso8583.Bit._049_CURRENCY_CODE_TRAN))
 			msgToTM.putField(Iso8583.Bit._049_CURRENCY_CODE_TRAN,
 					msg.getField(Iso8583.Bit._049_CURRENCY_CODE_TRAN).toString());
+		else
+			msgToTM.putField(Iso8583.Bit._049_CURRENCY_CODE_TRAN, Constants.General.DEFAULT_ERROR_049);
 
 		if (msg.isFieldSet(Iso8583.Bit._052_PIN_DATA))
 			msgToTM.putField(Iso8583.Bit._052_PIN_DATA,

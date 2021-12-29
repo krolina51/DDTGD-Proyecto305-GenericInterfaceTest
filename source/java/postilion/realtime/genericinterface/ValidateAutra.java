@@ -19,13 +19,20 @@ public class ValidateAutra {
 	 ************************************************************************************/
 	public static int getRouting(Base24Ath msg, Client udpClient, String nameInterface, String filtro)
 			throws XFieldUnableToConstruct {
+
+		int routingTo = 0;
+		
+		if (filtro.equals("Capa")) 
+			// Tarjetas de credito son administradas por FirstData
+			return msg.getProcessingCode().toString().equals("333000") ? Constants.TransactionRouting.INT_AUTRA
+					: Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
+		
 		// deuda tecnica
 		String retRefNumber = "N/D";
 		String channel = "N/D";
 		String pan = msg.getTrack2Data().getPan();
 		String procCode = msg.getProcessingCode().toString();
 		String bin = pan.substring(0, 6);
-		int routingTo = 0;
 		StringBuilder keyCuenta = new StringBuilder();
 		try {
 			channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13).equals(" ") ? "E"
@@ -33,7 +40,6 @@ public class ValidateAutra {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			String[] terminalsID = { "8354", "8110", "9631", "9632" };
 			String terminalId = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4, 8);
-     
 			if (Arrays.stream(terminalsID).anyMatch(terminalId::equals)) {
 				routingTo = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
 			} else {
@@ -52,10 +58,10 @@ public class ValidateAutra {
 							|| GenericInterface.fillMaps.getPrimerFiltroTest1().containsKey(keyTarjeta)
 							|| GenericInterface.fillMaps.getPrimerFiltroTest1().containsKey(keyCuenta.toString()))
 						routingTo = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
-					
+
 					else
 						routingTo = Constants.TransactionRouting.INT_AUTRA;
-										
+
 					break;
 				}
 
@@ -67,7 +73,8 @@ public class ValidateAutra {
 
 		} catch (XPostilion e) {
 			EventReporter.reportGeneralEvent(nameInterface, ValidateAutra.class.getName(), e, retRefNumber,
-					"getRouting", udpClient, routingTo == Constants.TransactionRouting.INT_AUTRA ? "Enrutamiento Autra Key: "
+					"getRouting", udpClient,
+					routingTo == Constants.TransactionRouting.INT_AUTRA ? "Enrutamiento Autra Key: "
 							: "Enrutamiento CI Key: " + "PAN:" + pan + "ProcCode:" + procCode + "Chanel:" + channel);
 		}
 
@@ -86,7 +93,8 @@ public class ValidateAutra {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13);
 			if (channel.equals("7") || channel.equals("1")) {
-				if ((GenericInterface.fillMaps.getMigratedCards().containsKey(pan) || GenericInterface.fillMaps.getMigratedBins().containsKey(bin))
+				if ((GenericInterface.fillMaps.getMigratedCards().containsKey(pan)
+						|| GenericInterface.fillMaps.getMigratedBins().containsKey(bin))
 						&& GenericInterface.fillMaps.getMigratedOpCodes().containsKey(procCode)) {
 
 					String opCode = GenericInterface.fillMaps.getMigratedOpCodes().get(procCode);
@@ -122,7 +130,8 @@ public class ValidateAutra {
 
 		} catch (XPostilion e) {
 			EventReporter.reportGeneralEvent(nameInterface, ValidateAutra.class.getName(), e, retRefNumber,
-					"validateAutra", udpClient, routingTo == Constants.TransactionRouting.INT_AUTRA ? "Enrutamiento Autra Key: "
+					"validateAutra", udpClient,
+					routingTo == Constants.TransactionRouting.INT_AUTRA ? "Enrutamiento Autra Key: "
 							: "Enrutamiento CI Key: " + "PAN:" + pan + "ProcCode:" + procCode + "Chanel:" + channel);
 		}
 

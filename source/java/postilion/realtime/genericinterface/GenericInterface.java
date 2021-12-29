@@ -44,6 +44,7 @@ import postilion.realtime.genericinterface.eventrecorder.events.UnsupportedNmi;
 import postilion.realtime.genericinterface.translate.ConstructFieldMessage;
 import postilion.realtime.genericinterface.translate.MessageTranslator;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
+import postilion.realtime.genericinterface.translate.bitmap.Base24AthCustom;
 import postilion.realtime.genericinterface.translate.stream.Header;
 import postilion.realtime.genericinterface.translate.util.BussinesRules;
 import postilion.realtime.genericinterface.translate.util.Constants;
@@ -423,18 +424,34 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					"LOG", nameInterface));
 
 //			long tStart = System.currentTimeMillis();
+			
+			//borrar****
+			String dataAux = new String (data);
+			getLogger().logLine("data impresion " + dataAux);
+			String rawMsgType = dataAux.substring(12, 16);					
+			////******
 			String msgType = new String(data, 0, 3);
 			BitmapMessage inMsg = null;
 			if (msgType.equals("ISO")) {
-				inMsg = new Base24Ath(kwa);
-				inMsg.fromMsg(data);
+				if (rawMsgType.equals("0210") && dataAux.contains("333000")) {
+					getLogger().logLine("Data Respuesta " + dataAux);
+					inMsg = new Base24Ath(kwa, 1);
+					inMsg.fromMsg(data);
+				} else {
+					getLogger().logLine("Data Solicitud " + dataAux);
+					inMsg = new Base24Ath(kwa);
+					inMsg.fromMsg(data);
+				}		
+//				inMsg = new Base24Ath(kwa);
+//				inMsg.fromMsg(data);
 				msg = inMsg;
 			} else {
+				getLogger().logLine("Respuesta else " + dataAux);
 				inMsg = new Iso8583Post();
 				inMsg.fromMsg(data);
 				msg = inMsg;
 			}
-
+			getLogger().logLine("Respuesta despues del else " + dataAux);
 			getLogger().logLine("**MENSAJE**\n" + msg);
 			exceptionMessage = Transform.fromBinToHex(Transform.getString(data));
 			return msg;
@@ -641,6 +658,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		} else if (msg instanceof Base24Ath) {
 
 			Base24Ath msgFromRemote = (Base24Ath) msg;
+			Base24Ath msgToRemote = new Base24Ath(kwa);
 
 			putRecordIntoSourceToTmHashtableB24(retRefNumber, msgFromRemote);
 
@@ -657,7 +675,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 				// Validacion MAC
 				int errMac = msgFromRemote.failedMAC();
-
 				if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR) {
 					action = new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromRemote, errMac), null, null);
 				} else {
@@ -672,14 +689,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					switch (routingFilter) {
 					case "Test1":
 					case "Prod1":
-
-						routingto = ValidateAutra.getRouting(msgFromRemote, udpClient, nameInterface, routingFilter);
-
-						break;
-
 					case "Capa":
 
-						routingto = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
+						routingto = ValidateAutra.getRouting(msgFromRemote, udpClient, nameInterface, routingFilter);
 
 						break;
 					case "Autra":
@@ -711,8 +723,22 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 						Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote, objectValidations);
 
-						action.putMsgToTranmgr(Isomsg);
-						putRecordIntoSourceToTmHashtable(retRefNumber, Isomsg);
+						if (!objectValidations.getValidationResult()) {
+							udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+									"Error de formato", "LOG", nameInterface));
+							action.putMsgToTranmgr(translator.construct0220ToTm(msg, interchange.getName()));
+							msgToRemote = translator.constructBase24(msgFromRemote, objectValidations);
+							udpClient.sendData(
+									Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+											Transform.fromBinToHex(Transform.getString(msgToRemote.toMsg(false))),
+											"B24", nameInterface));
+							action.putMsgToRemote(msgToRemote);
+						} else {
+
+							action.putMsgToTranmgr(Isomsg);
+							putRecordIntoSourceToTmHashtable(retRefNumber, Isomsg);
+
+						}
 
 						break;
 
@@ -979,7 +1005,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				&& originalMsg.getStructuredData().get("B24_Message") != null) {
 			Base24Ath msg = (Base24Ath) msgFromRemote;
 
-			GenericInterface.getLogger().logLine("Por Autra");
 			Super objectSuper = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING, null,
 					params) {
 
@@ -1114,9 +1139,23 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					// objectValidations.getInforCollectedForStructData());
 
 					Iso8583Post Isomsg = translator.constructIso8583(msgFromRemote, objectValidations);
-					GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
-					action.putMsgToTranmgr(Isomsg);
-					putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+
+					if (!objectValidations.getValidationResult()) {
+						udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+								"Error de formato", "LOG", nameInterface));
+						action.putMsgToTranmgr(translator.construct0220ToTm(msg, interchange.getName()));
+						msgFromRemote = translator.constructBase24(msgFromRemote, objectValidations);
+						udpClient.sendData(
+								Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+										Transform.fromBinToHex(Transform.getString(msgFromRemote.toMsg(false))), "B24",
+										nameInterface));
+						action.putMsgToRemote(msgFromRemote);
+					} else {
+						GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
+						action.putMsgToTranmgr(Isomsg);
+						putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+					}
+
 					break;
 
 				default:

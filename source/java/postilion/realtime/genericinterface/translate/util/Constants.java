@@ -380,6 +380,8 @@ public class Constants {
 		
 		public static final String PCODE_PAGO_OBLIGACIONES_OTROS_EFECTIVO= "500141";
 		public static final String PCODE_PAGO_OBLIGACIONES_OTROS_CHEQUE= "500241";
+		public static final String PCODE_PAGO_OBLIGACIONES_PAGO_MOTOS_Y_VEHICULOS_EFECTIVO= "500142";
+		public static final String PCODE_PAGO_OBLIGACIONES_PAGO_MOTOS_Y_VEHICULOS_CHEQUE= "500242";
 		
 		//ATM
 		public static final String PCODE_RETIRO_ATM_A = "011000";
@@ -420,12 +422,29 @@ public class Constants {
 		public static final String PCODE_ANULACION_COMPRA_CREDIBANCO_A = "201000";
 		public static final String PCODE_ANULACION_COMPRA_CREDIBANCO_C = "202000";
 		
-		//Oficina Aval
+		//Oficina Aval		
+		public static final String PCODE_ANULACION_PAGO_CREDITO_HIPOTECARIO_EFECTIVO = "200100";		
+		public static final String PCODE_ANULACION_PAGO_TC_EFECTIVO = "200130";		
+		public static final String PCODE_ANULACION_PAGO_CREDITO_CUPO_ROTATIVO_EFECTIVO = "200140";		
+		public static final String PCODE_ANULACION_PAGO_OTROS_CREDITOS_EFECTIVO = "200141";		
+		public static final String PCODE_ANULACION_PAGO_MOTOS_Y_VEHICULOS_EFECTIVO = "200142";		
+		public static final String PCODE_ANULACION_PAGO_CREDITO_HIPOTECARIO_CHEQUE = "200200";
+		public static final String PCODE_ANULACION_PAGO_TC_CHEQUE = "200230";
+		public static final String PCODE_ANULACION_PAGO_CREDITO_CUPO_ROTATIVO_CHEQUE = "200240";
+		public static final String PCODE_ANULACION_PAGO_OTROS_CREDITOS_CHEQUE = "200241";
+		public static final String PCODE_ANULACION_PAGO_MOTOS_Y_VEHICULOS_CHEQUE = "200242";		
+		
 		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_CREDIBANCO_HIPOTECARIO = "230000";
 		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_TARJETA_CREDITO = "233000";
 		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_CUPO_ROTATIVO= "234000";
 		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_OTROS_CREDITOS = "234100";
 		public static final String PCODE_DEVOLUCION_CANJE_PAGO_A_CREDITO_MOTO_Y_VEHICULO = "234200";
+		
+		public static final String PCODE_CONSULTA_TITULARIDAD_CREDITO_HIPOTECARIO ="330000";
+		public static final String PCODE_CONSULTA_TITULARIDAD_TARJETA_CREDITO ="333000";
+		public static final String PCODE_CONSULTA_TITULARIDAD_CREDITO_ROTATIVO ="334000";
+		public static final String PCODE_CONSULTA_TITULARIDAD_OTROS_CREDITOS ="334100";
+		public static final String PCODE_CONSULTA_TITULARIDAD_CREDITO_MOTO_VEHICULO ="334200";
 		
 	}
 	public static final class TransactionTypes

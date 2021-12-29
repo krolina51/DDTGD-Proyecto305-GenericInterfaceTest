@@ -1,7 +1,6 @@
 package postilion.realtime.genericinterface.translate.bitmap;
 
 import postilion.realtime.sdk.message.bitmap.*;
-import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.translate.stream.AthAtmAdditionalResponseData;
 import postilion.realtime.genericinterface.translate.stream.AthAtmTerminalData;
 import postilion.realtime.genericinterface.translate.stream.AthErrorInterchange;
@@ -14,8 +13,9 @@ import postilion.realtime.sdk.message.*;
 import postilion.realtime.sdk.util.*;
 import postilion.realtime.sdk.util.convert.AmountFormat;
 import postilion.realtime.sdk.util.convert.Transform;
+import postilion.realtime.sdk.message.bitmap.Formatter;
 
-public class Base24Ath extends Iso8583 {
+public class Base24AthCustom extends Iso8583 {
 	/** Variable para validación del MAC. */
 	private int failed_MAC = 0;
 	/** Header de los mensajes. */
@@ -24,16 +24,9 @@ public class Base24Ath extends Iso8583 {
 	private DesKwa kwa = null;
 
 	/**	Constructor. Crea un nuevo objeto Iso8583Ath. */
-	public Base24Ath(DesKwa mac_key) {
+	public Base24AthCustom(DesKwa mac_key) {
 		super(iso_Ath_formatters);
 		kwa = mac_key;
-	}
-	
-	public Base24Ath(DesKwa mac_key, int option) {				
-		super(iso_Ath_formatters_custom);		
-		GenericInterface.getLogger().logLine("Constructor Base24Ath " + iso_Ath_formatters_custom.toString());
-		kwa = mac_key;	
-		
 	}
 
 	/** Constantes de bit de la mensajería ATH. */
@@ -278,7 +271,8 @@ public class Base24Ath extends Iso8583 {
 			XStreamBase, XPostilion {
 	   offset += header.fromMsg(msg, 0);
 	   offset = super.fromMsg(msg, offset);
-		String info_code = getField(Iso8583.Bit.NETWORK_MNG_INFO_CODE);	
+		String info_code = getField(Iso8583.Bit.NETWORK_MNG_INFO_CODE);
+		
 		if( kwa!=null 
 			&& (	info_code == null 
 				 ||(		!info_code.equals(Iso8583.NwrkMngInfoCode._001_SIGN_ON)
@@ -437,7 +431,7 @@ public class Base24Ath extends Iso8583 {
 			
 			
 
-			byte[] byte_mac = new byte[Base24Ath.Length.MAC_LEN];
+			byte[] byte_mac = new byte[Base24AthCustom.Length.MAC_LEN];
 			
 			byte_mac = Transform.getData(mac+"00000000");			// 8 zeros
 			
@@ -449,7 +443,7 @@ public class Base24Ath extends Iso8583 {
 			
 
 			//copy the MAC authentication code into the final message array
-			System.arraycopy(byte_mac, 0, msg_to_rdbn, final_msg.length, Base24Ath.Length.MAC_LEN);
+			System.arraycopy(byte_mac, 0, msg_to_rdbn, final_msg.length, Base24AthCustom.Length.MAC_LEN);
 			
 			this.clear_binary_data = msg_to_rdbn;
 			return msg_to_rdbn;
@@ -585,7 +579,7 @@ public class Base24Ath extends Iso8583 {
 	 * @see AthAtmTerminalData
 	 */
 	public final AthAtmTerminalData getAthAtmTerminalData() throws XPostilion {
-		String data = getField(Base24Ath.Bit.TERMINAL_DATA);
+		String data = getField(Base24AthCustom.Bit.TERMINAL_DATA);
 		if (data == null) {
 			return null;
 		}
@@ -604,10 +598,10 @@ public class Base24Ath extends Iso8583 {
 	public final void putAthAtmTerminalData(AthAtmTerminalData value)
 			throws XPostilion {
 		if (value != null) {
-			putField(Base24Ath.Bit.TERMINAL_DATA,
+			putField(Base24AthCustom.Bit.TERMINAL_DATA,
 					Transform.getString(value.toMsg()));
 		} else {
-			clearField(Base24Ath.Bit.TERMINAL_DATA);
+			clearField(Base24AthCustom.Bit.TERMINAL_DATA);
 		}
 	}
 
@@ -619,7 +613,7 @@ public class Base24Ath extends Iso8583 {
 	 *             En caso de error.
 	 */
 	public final AthErrorInterchange getAthErrorInterchange() throws XPostilion {
-		String data = getField(Base24Ath.Bit.ENTITY_ERROR);
+		String data = getField(Base24AthCustom.Bit.ENTITY_ERROR);
 		if (data == null) {
 			return null;
 		}
@@ -642,9 +636,9 @@ public class Base24Ath extends Iso8583 {
 			StringBuffer field = new StringBuffer();
 			field.append(value.getField("error"));
 			field.append(value.getField("description"));
-			putField(Base24Ath.Bit.ENTITY_ERROR, field.toString());
+			putField(Base24AthCustom.Bit.ENTITY_ERROR, field.toString());
 		} else {
-			clearField(Base24Ath.Bit.ENTITY_ERROR);
+			clearField(Base24AthCustom.Bit.ENTITY_ERROR);
 		}
 	}
 
@@ -736,10 +730,6 @@ public class Base24Ath extends Iso8583 {
 	/** Instancia del array estático Iso8583. */
 	protected static Iso8583.Template iso_Ath_formatters = null;
 	
-	
-	/** Instancia del array estático Iso8583. */
-	protected static Iso8583.Template iso_Ath_formatters_custom = null;
-	
 	/**
 	 * Inicializa el array de formatters.
 	 */
@@ -764,12 +754,13 @@ public class Base24Ath extends Iso8583 {
         
         iso_Ath_formatters.putFieldFormatter(Iso8583.Bit._030_AMOUNT_TRAN_PROC_FEE,
                 new Formatter(LengthFormatter.getFixed(8), FieldFormatter.getNone(), Validator.getN()));
-
  
 
         iso_Ath_formatters.putFieldFormatter(Iso8583.Bit.ACQUIRING_INST_ID_CODE,
                 new Formatter(LengthFormatter.getVar(2, 11), FieldFormatter.getNone(), Validator.getAns()));
 
+        iso_Ath_formatters.putFieldFormatter(Iso8583.Bit._035_TRACK_2_DATA,
+                new Formatter(LengthFormatter.getVar(2, 45), FieldFormatter.getNone(), Validator.getAns()));
  
 
         iso_Ath_formatters.putFieldFormatter(Iso8583.Bit.CARD_ACCEPTOR_TERM_ID,
@@ -792,12 +783,12 @@ public class Base24Ath extends Iso8583 {
         iso_Ath_formatters.putFieldFormatter(Iso8583Post.Bit._057_AUTH_LIFE_CYCLE,
                 new Formatter(LengthFormatter.getVar(4, 9999), FieldFormatter.getNone(), Validator.getAns()));
 
-        iso_Ath_formatters.putFieldFormatter(Base24Ath.Bit.CARD_ISSUER_DATA,
+        iso_Ath_formatters.putFieldFormatter(Base24AthCustom.Bit.CARD_ISSUER_DATA,
                 new Formatter(LengthFormatter.getVar(3, 22), FieldFormatter.getNone(), Validator.getAns()));
 
  
 
-        iso_Ath_formatters.putFieldFormatter(Base24Ath.Bit.DATA_ADDTIONAL,
+        iso_Ath_formatters.putFieldFormatter(Base24AthCustom.Bit.DATA_ADDTIONAL,
                 new Formatter(LengthFormatter.getVar(3, 150), FieldFormatter.getNone(), Validator.getAns()));
 
  
@@ -822,115 +813,21 @@ public class Base24Ath extends Iso8583 {
 
  
 
-        iso_Ath_formatters.putFieldFormatter(Base24Ath.Bit.ID_ACCOUNT_CORRESP,
+        iso_Ath_formatters.putFieldFormatter(Base24AthCustom.Bit.ID_ACCOUNT_CORRESP,
                 new Formatter(LengthFormatter.getVar(3, 25), FieldFormatter.getNone(), Validator.getAns()));
 
  
 
-        iso_Ath_formatters.putFieldFormatter(Base24Ath.Bit.KEY_MANAGEMENT,
+        iso_Ath_formatters.putFieldFormatter(Base24AthCustom.Bit.KEY_MANAGEMENT,
                 new Formatter(LengthFormatter.getVar(3, 6), FieldFormatter.getNone(), Validator.getAns()));
 
 
-        iso_Ath_formatters.putFieldFormatter(Base24Ath.Bit._126_ATH_ADDITIONAL_DATA,
+        iso_Ath_formatters.putFieldFormatter(Base24AthCustom.Bit._126_ATH_ADDITIONAL_DATA,
                 new Formatter(LengthFormatter.getVar(3, 110), FieldFormatter.getNone(), Validator.getAns()));
 
  
 
         iso_Ath_formatters.putFieldFormatter(Iso8583.Bit.MAC_EXTENDED,
-                new Formatter(LengthFormatter.getFixed(16), FieldFormatter.getNone(), Validator.getAn()));
-    }
-	
-	
-	private static void initCustom() {
-		
-        try {
-        	iso_Ath_formatters_custom = new Iso8583.Template(Iso8583.Template.Packing.NONE, Iso8583.Template.Packing.NONE,
-                    Iso8583.Template.Packing.NONE, Iso8583.Template.Packing.HEX, Iso8583.Template.Packing.NONE,
-                    Iso8583.Template.Packing.NONE, Iso8583.Template.Packing.NONE, Iso8583.Template.Packing.NONE,
-                    Iso8583.Template.Packing.HEX, true);
-        } catch (XInputParameterError e) {
-            System.exit(1);
-        }
-
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit.AMOUNT_TRANSACTION,
-                new Formatter(LengthFormatter.getFixed(12), FieldFormatter.getNone(), Validator.getAns()));
-        
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit._028_AMOUNT_TRAN_FEE,
-                new Formatter(LengthFormatter.getFixed(8), FieldFormatter.getNone(), Validator.getN()));
-        
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit._030_AMOUNT_TRAN_PROC_FEE,
-                new Formatter(LengthFormatter.getFixed(8), FieldFormatter.getNone(), Validator.getN()));
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit.ACQUIRING_INST_ID_CODE,
-                new Formatter(LengthFormatter.getVar(2, 11), FieldFormatter.getNone(), Validator.getAns()));
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit._035_TRACK_2_DATA,
-                new Formatter(LengthFormatter.getFixed(45), FieldFormatter.getNone(), Validator.getAns()));
- 
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit.CARD_ACCEPTOR_TERM_ID,
-                new Formatter(LengthFormatter.getFixed(16), FieldFormatter.getNone(), Validator.getAns()));
-
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit.PIN_DATA,
-                new Formatter(LengthFormatter.getFixed(16), FieldFormatter.getNone(), Validator.getAn()));
-
- 
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit.SECURITY_INFO,
-                new Formatter(LengthFormatter.getFixed(16), FieldFormatter.getNone(), Validator.getAn()));
- 
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit.ADDITIONAL_AMOUNTS,
-                new Formatter(LengthFormatter.getVar(3, 120), FieldFormatter.getNone(), Validator.getAns()));
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583Post.Bit._057_AUTH_LIFE_CYCLE,
-                new Formatter(LengthFormatter.getVar(4, 9999), FieldFormatter.getNone(), Validator.getAns()));
-
-        iso_Ath_formatters_custom.putFieldFormatter(Base24Ath.Bit.CARD_ISSUER_DATA,
-                new Formatter(LengthFormatter.getVar(3, 22), FieldFormatter.getNone(), Validator.getAns()));
-
- 
-
-        iso_Ath_formatters_custom.putFieldFormatter(Base24Ath.Bit.DATA_ADDTIONAL,
-                new Formatter(LengthFormatter.getVar(3, 150), FieldFormatter.getNone(), Validator.getAns()));
-
- 
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit.MAC_NORMAL,
-                new Formatter(LengthFormatter.getFixed(16), FieldFormatter.getNone(), Validator.getAn()));
-
- 
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit.REPLACEMENT_AMOUNTS,
-                new Formatter(LengthFormatter.getFixed(42), FieldFormatter.getNone(), Validator.getAns()));
-
- 
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit._100_RECEIVING_INST_ID_CODE,
-                new Formatter(LengthFormatter.getVar(2, 11), FieldFormatter.getNone(), Validator.getNs()));
-
- 
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit._104_TRAN_DESCRIPTION,
-                new Formatter(LengthFormatter.getVar(2, 24), FieldFormatter.getNone(), Validator.getNs()));
-
- 
-
-        iso_Ath_formatters_custom.putFieldFormatter(Base24Ath.Bit.ID_ACCOUNT_CORRESP,
-                new Formatter(LengthFormatter.getVar(3, 25), FieldFormatter.getNone(), Validator.getAns()));
-
- 
-
-        iso_Ath_formatters_custom.putFieldFormatter(Base24Ath.Bit.KEY_MANAGEMENT,
-                new Formatter(LengthFormatter.getVar(3, 6), FieldFormatter.getNone(), Validator.getAns()));
-
-
-        iso_Ath_formatters_custom.putFieldFormatter(Base24Ath.Bit._126_ATH_ADDITIONAL_DATA,
-                new Formatter(LengthFormatter.getVar(3, 110), FieldFormatter.getNone(), Validator.getAns()));
-
- 
-
-        iso_Ath_formatters_custom.putFieldFormatter(Iso8583.Bit.MAC_EXTENDED,
                 new Formatter(LengthFormatter.getFixed(16), FieldFormatter.getNone(), Validator.getAn()));
     }
 	
@@ -1037,6 +934,5 @@ public class Base24Ath extends Iso8583 {
 	
 	static {
 		init();
-		initCustom();
 	}
 }
