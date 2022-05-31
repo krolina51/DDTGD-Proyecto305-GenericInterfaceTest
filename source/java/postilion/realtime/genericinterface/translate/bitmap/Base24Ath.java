@@ -832,7 +832,7 @@ public class Base24Ath extends Iso8583 {
 
 
         iso_Ath_formatters.putFieldFormatter(Base24Ath.Bit._126_ATH_ADDITIONAL_DATA,
-                new Formatter(LengthFormatter.getVar(3, 110), FieldFormatter.getNone(), Validator.getAns()));
+                new Formatter(LengthFormatter.getVar(3, 999), FieldFormatter.getNone(), Validator.getAns()));
 
  
 
@@ -926,7 +926,7 @@ public class Base24Ath extends Iso8583 {
 
 
         iso_Ath_formatters_custom.putFieldFormatter(Base24Ath.Bit._126_ATH_ADDITIONAL_DATA,
-                new Formatter(LengthFormatter.getVar(3, 110), FieldFormatter.getNone(), Validator.getAns()));
+                new Formatter(LengthFormatter.getVar(3, 999), FieldFormatter.getNone(), Validator.getAns()));
 
  
 

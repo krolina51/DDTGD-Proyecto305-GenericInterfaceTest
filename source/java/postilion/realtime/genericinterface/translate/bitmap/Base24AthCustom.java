@@ -823,7 +823,7 @@ public class Base24AthCustom extends Iso8583 {
 
 
         iso_Ath_formatters.putFieldFormatter(Base24AthCustom.Bit._126_ATH_ADDITIONAL_DATA,
-                new Formatter(LengthFormatter.getVar(3, 110), FieldFormatter.getNone(), Validator.getAns()));
+                new Formatter(LengthFormatter.getVar(3, 999), FieldFormatter.getNone(), Validator.getAns()));
 
  
 

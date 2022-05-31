@@ -153,6 +153,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public FactoryCommonRules factory;
 
 	protected DesKvc kvc = null;
+	public boolean freeThreaded = false;
 
 	static Header default_header;
 
@@ -355,6 +356,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				this.portCryptoValidation = Integer
 						.valueOf(BussinesRules.validatePortUdpServerParameter(cfgPortCryptoValidation));
 				this.termConsecutiveSection = parameters.get("terminal_consecutive_section").toString();
+				this.freeThreaded = (boolean) parameters.get("FREE_THREADED");
 
 				if (channelsIds.size() != 0) {
 					CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
@@ -383,6 +385,13 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					"getParameters", this.udpClient);
 		}
 
+	}
+	
+	
+
+	@Override
+	public boolean isFreeThreaded() {
+		return this.freeThreaded;
 	}
 
 	/************************************************************************************

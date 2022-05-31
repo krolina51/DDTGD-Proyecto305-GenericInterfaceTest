@@ -134,7 +134,7 @@ public class MessageTranslator {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 
-			msgToRmto.putHeader(constructAtmHeaderSourceNode(msgToRmto));
+			msgToRmto.putHeader(constructAtmHeaderSinkNode(msg));
 			msgToRmto.putMsgType(msg.getMsgType());
 
 			StructuredData sd = new StructuredData();
@@ -1173,6 +1173,35 @@ public class MessageTranslator {
 			atmHeader.putField(Header.Field.RESPONDER_CODE, Header.SystemCode.HOST);
 			atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.ATM);
 			atmHeader.putField(Header.Field.RELEASE_NUMBER, Base24Ath.Version.REL_NR_40);
+			atmHeader.putField(Header.Field.STATUS, Header.Status.OK);
+			atmHeader.putField(Header.Field.ORIGINATOR_CODE, Header.OriginatorCode.CINCO);
+			return atmHeader;
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e, retRefNumber,
+					"constructAtmHeaderSourceNode", this.udpClient, "of type XPostilion");
+		} catch (Exception e1) {
+			EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e1, retRefNumber,
+					"constructAtmHeaderSourceNode", this.udpClient, "of type Exception");
+		}
+		return null;
+	}
+	
+	/**
+	 * Construye el Header de un mensaje que va a ser enviado a la Interchange desde
+	 * el Nodo Source.
+	 *
+	 * @param msgFromRemote Mensaje desde ATH.
+	 * @return Objeto Header.
+	 */
+	private Header constructAtmHeaderSinkNode(Iso8583Post msg) {
+		String retRefNumber = "N/D";
+		try {
+			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
+			Header atmHeader = new Header();
+			atmHeader.putField(Header.Field.ISO_LITERAL, Header.Iso.ISO);
+			atmHeader.putField(Header.Field.RESPONDER_CODE, Header.SystemCode.UNDETERMINED);
+			atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.POS);
+			atmHeader.putField(Header.Field.RELEASE_NUMBER, Base24Ath.Version.REL_NR_34);
 			atmHeader.putField(Header.Field.STATUS, Header.Status.OK);
 			atmHeader.putField(Header.Field.ORIGINATOR_CODE, Header.OriginatorCode.CINCO);
 			return atmHeader;
