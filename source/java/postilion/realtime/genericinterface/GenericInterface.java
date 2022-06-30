@@ -78,6 +78,7 @@ import postilion.realtime.sdk.node.AInterchangeDriverEnvironment;
 import postilion.realtime.sdk.node.Action;
 import postilion.realtime.sdk.node.ActiveActiveKeySyncMsgHandler;
 import postilion.realtime.sdk.node.NodeDriverEnvAdapter;
+import postilion.realtime.sdk.node.XNodeParameterUnknown;
 import postilion.realtime.sdk.node.XNodeParameterValueInvalid;
 import postilion.realtime.sdk.util.DateTime;
 import postilion.realtime.sdk.util.TimedHashtable;
@@ -2181,6 +2182,45 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Action action = new Action();
 		Object response[] = this.factory.commandProcess(new Base24Ath(kwa), (Iso8583Post) msg);
 		action.putMsgToRemote((Iso8583Post) response[1]);
+		return action;
+	}
+	
+	
+	/**
+	 * Processes a SET command received on the command port. The SET command sets
+	 * the value of an IInterchangeDriver specific parameter.
+	 * 
+	 * @param interchange
+	 * @param param
+	 * @param value
+	 */
+	public Action processSetCommand(AInterchangeDriverEnvironment interchange, java.lang.String param,
+			java.lang.String value) throws XNodeParameterUnknown, XNodeParameterValueInvalid, java.lang.Exception {
+		Action action = new Action();
+		Base24Ath msg = new Base24Ath(kwa);
+		try {
+			switch (param.toUpperCase()) {
+			case Constants.General.SIGN_ON:
+				msg = constructNwrkMngReqToRemote(interchange, Iso8583.NwrkMngInfoCode._001_SIGN_ON);
+//				msg.putField(Iso8583.Bit._048_ADDITIONAL_DATA, cfg_additional_data);
+				break;
+			case Constants.General.KEYEXCHANGE:
+				if (keyExchangeState == Base24Ath.KeyExchangeState.IDLE) {
+					msg = constructNwrkMngReqToRemote(interchange, Constants.KeyExchange.KEY_REQUEST);
+					action.putTimerAction(new Action.Timer(Base24Ath.CommandMsg.MANUAL_KEY_EXCHANGE_REQ,
+							new Long(Base24Ath.PeriodTime.NWRK_MNG_MSG_TIMEOUT_PERIOD), null));
+					keyExchangeState = Base24Ath.KeyExchangeState.PENDING;
+				}
+				break;
+			case Constants.General.ECHO_TEST:
+				msg = constructNwrkMngReqToRemote(interchange, Iso8583.NwrkMngInfoCode._301_ECHO_TEST);
+				break;
+			}
+		} catch (Exception e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/A",
+					"processSetCommand", this.udpClient);
+		}
+		action.putMsgToRemote(msg);
 		return action;
 	}
 
