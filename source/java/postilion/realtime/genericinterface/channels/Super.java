@@ -304,24 +304,28 @@ public abstract class Super {
 
 		if (msg.isFieldSet(Iso8583.Bit._022_POS_ENTRY_MODE))
 			msgToTM.putField(Iso8583.Bit._022_POS_ENTRY_MODE, msg.getField(Iso8583.Bit._022_POS_ENTRY_MODE).toString());
+		else
+			msgToTM.putField(Iso8583.Bit._022_POS_ENTRY_MODE, "021");
 
 		if (msg.isFieldSet(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE))
 			msgToTM.putField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE,
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
-		if (msg.getProcessingCode().toString().equals("333000")) { 
-
-			msgToTM.putField(Iso8583.Bit._003_PROCESSING_CODE,
-					Iso8583Post.TranType._32_GENERAL_INQUIRY
-							.concat(new ProcessingCode(msg.getField(3)).getFromAccount())
-							.concat(msg.getProcessingCode().getToAccount()).toString());
-			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-
-		} else if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
+//		if (msg.getProcessingCode().toString().equals("333000")) { 
+//
+//			msgToTM.putField(Iso8583.Bit._003_PROCESSING_CODE,
+//					Iso8583Post.TranType._32_GENERAL_INQUIRY
+//							.concat(new ProcessingCode(msg.getField(3)).getFromAccount())
+//							.concat(msg.getProcessingCode().getToAccount()).toString());
+//			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+//
+//		} else 
+		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
 			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
 			case "008823":
 			case "008802":
 			case "008852":
+			case "007701":	
 
 				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
 
@@ -423,6 +427,8 @@ public abstract class Super {
 
 		if (msg.isFieldSet(Iso8583.Bit._022_POS_ENTRY_MODE))
 			msgToTM.putField(Iso8583.Bit._022_POS_ENTRY_MODE, msg.getField(Iso8583.Bit._022_POS_ENTRY_MODE).toString());
+		else
+			msgToTM.putField(Iso8583.Bit._022_POS_ENTRY_MODE, "021");
 
 		if (msg.isFieldSet(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE))
 			msgToTM.putField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE,
@@ -433,6 +439,7 @@ public abstract class Super {
 			case "008823":
 			case "008802":
 			case "008852":
+			case "007701":	
 
 				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
 
@@ -589,13 +596,29 @@ public abstract class Super {
 
 		if (msg.isFieldSet(Iso8583.Bit._022_POS_ENTRY_MODE))
 			msgToTM.putField(Iso8583.Bit._022_POS_ENTRY_MODE, msg.getField(Iso8583.Bit._022_POS_ENTRY_MODE).toString());
+		else
+			msgToTM.putField(Iso8583.Bit._022_POS_ENTRY_MODE, "021");
 
 		if (msg.isFieldSet(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE))
 			msgToTM.putField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE,
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
-		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA))
-			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
+			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
+			case "008823":
+			case "008802":
+			case "008852":
+			case "007701":	
+
+				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+
+				break;
+			default:
+				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+				break;
+			}
+
+		}
 
 		if (msg.isFieldSet(Iso8583.Bit._037_RETRIEVAL_REF_NR))
 			msgToTM.putField(Iso8583.Bit._037_RETRIEVAL_REF_NR,
@@ -710,13 +733,29 @@ public abstract class Super {
 
 		if (msg.isFieldSet(Iso8583.Bit._022_POS_ENTRY_MODE))
 			msgToTM.putField(Iso8583.Bit._022_POS_ENTRY_MODE, msg.getField(Iso8583.Bit._022_POS_ENTRY_MODE).toString());
+		else
+			msgToTM.putField(Iso8583.Bit._022_POS_ENTRY_MODE, "021");
 
 		if (msg.isFieldSet(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE))
 			msgToTM.putField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE,
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
-		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA))
-			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
+			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
+			case "008823":
+			case "008802":
+			case "008852":
+			case "007701":	
+
+				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+
+				break;
+			default:
+				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+				break;
+			}
+
+		}
 
 		if (msg.isFieldSet(Iso8583.Bit._037_RETRIEVAL_REF_NR))
 			msgToTM.putField(Iso8583.Bit._037_RETRIEVAL_REF_NR,
@@ -1399,6 +1438,13 @@ public abstract class Super {
 				case Constants.Channels.PCODE_PAGO_OTROS_CREDITOS_EFECTIVO_ATM_MULTIFUNCIONAL:
 					field3 = postilion.realtime.sdk.message.bitmap.Iso8583Post.TranType._51_PAYMENT_BY_DEPOSIT
 							+ fromAccount + toAccount;
+					break;
+				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_CREDITO_HIPOTECARIO:
+				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_TARJETA_CREDITO:
+				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_CREDITO_ROTATIVO:
+				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_OTROS_CREDITOS:
+				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_CREDITO_MOTO_VEHICULO:
+					field3 = Iso8583Post.TranType._32_GENERAL_INQUIRY + fromAccount + toAccount;
 					break;
 				default:
 					field3 = procCode.toString();

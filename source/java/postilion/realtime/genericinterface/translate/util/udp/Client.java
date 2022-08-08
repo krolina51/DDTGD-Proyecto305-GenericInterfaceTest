@@ -91,6 +91,12 @@ public class Client {
 			}
 		}
 	}
+	
+	public void close(){
+		if(this.socket != null)
+			this.socket.close();
+		this.socket = null;
+	}
 
 	public void setIpAddress(InetAddress ipAddress) {
 		this.ipAddress = ipAddress;

@@ -408,6 +408,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Action action = new Action();
 		try {
 			kwa = null;
+			fillMaps = null;
+			fillMaps = new HashMapBusinessLogic();
+			if(udpClient != null)
+				udpClient.close();
 			init(interchange);
 		} catch (Exception e) {
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
@@ -443,17 +447,17 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			String msgType = new String(data, 0, 3);
 			BitmapMessage inMsg = null;
 			if (msgType.equals("ISO")) {
-				if (rawMsgType.equals("0210") && dataAux.contains("333000")) {
-					getLogger().logLine("Data Respuesta " + dataAux);
-					inMsg = new Base24Ath(kwa, 1);
-					inMsg.fromMsg(data);
-				} else {
-					getLogger().logLine("Data Solicitud " + dataAux);
-					inMsg = new Base24Ath(kwa);
-					inMsg.fromMsg(data);
-				}		
-//				inMsg = new Base24Ath(kwa);
-//				inMsg.fromMsg(data);
+//				if (rawMsgType.equals("0210") && dataAux.contains("333000")) {
+//					getLogger().logLine("Data Respuesta " + dataAux);
+//					inMsg = new Base24Ath(kwa, 1);
+//					inMsg.fromMsg(data);
+//				} else {
+//					getLogger().logLine("Data Solicitud " + dataAux);
+//					inMsg = new Base24Ath(kwa);
+//					inMsg.fromMsg(data);
+//				}		
+				inMsg = new Base24Ath(kwa);
+				inMsg.fromMsg(data);
 				msg = inMsg;
 			} else {
 				getLogger().logLine("Respuesta else " + dataAux);
@@ -643,7 +647,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public Action processTranReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
 			throws XPostilion {
 		Action action = new Action();
-		String retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
+		String retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 
 		if (msg instanceof Iso8583Post) {
 
@@ -699,10 +703,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					switch (routingFilter) {
 					case "Test1":
 					case "Prod1":
-					case "Capa":
 
 						routingto = ValidateAutra.getRouting(msgFromRemote, udpClient, nameInterface, routingFilter);
 
+						break;
+					case "Capa":
+						
+						routingto = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
+						
 						break;
 					case "Autra":
 
@@ -770,11 +778,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 						action.putMsgToTranmgr(msgToTm);
 
-						putRecordIntoSourceToTmHashtable(
-								retRefNumber + msgToTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgToTm);
-						putRecordIntoSourceToTmHashtableB24(
-								retRefNumber + msgToTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
-								msgFromRemote);
+						putRecordIntoSourceToTmHashtable(retRefNumber, msgToTm);
+						putRecordIntoSourceToTmHashtableB24(retRefNumber,msgFromRemote);
 
 						break;
 					}
@@ -885,7 +890,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			throws Exception {
 		GenericInterface.getLogger().logLine("Entro processAcquirerRevAdvFromTranmgr");
 		GenericInterface.getLogger().logLine("Iso8583Post Rev: " + msg.toString());
-		String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
+		String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 		Action action = new Action();
 		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._006_AUTH_PROFILE)) {
 			switch (msg.getPrivField(Iso8583Post.PrivBit._006_AUTH_PROFILE)) {
@@ -929,7 +934,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			byte[] decodedBytes = Base64.getDecoder().decode(sdData0200);
 			String decodedString = new String(decodedBytes);
 
-			String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
+			String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 			putRecordIntoSourceToTmHashtable(keyMsg, msg);
 
 			String keyMsgFromRemote210 = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
@@ -1032,9 +1037,34 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			action.putMsgToTranmgr(originalMsg);
 		} else {
 
+			StructuredData sd = null;
+			
+			if(originalMsg.getStructuredData() != null) {
+				sd = originalMsg.getStructuredData();	
+			} else {
+				sd = new StructuredData();
+			}
 			originalMsg.putMsgType(msgFromRemote.getMsgType());
 			originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
 			originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
+			
+			if(msgFromRemote.isFieldSet(Base24Ath.Bit.ENTITY_ERROR))
+				sd.put("B24_Field_63", msgFromRemote.getField(Base24Ath.Bit.ENTITY_ERROR));
+			
+			if(msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
+				sd.put("B24_Field_102", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
+			
+			if(msgFromRemote.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
+				sd.put("B24_Field_103", msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2));
+			
+			if(msgFromRemote.isFieldSet(Iso8583.Bit._054_ADDITIONAL_AMOUNTS))
+				sd.put("B24_Field_54", msgFromRemote.getField(Iso8583.Bit._054_ADDITIONAL_AMOUNTS));
+			
+			if(msgFromRemote.isFieldSet(Base24Ath.Bit._126_ATH_ADDITIONAL_DATA))
+				sd.put("B24_Field_126", msgFromRemote.getField(Base24Ath.Bit._126_ATH_ADDITIONAL_DATA));
+			
+			
+			originalMsg.putStructuredData(sd);
 			action.putMsgToTranmgr(originalMsg);
 
 		}
@@ -1055,7 +1085,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		try {
 			MessageTranslator translator = new MessageTranslator(params);
 			Base24Ath originalMsg = (Base24Ath) sourceTranToTmHashtableB24
-					.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR));
+					.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 
 			getLogger().logLine("processTranAdvRspFromTranmgr : 0");
 			if (originalMsg != null) {
@@ -1110,7 +1140,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
 		Iso8583Post msgToTm = new Iso8583Post();
-		putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);
+		putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgFromRemote);
 //		Base24Ath msgToRemote = new Base24Ath(kwa);
 		MessageTranslator translator = new MessageTranslator(params);
 		try {
@@ -1163,7 +1193,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					} else {
 						GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
 						action.putMsgToTranmgr(Isomsg);
-						putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+						putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+								+Isomsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), Isomsg);
 					}
 
 					break;
@@ -1184,8 +1215,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					GenericInterface.getLogger().logLine("msgToTm AUTRA:" + msgToTm.toString());
 
 					action.putMsgToTranmgr(msgToTm);
-					putRecordIntoSourceToTmHashtable(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgToTm);
-					putRecordIntoSourceToTmHashtableB24(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					putRecordIntoSourceToTmHashtable(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+							+msgToTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgToTm);
+					putRecordIntoSourceToTmHashtableB24(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+							+msgToTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
 							msgFromRemote);
 					break;
 
@@ -1253,8 +1286,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		GenericInterface.getLogger().logLine("Entro processAcquirerRevAdvRspFromInterchange");
 		Base24Ath msg = (Base24Ath) msgFromRemote;
 		Action action = new Action();
-		String keyMsgFromRemote = msg
-				.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+		String keyMsgFromRemote = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 		Iso8583Post msgToTM = new Iso8583Post();
 		msgToTM = (Iso8583Post) sourceTranToTmHashtable.get(keyMsgFromRemote);
 
@@ -1322,8 +1354,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 				action.putMsgToTranmgr(Isomsg);
 
-				putRecordIntoSourceToTmHashtableB24(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), msgFromRemote);
-				putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), Isomsg);
+				putRecordIntoSourceToTmHashtableB24(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + Isomsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgFromRemote);
+				putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + Isomsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), Isomsg);
 
 			}
 

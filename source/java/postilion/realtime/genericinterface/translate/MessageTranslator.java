@@ -2,7 +2,9 @@ package postilion.realtime.genericinterface.translate;
 
 import java.math.BigInteger;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +16,9 @@ import postilion.realtime.date.SettlementDate;
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.InvokeMethodByConfig;
 import postilion.realtime.genericinterface.Parameters;
+import postilion.realtime.genericinterface.channels.ATM;
 import postilion.realtime.genericinterface.channels.Super;
+import postilion.realtime.genericinterface.extract.Extract;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.database.DBHandler;
 import postilion.realtime.genericinterface.translate.database.InfoRelatedToCard;
@@ -30,6 +34,7 @@ import postilion.realtime.library.common.model.ConfigAllTransaction;
 import postilion.realtime.library.common.model.ResponseCode;
 import postilion.realtime.library.common.util.constants.TagNameStructuredData;
 import postilion.realtime.sdk.crypto.DesKwa;
+import postilion.realtime.sdk.env.calendar.BusinessCalendar;
 import postilion.realtime.sdk.message.bitmap.Iso8583;
 import postilion.realtime.sdk.message.bitmap.Iso8583Post;
 import postilion.realtime.sdk.message.bitmap.ProcessingCode;
@@ -51,12 +56,14 @@ public class MessageTranslator {
 
 	private DesKwa kwa;
 	private TimedHashtable sourceTranToTmHashtable = null;
+	private TimedHashtable sourceTranToTmHashtableB24 = null;
 	private Map<String, ConfigAllTransaction> structureMap = new HashMap<>();
 	private Map<String, ResponseCode> allCodesIsoToB24TM = new HashMap<>();
 	private Client udpClient = null;
 	private String nameInterface = "";
 	protected String responseCodesVersion = "1";
 	private Parameters params;
+	private BusinessCalendar objectBusinessCalendar = null;
 
 	public MessageTranslator() {
 
@@ -65,6 +72,7 @@ public class MessageTranslator {
 	public MessageTranslator(Parameters params) {
 		this.kwa = params.getKwa();
 		this.sourceTranToTmHashtable = params.getSourceTranToTmHashtable();
+		this.sourceTranToTmHashtableB24 = params.getSourceTranToTmHashtableB24();
 		this.udpClient = params.getUdpClient();
 		this.nameInterface = params.getNameInterface();
 		this.responseCodesVersion = params.getResponseCodesVersion();
@@ -198,6 +206,15 @@ public class MessageTranslator {
 					}
 				}
 			}
+			if(sd.get("NEXTDAY") != null && sd.get("NEXTDAY").equals("TRUE")) {
+				objectBusinessCalendar = new BusinessCalendar("DefaultBusinessCalendar");
+				Date businessCalendarDate = this.objectBusinessCalendar.getNextBusinessDate();
+				String settlementDate = new SimpleDateFormat("MMdd").format(businessCalendarDate);
+//				SettlementDate date = new SettlementDate(this.params.getCalendarInfo().getCalendar());
+//				date.calculateDate(msg);
+				msgToRmto.putField(Iso8583.Bit._017_DATE_CAPTURE, settlementDate);
+			}
+			
 
 		} catch (XPostilion e) {
 			msgToRmto = null;
@@ -217,10 +234,11 @@ public class MessageTranslator {
 		String strTypeMsg = msg.getMessageType();
 		String retRefNumber = "N/D";
 		try {
-			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
+			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 			msgToRmto.putHeader(constructAtmHeaderSourceNode(msgToRmto));
 			msgToRmto.putMsgType(msg.getMsgType());
 			Iso8583Post msgOriginal = null;
+			Base24Ath msgB24Orig = (Base24Ath) this.sourceTranToTmHashtableB24.get(retRefNumber);
 			StructuredData sd = new StructuredData();
 
 			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
@@ -228,6 +246,7 @@ public class MessageTranslator {
 			if (msg.getResponseCode().equals(Iso8583.RspCode._00_SUCCESSFUL)) {// si la respuesta es exitosa
 				sd = msg.getStructuredData();
 				msgOriginal = (Iso8583Post) this.sourceTranToTmHashtable.get(retRefNumber);
+				
 				this.udpClient.sendData(Client.getMsgKeyValue(retRefNumber,
 						"VA A ENTRAR .... A SACAR EL SD DEL MENSAJE ORIGINAL", "LOG", this.nameInterface));
 				if ((sd == null && msgOriginal != null)) {
@@ -301,6 +320,11 @@ public class MessageTranslator {
 
 				msgToRmto.putField(Iso8583.Bit._102_ACCOUNT_ID_1, Pack.resize(Constants.Account.ACCOUNT_DEFAULT,
 						msgToRmto.getFieldLength(Iso8583.Bit._102_ACCOUNT_ID_1), '0', false));
+			}
+			if(!msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA) || msg.getStructuredData().get("B24_Field_41") == null) {
+				msgToRmto.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, 
+						msgB24Orig != null && msgB24Orig.isFieldSet(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID) ? msgB24Orig.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID)
+								: Pack.resize(msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID), 16, ' ', true));
 			}
 
 			// SKIP-TRANSFORM y TRANSFORM
@@ -483,6 +507,7 @@ public class MessageTranslator {
 
 			case Constants.Channels.OFC:
 				objectValidations.putInforCollectedForStructData("CHANNEL", "4");
+				objectValidations.putInforCollectedForStructData("Identificacion_Canal", "OF");
 				switch (msgFromRemote.getProcessingCode().toString()) {
 
 				// RETIRO OFIAVAL
@@ -556,11 +581,34 @@ public class MessageTranslator {
 				case Constants.Channels.PCODE_ANULACION_PAGO_MOTOS_Y_VEHICULOS_EFECTIVO:
 				case Constants.Channels.PCODE_ANULACION_PAGO_MOTOS_Y_VEHICULOS_CHEQUE:
 					
+					objectValidations.putInforCollectedForStructData("Tipo_de_Tarjeta", "0");
+					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "CRE");
+					objectValidations.putInforCollectedForStructData("Entidad", "0000");
+					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT", "PO_OFICINAS");
+					
+					objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "32");
+					objectValidations.putInforCollectedForStructData("Nombre_Transaccion", "DEBCOR");
+
+					objectValidations.putInforCollectedForStructData("Mod_Credito", "9");
+					objectValidations.putInforCollectedForStructData("Indicador_AVAL", "1");
+
+					// tarjetas y cuentas por cuadrar segun modelo en el pcode no aparece el segundo
+					// tipo de cuenta revisar
+					objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "06");
+					
 					Iso.putField(Iso8583.Bit._004_AMOUNT_TRANSACTION,
 							msgFromRemote.getField(Iso8583.Bit._054_ADDITIONAL_AMOUNTS).substring(30));
 					objectValidations.putInforCollectedForStructData("B24_Field_35",
 							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
 					Iso.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+					objectValidations.putInforCollectedForStructData("CLIENT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(6,24));
+					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(6,24));
+					objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(6,24));
 					//*
 					
 				break;
@@ -570,6 +618,23 @@ public class MessageTranslator {
 				case Constants.Channels.PCODE_DEVOLUCION_CANJE_PAGO_A_CUPO_ROTATIVO:
 				case Constants.Channels.PCODE_DEVOLUCION_CANJE_PAGO_A_OTROS_CREDITOS:
 				case Constants.Channels.PCODE_DEVOLUCION_CANJE_PAGO_A_CREDITO_MOTO_Y_VEHICULO:
+					
+					objectValidations.putInforCollectedForStructData("Tipo_de_Tarjeta", "0");
+					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "CRE");
+					objectValidations.putInforCollectedForStructData("Entidad", "0000");
+					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT", "PO_OFICINAS");
+					
+					objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "32");
+					objectValidations.putInforCollectedForStructData("Nombre_Transaccion", "DEBCOR");
+
+					objectValidations.putInforCollectedForStructData("Mod_Credito", "9");
+					objectValidations.putInforCollectedForStructData("Indicador_AVAL", "1");
+
+					// tarjetas y cuentas por cuadrar segun modelo en el pcode no aparece el segundo
+					// tipo de cuenta revisar
+					objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "06");
 
 					objectValidations.putInforCollectedForStructData("B24_Field_17",
 							msgFromRemote.getField(Iso8583.Bit._015_DATE_SETTLE));
@@ -587,6 +652,14 @@ public class MessageTranslator {
 					// Se envia el CHANNEL en 4 para que ISC identifique que son tx sin tarjeta
 					// presente
 					objectValidations.putInforCollectedForStructData("CHANNEL", "4");
+					objectValidations.putInforCollectedForStructData("CLIENT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(6,24));
+					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(6,24));
+					objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(6,24));
+					
+
 
 					break;
 
@@ -595,6 +668,13 @@ public class MessageTranslator {
 				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_CREDITO_ROTATIVO:
 				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_OTROS_CREDITOS:
 				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_CREDITO_MOTO_VEHICULO:
+					
+					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT", "PO_OFICINAS");
+					objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "06");
+					
+					objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "62");
+					objectValidations.putInforCollectedForStructData("Nombre_Transaccion", "CONSUL");
 
 					objectValidations.putInforCollectedForStructData("B24_Field_3",
 							msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
@@ -610,9 +690,12 @@ public class MessageTranslator {
 							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
 					Iso.putField(Iso8583.Bit._017_DATE_CAPTURE, msgFromRemote.getField(Iso8583.Bit._015_DATE_SETTLE));
 					Iso.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-					fillAccount(msgFromRemote, account, new DBHandler(this.params), retRefNumber);
-					objectValidations.putInforCollectedForStructData("P_CODE",
-							account.getInforCollectedForStructData().get("P_CODE"));
+					objectValidations.putInforCollectedForStructData("CLIENT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(6,24));
+					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(6,24));
+					objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(6,24));
 
 					Iso.putField(Iso8583.Bit._004_AMOUNT_TRANSACTION, Constants.General.TWELVE_ZEROS);
 					Iso.putField(Iso8583.Bit._049_CURRENCY_CODE_TRAN, Constants.General.DEFAULT_ERROR_049);
@@ -710,6 +793,18 @@ public class MessageTranslator {
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_CHEQUE:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_EFECTIVO:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CHEQUE:
+					
+					objectValidations.putInforCollectedForStructData("Tipo_de_Tarjeta", "0");
+					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "CRE");
+					objectValidations.putInforCollectedForStructData("Entidad", "0000");
+					objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "20");
+					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT", "PO_OFICINAS");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_CNB_TYPE",
+							"OF_POBLIG_" + Extract.tagTTypePOblig(msgFromRemote, objectValidations));
+					
+					Extract.tagsModelPaymentOfObligationsCredit(objectValidations, msgFromRemote);
 
 					objectValidations.putInforCollectedForStructData("B24_Field_35",
 							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
@@ -1380,15 +1475,15 @@ public class MessageTranslator {
 					allCodesIsoToB24TM = postilion.realtime.library.common.db.DBHandler.getResponseCodes(false, "1",
 							responseCodesVersion);
 				} catch (SQLException e1) {
-					EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e1,
-							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
+//					EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e1,
+//							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
 				}
 				responseCode = InitialLoadFilter.getFilterCodeIsoToB24(error.getErrorCodeISO(), allCodesIsoToB24TM);
 			} else {
 				responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
 						error.getErrorCodeISO(), error.getErrorCodeISO(), "10002");
-				EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e,
-						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
+//				EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e,
+//						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
 			}
 		}
 
@@ -1536,8 +1631,8 @@ public class MessageTranslator {
 				} else {
 					responseCode = new ResponseCode("10002", "Error Code could not extracted from message",
 							error.getErrorCodeISO(), error.getErrorCodeISO(), "10002");
-					EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e,
-							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
+//					EventReporter.reportGeneralEvent(this.nameInterface, MessageTranslator.class.getName(), e,
+//							msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructBase24", this.udpClient);
 				}
 			}
 			msgToRem.putField(Base24Ath.Bit.ENTITY_ERROR,

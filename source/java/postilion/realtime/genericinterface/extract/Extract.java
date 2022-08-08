@@ -1002,4 +1002,89 @@ public class Extract {
 			objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", "0000000000000000000");
 
 	}
+	
+	public static String tagTTypePOblig(Base24Ath msg, Super objectValidations) throws XFieldUnableToConstruct {
+
+		switch (msg.getProcessingCode().toString()) {
+		case Constants.Channels.PCODE_PAGO_CREDITO_HIPOTECARIO_ATM_AHORROS:
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_CORRIENTE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "1");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "1");
+
+			return "PAGO_CREDITO_HIPOTECARIO";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_AHORROS:
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_CORRIENTE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "5");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "5");
+			return "TARJETA_CREDITO";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_AHORROS:
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_CORRIENTE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "2");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "2");
+			return "CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_AHORROS:
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_CORRIENTE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "3");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "3");
+			return "OTROS_CREDITOS";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_HIPOTECARIO_EFECTIVO:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "1");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "1");
+			return "HIPOTECARIO_EFECTIVO";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_HIPOTECARIO_CHEQUE:
+
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "1");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "1");
+			return "HIPOTECARIO_CHEQUE";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_EFECTIVO:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "5");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "5");
+
+			return "TC_EFECTIVO";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_CHEQUE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "5");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "5");
+
+			return "TC_CHEQUE";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_EFECTIVO:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "2");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "2");
+
+			return "ROTATIVO_EFECTIVO";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_CHEQUE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "2");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "2");
+
+			return "ROTATIVO_CHEQUE";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_EFECTIVO:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "3");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "3");
+			return "OTROS_EFECTIVO";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CHEQUE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "3");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "3");
+			return "OTROS_CHEQUE";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_AHORROS:
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_CORRIENTE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "4");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "4");
+			return "VEHICULOS";
+
+		default:
+			return "OTROS";
+		}
+
+	}
 }

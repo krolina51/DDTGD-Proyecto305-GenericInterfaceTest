@@ -43,6 +43,11 @@ public class ValidateAutra {
 			if (Arrays.stream(terminalsID).anyMatch(terminalId::equals)) {
 				routingTo = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
 			} else {
+				
+				GenericInterface.fillMaps.getPrimerFiltroTest1().forEach((k, v) -> {
+					GenericInterface.getLogger().logLine("filtros " + k + " con " + v);
+				});
+				
 				if (procCode.equals("890000"))
 					procCode = msg.getField(126).substring(22, 28);
 				String keyTarjeta = channel + procCode + pan;
@@ -50,6 +55,10 @@ public class ValidateAutra {
 				keyCuenta.append(channel);
 				keyCuenta.append(procCode);
 				keyCuenta.append(construyeCtasValidacionAutra(procCode, msg));
+				
+				GenericInterface.getLogger().logLine("keybin " + keyBin);
+				GenericInterface.getLogger().logLine("keyTarjeta " + keyBin);
+				GenericInterface.getLogger().logLine("keyCuenta " + keyBin);
 
 				switch (filtro) {
 				case "Test1":
