@@ -273,6 +273,10 @@ public abstract class Super {
 	}
 
 	public void constructAutraMessage(Base24Ath msg, Iso8583Post msgToTM) throws XPostilion {
+		String procCode = msg.getProcessingCode().toString();
+		if (procCode.equals("890000")) {
+			procCode = msg.getField(126).substring(22, 28);
+		}
 		msgToTM.putMsgType(Iso8583.MsgType._0200_TRAN_REQ);
 
 		msgToTM.putField(Iso8583.Bit._003_PROCESSING_CODE, this.transformProcessingCodeForAutra(msg));
@@ -383,13 +387,25 @@ public abstract class Super {
 		msgToTM.putField(Iso8583Post.Bit._123_POS_DATA_CODE, General.POSDATACODE);
 		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
 
+		StructuredData sd = new StructuredData();
+		if(procCode.equals("330000") || procCode.equals("334000")
+				|| procCode.equals("333000") || procCode.equals("334100")
+				|| procCode.equals("334200")){
+				if(!msg.isFieldSet(Iso8583.Bit._022_POS_ENTRY_MODE)) {
+					sd.put("PROCCESS_FIELD_22", "TRUE");
+					msg.putField(Iso8583.Bit._022_POS_ENTRY_MODE, "021");
+					msg.clearField(64);
+				}				
+		}
+
 		String OriginalInput = new String(msg.toMsg(false));
 		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
 
 		GenericInterface.getLogger().logLine("Original Input B24 : " + OriginalInput);
 		GenericInterface.getLogger().logLine("Encoded Input B24 : " + encodedString);
 
-		StructuredData sd = new StructuredData();
+		
+		
 		sd.put("B24_Message", encodedString);
 		msgToTM.putStructuredData(sd);
 		msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,

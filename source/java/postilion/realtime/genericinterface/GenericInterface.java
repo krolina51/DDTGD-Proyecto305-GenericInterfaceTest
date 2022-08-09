@@ -872,7 +872,13 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			byte[] decodedBytes = Base64.getDecoder().decode(sdData);
 			String decodedString = new String(decodedBytes);
 			GenericInterface.getLogger().logLine("B24_Message: " + decodedString);
-			Base24Ath msgDecoded = new Base24Ath(null);
+			Base24Ath msgDecoded = null;
+			if(msg.getStructuredData().get("PROCCESS_FIELD_22") != null && msg.getStructuredData().get("PROCCESS_FIELD_22").equals("TRUE"))
+				msgDecoded = new Base24Ath(kwa);
+			else
+				msgDecoded = new Base24Ath(null);
+			
+			
 			msgDecoded.fromMsg(decodedString);
 			action.putMsgToRemote(msgDecoded);
 		} else {
