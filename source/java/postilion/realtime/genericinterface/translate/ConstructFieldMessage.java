@@ -2257,15 +2257,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 		try {
 			switch (this.routingField100) {
 
-			case "10":
+			case "0":
 
-				return "10";
-
-			case "20":
-
-				return "20";
-
-			default:
 				String secondsfield12 = msg.getField(Iso8583.Bit._012_TIME_LOCAL).substring(5, 6);
 				int fieldValue = Integer.parseInt(secondsfield12);
 
@@ -2275,6 +2268,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 				default:
 					return "10";
 				}
+
+			default:
+				return this.routingField100;
 			}
 
 		} catch (Exception e) {

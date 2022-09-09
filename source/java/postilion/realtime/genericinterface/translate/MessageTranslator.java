@@ -16,7 +16,6 @@ import postilion.realtime.date.SettlementDate;
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.InvokeMethodByConfig;
 import postilion.realtime.genericinterface.Parameters;
-import postilion.realtime.genericinterface.channels.ATM;
 import postilion.realtime.genericinterface.channels.Super;
 import postilion.realtime.genericinterface.extract.Extract;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
@@ -902,9 +901,71 @@ public class MessageTranslator {
 				}
 
 				break;
+				
+				
+			case Constants.Channels.INTERNET:
+				
+				objectValidations.putInforCollectedForStructData("CHANNEL", "8");
+				
+				switch (msgFromRemote.getProcessingCode().toString()) {
+
+				//Transferencias Internet
+				case Constants.Channels.PCODE_TRANSFERENCIAS_AHORROS_A_AHORROS:// ***
+				case Constants.Channels.PCODE_TRANSFERENCIAS_AHORROS_A_CORRIENTE:// ***
+				case Constants.Channels.PCODE_TRANSFERENCIAS_CORRIENTE_A_CORRIENTE:// ***
+				case Constants.Channels.PCODE_TRANSFERENCIAS_CORRIENTE_A_AHORROS:// ***
+					
+					//TAGS EXTRACT
+					// ***************************************************************************************************					
+					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT", "INTERNET_TRANSFERENCIA");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_CNB_TYPE", "INTERNET_TRANSFERENCIAS");
+					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
+					Extract.tagsModelTransferCredit(objectValidations, msgFromRemote);
+
+					objectValidations.putInforCollectedForStructData("Entidad", "0000");
+					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
+					////
+					
+					//TAGS ISC
+					if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
+							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("1")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "5000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "B");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "BS");
+					} else if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
+							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("2")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "6000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "W");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "WP");
+					} else if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0099")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "9000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "V");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IV");
+					} else {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "8000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "T");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
+					}
+					
+					objectValidations.putInforCollectedForStructData("B24_Field_35",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
+					Iso.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+					objectValidations.putInforCollectedForStructData("P_CODE",
+							msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
+					objectValidations.putInforCollectedForStructData("CREDIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7));
+					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
+					////	
+					
+					break;
+
+				}
+				
+				break;	
 
 			default:
-				objectValidations.modifyAttributes(false, "ERROR DE FORMATO", "0001", "30");
+				objectValidations.modifyAttributes(false, "CANAL NO CONFIGURADO", "0001", "30");
 				break;
 			}
 

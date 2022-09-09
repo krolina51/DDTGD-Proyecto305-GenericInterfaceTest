@@ -321,6 +321,7 @@ public class Constants {
 		public static final String ATM = "ATM";
 		public static final String CNB = "CNB";
 		public static final String CBCO= "CBCO";
+		public static final String INTERNET= "INTERNET";
 		public static final String VTL= "VTL";
 		public static final String IVR= "IVR";
 		public static final String OFC= "OFC";

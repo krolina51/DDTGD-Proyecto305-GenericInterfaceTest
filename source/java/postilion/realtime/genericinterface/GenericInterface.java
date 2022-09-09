@@ -158,7 +158,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 	static Header default_header;
 
-	private static Logger logger = new Logger(Constants.Config.URL_LOG);
+	private static Logger logger = new Logger(Constants.Config.URL_LOG, false);
 
 	public static HashMapBusinessLogic fillMaps = new HashMapBusinessLogic();
 

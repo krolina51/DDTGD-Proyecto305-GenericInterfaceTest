@@ -374,7 +374,11 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._052_PIN_DATA,
 					Transform.fromHexToBin(msg.getField(Iso8583.Bit._052_PIN_DATA)));
 
-		msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+		if (this.nameInterface.toLowerCase().startsWith("autra"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+		
 
 		if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
 			msgToTM.putField(Iso8583.Bit._102_ACCOUNT_ID_1, msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).toString());
@@ -391,6 +395,7 @@ public abstract class Super {
 		if(procCode.equals("330000") || procCode.equals("334000")
 				|| procCode.equals("333000") || procCode.equals("334100")
 				|| procCode.equals("334200")){
+			sd.put("CONSUL_TITUL", "TRUE");
 				if(!msg.isFieldSet(Iso8583.Bit._022_POS_ENTRY_MODE)) {
 					sd.put("PROCCESS_FIELD_22", "TRUE");
 					msg.putField(Iso8583.Bit._022_POS_ENTRY_MODE, "021");
@@ -504,7 +509,10 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS,
 					msg.getField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS).toString());
 
-		msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+		if (this.nameInterface.toLowerCase().startsWith("autra"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
 		if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
 			msgToTM.putField(Iso8583.Bit._102_ACCOUNT_ID_1, msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).toString());
@@ -562,7 +570,10 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE,
 					msg.getField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE).toString());
 
-		msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+		if (this.nameInterface.toLowerCase().startsWith("autra"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
 //		msgToTM.putField(Iso8583.Bit._025_POS_CONDITION_CODE, Iso8583.PosCondCode._00_NORMAL_PRESENTMENT);
 //		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
@@ -675,7 +686,10 @@ public abstract class Super {
 					.replaceAll("\\p{InCombiningDiacriticalMarks}+", ""), 150, ' ', false));
 		}
 
-		msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+		if (this.nameInterface.toLowerCase().startsWith("autra"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
 		if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
 			msgToTM.putField(Iso8583.Bit._102_ACCOUNT_ID_1, msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).toString());
@@ -806,7 +820,10 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._049_CURRENCY_CODE_TRAN,
 					msg.getField(Iso8583.Bit._049_CURRENCY_CODE_TRAN).toString());
 
-		msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+		if (this.nameInterface.toLowerCase().startsWith("autra"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
 		if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
 			msgToTM.putField(Iso8583.Bit._102_ACCOUNT_ID_1, msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).toString());
@@ -857,7 +874,10 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE,
 					msg.getField(Iso8583.Bit._070_NETWORK_MNG_INFO_CODE).toString());
 
-		msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+		if (this.nameInterface.toLowerCase().startsWith("autra"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
 //		msgToTM.putField(Iso8583.Bit._025_POS_CONDITION_CODE, Iso8583.PosCondCode._00_NORMAL_PRESENTMENT);
 //		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
