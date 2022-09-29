@@ -873,7 +873,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			String decodedString = new String(decodedBytes);
 			GenericInterface.getLogger().logLine("B24_Message: " + decodedString);
 			Base24Ath msgDecoded = null;
-			if(msg.getStructuredData().get("PROCCESS_FIELD_22") != null && msg.getStructuredData().get("PROCCESS_FIELD_22").equals("TRUE"))
+			if((msg.getStructuredData().get("PROCCESS_FIELD_22") != null && msg.getStructuredData().get("PROCCESS_FIELD_22").equals("TRUE"))
+					|| (msg.getStructuredData().get("PASSTHROUGH") != null && msg.getStructuredData().get("PASSTHROUGH").equals("TRUE")))
 				msgDecoded = new Base24Ath(kwa);
 			else
 				msgDecoded = new Base24Ath(null);

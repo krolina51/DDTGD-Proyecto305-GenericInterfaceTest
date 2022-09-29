@@ -376,6 +376,8 @@ public abstract class Super {
 
 		if (this.nameInterface.toLowerCase().startsWith("autra"))
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
 		else
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 		
@@ -402,6 +404,13 @@ public abstract class Super {
 					msg.clearField(64);
 				}				
 		}
+		
+		if (this.nameInterface.toLowerCase().startsWith("generictestdes2")) {
+			sd.put("PASSTHROUGH", "TRUE");
+			if(msg.isFieldSet(128))
+				msg.clearField(128);
+		}
+		
 
 		String OriginalInput = new String(msg.toMsg(false));
 		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
@@ -511,6 +520,8 @@ public abstract class Super {
 
 		if (this.nameInterface.toLowerCase().startsWith("autra"))
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
 		else
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
@@ -572,6 +583,8 @@ public abstract class Super {
 
 		if (this.nameInterface.toLowerCase().startsWith("autra"))
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
 		else
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
@@ -688,6 +701,8 @@ public abstract class Super {
 
 		if (this.nameInterface.toLowerCase().startsWith("autra"))
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
 		else
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
@@ -822,6 +837,8 @@ public abstract class Super {
 
 		if (this.nameInterface.toLowerCase().startsWith("autra"))
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
 		else
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
@@ -876,6 +893,8 @@ public abstract class Super {
 
 		if (this.nameInterface.toLowerCase().startsWith("autra"))
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+		else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
 		else
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
 
