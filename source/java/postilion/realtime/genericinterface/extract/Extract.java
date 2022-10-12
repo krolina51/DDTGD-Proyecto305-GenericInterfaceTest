@@ -239,6 +239,10 @@ public class Extract {
 				(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
 						? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(0, 4)
 						: msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0, 4));
+		objectValidations.putInforCollectedForStructData("Codigo_de_Red",
+				(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
+				? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(0, 4)
+						: msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0, 4));
 
 		// tarjetas y cuentas por cuadrar segun modelo en el pcode no aparece el segundo
 		// tipo de cuenta revisar
@@ -995,9 +999,9 @@ public class Extract {
 	 * @throws XPostilion
 	 */
 	public static void putTagClientCardNr(Super objectValidations, Base24Ath msg) throws XPostilion {
-		if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
+		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA))
 			objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",
-					"00" + msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(0, 4) + "0000000000000");
+					msg.getTrack2Data().getPan());
 		else
 			objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", "0000000000000000000");
 

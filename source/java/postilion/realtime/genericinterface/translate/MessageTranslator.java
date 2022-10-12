@@ -674,6 +674,24 @@ public class MessageTranslator {
 					
 					objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "62");
 					objectValidations.putInforCollectedForStructData("Nombre_Transaccion", "CONSUL");
+					
+					objectValidations.putInforCollectedForStructData("Codigo_FI_Origen", "1011");
+					objectValidations.putInforCollectedForStructData("Nombre_FI_Origen", "OFI");
+					objectValidations.putInforCollectedForStructData("Codigo_de_Red",
+							(msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
+							? msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(0, 4)
+									: msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0, 4));
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "   ");
+					objectValidations.putInforCollectedForStructData("PAN_Tarjeta", "                   ");
+					objectValidations.putInforCollectedForStructData("Vencimiento", "0000");
+					objectValidations.putInforCollectedForStructData("Ent_Adq",
+							(msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
+									? msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(0, 4)
+									: msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0, 4));
+					objectValidations.putInforCollectedForStructData("Canal", "01");
+					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
+					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
+					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
 
 					objectValidations.putInforCollectedForStructData("B24_Field_3",
 							msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
@@ -795,15 +813,28 @@ public class MessageTranslator {
 					
 					objectValidations.putInforCollectedForStructData("Tipo_de_Tarjeta", "0");
 					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
-					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "CRE");
 					objectValidations.putInforCollectedForStructData("Entidad", "0000");
 					objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "20");
 					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
 					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT", "PO_OFICINAS");
+					objectValidations.putInforCollectedForStructData("Codigo_FI_Origen", "1011");
+					objectValidations.putInforCollectedForStructData("Nombre_FI_Origen", "OFI");
 					objectValidations.putInforCollectedForStructData("TRANSACTION_CNB_TYPE",
 							"OF_POBLIG_" + Extract.tagTTypePOblig(msgFromRemote, objectValidations));
 					
 					Extract.tagsModelPaymentOfObligationsCredit(objectValidations, msgFromRemote);
+					
+					objectValidations.putInforCollectedForStructData("PAN_Tarjeta",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6) + "0000000000000");
+					
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "OTR");
+					objectValidations.putInforCollectedForStructData("Ofi_Adqui", msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4,8));
+					objectValidations.putInforCollectedForStructData("Canal", "01");
+					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
+					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
+					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
+					objectValidations.putInforCollectedForStructData("Numero_Cedula", msgFromRemote.isFieldSet(125)
+							? msgFromRemote.getField(125).substring(msgFromRemote.getField(125).length()-11) : "00000000000");
 
 					objectValidations.putInforCollectedForStructData("B24_Field_35",
 							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));

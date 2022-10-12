@@ -327,6 +327,7 @@ public abstract class Super {
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
 			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
 			case "008823":
+			case "008801":
 			case "008802":
 			case "008852":
 			case "007701":	
