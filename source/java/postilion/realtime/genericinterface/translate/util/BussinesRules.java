@@ -44,7 +44,7 @@ public class BussinesRules {
 				channel = Constants.Channels.VTL;
 			} else if (nameInterface.toLowerCase().startsWith("credibanco")) {
 				return Constants.Channels.CBCO;
-			} else if (nameInterface.toLowerCase().startsWith("internet")) {
+			} else if (nameInterface.toLowerCase().contains("internet")) {
 				return Constants.Channels.INTERNET;	
 			} else if (p41.substring(12, 13).equals("3")) {
 				return Constants.Channels.OFC;
