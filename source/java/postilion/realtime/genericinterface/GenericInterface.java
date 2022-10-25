@@ -1058,8 +1058,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			if(msgFromRemote.isFieldSet(Base24Ath.Bit.ENTITY_ERROR))
 				sd.put("B24_Field_63", msgFromRemote.getField(Base24Ath.Bit.ENTITY_ERROR));
 			
-			if(msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
+			if(msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)) {
 				sd.put("B24_Field_102", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
+				sd.put("CLIENT_ACCOUNT_NR", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
+			}
+				
 			
 			if(msgFromRemote.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
 				sd.put("B24_Field_103", msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2));

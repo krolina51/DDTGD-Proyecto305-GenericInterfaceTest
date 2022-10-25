@@ -315,30 +315,26 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE,
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
-//		if (msg.getProcessingCode().toString().equals("333000")) { 
-//
-//			msgToTM.putField(Iso8583.Bit._003_PROCESSING_CODE,
-//					Iso8583Post.TranType._32_GENERAL_INQUIRY
-//							.concat(new ProcessingCode(msg.getField(3)).getFromAccount())
-//							.concat(msg.getProcessingCode().getToAccount()).toString());
-//			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-//
-//		} else 
+
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
-			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
-			case "008823":
-			case "008801":
-			case "008802":
-			case "008852":
-			case "007701":	
-
-				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-
-				break;
-			default:
-				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
-				break;
-			}
+			
+			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+			
+//			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
+//			case "008823":
+//			case "008801":
+//			case "008802":
+//			case "008852":
+//			case "007701":	
+//			case "007702":	
+//
+//				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+//
+//				break;
+//			default:
+//				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+//				break;
+//			}
 
 		}
 
@@ -395,9 +391,9 @@ public abstract class Super {
 		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
 
 		StructuredData sd = new StructuredData();
-		if(procCode.equals("330000") || procCode.equals("334000")
+		if(this.nameInterface.toLowerCase().startsWith("generictest") && (procCode.equals("330000") || procCode.equals("334000")
 				|| procCode.equals("333000") || procCode.equals("334100")
-				|| procCode.equals("334200")){
+				|| procCode.equals("334200"))){
 			sd.put("CONSUL_TITUL", "TRUE");
 				if(!msg.isFieldSet(Iso8583.Bit._022_POS_ENTRY_MODE)) {
 					sd.put("PROCCESS_FIELD_22", "TRUE");
@@ -411,6 +407,7 @@ public abstract class Super {
 			if(msg.isFieldSet(128))
 				msg.clearField(128);
 		}
+		sd.put("FIELD_35",  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
 		
 
 		String OriginalInput = new String(msg.toMsg(false));
@@ -466,19 +463,24 @@ public abstract class Super {
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
-			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
-			case "008823":
-			case "008802":
-			case "008852":
-			case "007701":	
-
-				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-
-				break;
-			default:
-				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
-				break;
-			}
+			
+			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+			
+//			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
+//			case "008823":
+//			case "008801":
+//			case "008802":
+//			case "008852":
+//			case "007701":	
+//			case "007702":	
+//
+//				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+//
+//				break;
+//			default:
+//				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+//				break;
+//			}
 
 		}
 
@@ -536,6 +538,10 @@ public abstract class Super {
 		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
 		msgToTM.putField(Iso8583Post.Bit._123_POS_DATA_CODE, General.POSDATACODE);
 		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
+		
+		StructuredData sd = new StructuredData();
+		
+		sd.put("FIELD_35",  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
 
 		String OriginalInput = new String(msg.toMsg(false));
 		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
@@ -543,7 +549,8 @@ public abstract class Super {
 		GenericInterface.getLogger().logLine("Original Input B24 : " + OriginalInput);
 		GenericInterface.getLogger().logLine("Encoded Input B24 : " + encodedString);
 
-		StructuredData sd = new StructuredData();
+		
+		
 		sd.put("B24_Message", encodedString);
 		msgToTM.putStructuredData(sd);
 		msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
@@ -645,19 +652,24 @@ public abstract class Super {
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
-			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
-			case "008823":
-			case "008802":
-			case "008852":
-			case "007701":	
-
-				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-
-				break;
-			default:
-				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
-				break;
-			}
+			
+			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+			
+//			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
+//			case "008823":
+//			case "008801":
+//			case "008802":
+//			case "008852":
+//			case "007701":	
+//			case "007702":	
+//
+//				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+//
+//				break;
+//			default:
+//				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+//				break;
+//			}
 
 		}
 
@@ -721,6 +733,10 @@ public abstract class Super {
 //		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
 //		msgToTM.putField(Iso8583Post.Bit._123_POS_DATA_CODE, General.POSDATACODE);
 //		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
+		
+		StructuredData sd = msgToTM.getStructuredData();
+		
+		sd.put("FIELD_35",  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
 		String OriginalInput;
 		try {
 			OriginalInput = new String(msg.toMsg(false), "US-ASCII");
@@ -743,7 +759,7 @@ public abstract class Super {
 		GenericInterface.getLogger().logLine("Original Response B24 : " + OriginalInput);
 		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
 
-		StructuredData sd = msgToTM.getStructuredData();
+		
 		sd.put("B24_MessageRsp", encodedString);
 		msgToTM.putStructuredData(sd);
 
@@ -787,19 +803,24 @@ public abstract class Super {
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
-			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
-			case "008823":
-			case "008802":
-			case "008852":
-			case "007701":	
-
-				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-
-				break;
-			default:
-				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
-				break;
-			}
+			
+			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+			
+//			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
+//			case "008823":
+//			case "008801":
+//			case "008802":
+//			case "008852":
+//			case "007701":	
+//			case "007702":	
+//
+//				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+//
+//				break;
+//			default:
+//				msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+//				break;
+//			}
 
 		}
 
@@ -857,11 +878,14 @@ public abstract class Super {
 //		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
 //		msgToTM.putField(Iso8583Post.Bit._123_POS_DATA_CODE, General.POSDATACODE);
 //		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
+		
+		StructuredData sd = msgToTM.getStructuredData();
+		sd.put("FIELD_35",  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
 
 		String OriginalInput = new String(msg.toMsg(false));
 		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
 
-		StructuredData sd = msgToTM.getStructuredData();
+		
 		sd.put("B24_MessageRsp", encodedString);
 		msgToTM.putStructuredData(sd);
 
