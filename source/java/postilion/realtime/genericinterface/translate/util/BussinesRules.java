@@ -46,7 +46,7 @@ public class BussinesRules {
 				return Constants.Channels.CBCO;
 			} else if (nameInterface.toLowerCase().contains("internet")) {
 				return Constants.Channels.INTERNET;	
-			} else if (p41.substring(12, 13).equals("3")) {
+			} else if (p41.substring(12, 13).equals("3") || p41.substring(12, 13).equals(" ")) {
 				return Constants.Channels.OFC;
 			} else if (p41.substring(12, 13).equals(Constants.General.SEVEN))
 				return Constants.Channels.CNB;

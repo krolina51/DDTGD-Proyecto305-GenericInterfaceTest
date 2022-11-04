@@ -3,6 +3,7 @@ package postilion.realtime.genericinterface.translate;
 import java.math.BigInteger;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Enumeration;
@@ -496,11 +497,7 @@ public class MessageTranslator {
 			};
 
 			String p41 = msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID);
-			if (p41.substring(12, 13).equals(" "))
-				// pendiente a que se defina con Aval , ya que estan enviando vacios
-				channel = Constants.Channels.OFC;
-			else
-				channel = BussinesRules.channelIdentifier(msgFromRemote, this.nameInterface, this.udpClient);
+			channel = BussinesRules.channelIdentifier(msgFromRemote, this.nameInterface, this.udpClient);
 
 			switch (channel) {
 
@@ -692,6 +689,7 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
 					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
 					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
+					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
 
 					objectValidations.putInforCollectedForStructData("B24_Field_3",
 							msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
@@ -824,11 +822,14 @@ public class MessageTranslator {
 					
 					Extract.tagsModelPaymentOfObligationsCredit(objectValidations, msgFromRemote);
 					
+					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6) + "0000000000000");
+					
 					objectValidations.putInforCollectedForStructData("PAN_Tarjeta",
 							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6) + "0000000000000");
 					
 					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "OTR");
-					objectValidations.putInforCollectedForStructData("Ofi_Adqui", msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4,8));
+					objectValidations.putInforCollectedForStructData("Ofi_Adqui", "9999");
 					objectValidations.putInforCollectedForStructData("Canal", "01");
 					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
 					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
@@ -951,6 +952,8 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT", "INTERNET_TRANSFERENCIA");
 					objectValidations.putInforCollectedForStructData("TRANSACTION_CNB_TYPE", "INTERNET_TRANSFERENCIAS");
 					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
+					objectValidations.putInforCollectedForStructData("Codigo_FI_Origen", "1005");
+					objectValidations.putInforCollectedForStructData("Canal", "01");
 					Extract.tagsModelTransferCredit(objectValidations, msgFromRemote);
 
 					objectValidations.putInforCollectedForStructData("Entidad", "0000");
@@ -963,6 +966,7 @@ public class MessageTranslator {
 						objectValidations.putInforCollectedForStructData("TAG_D140", "5000");
 						objectValidations.putInforCollectedForStructData("TAG_D139", "B");
 						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "BS");
+						
 					} else if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
 							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("2")) {
 						objectValidations.putInforCollectedForStructData("TAG_D140", "6000");
@@ -976,6 +980,24 @@ public class MessageTranslator {
 						objectValidations.putInforCollectedForStructData("TAG_D140", "8000");
 						objectValidations.putInforCollectedForStructData("TAG_D139", "T");
 						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
+					}
+					
+					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,6).concat("0000000000000"));
+					objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR", msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7));
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
+					objectValidations.putInforCollectedForStructData("PAN_Tarjeta", msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,6).concat("0000000000000"));
+					objectValidations.putInforCollectedForStructData("Indicador_Aval", "1");
+					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
+					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
+					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
+					
+					String[] terminalsID = { "8590", "8591", "8593", "8594" };
+					String terminalId = msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4, 8);
+					
+					// ES TRANSFERENCIA CEL2CEL
+					if(Arrays.stream(terminalsID).anyMatch(terminalId::equals)) {
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
+						objectValidations.putInforCollectedForStructData("Transaccion_Unica", "C202");
 					}
 					
 					objectValidations.putInforCollectedForStructData("B24_Field_35",

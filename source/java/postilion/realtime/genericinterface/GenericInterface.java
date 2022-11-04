@@ -3,6 +3,7 @@ package postilion.realtime.genericinterface;
 import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
+import java.text.Normalizer;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Timer;
@@ -829,7 +830,12 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				String sdData = msg.getStructuredData().get("B24_MessageRsp");
 				byte[] decodedBytes = Base64.getDecoder().decode(sdData);
 				String decodedString = new String(decodedBytes, Charset.forName("US-ASCII"));
-				Base24Ath msgDecoded = new Base24Ath(null);
+				Base24Ath msgDecoded = null;
+				if((msg.getStructuredData().get("PROCESS_FIELD_125") != null && msg.getStructuredData().get("PROCESS_FIELD_125").equals("TRUE"))
+						|| (msg.getStructuredData().get("PROCESS_FIELD_63") != null && msg.getStructuredData().get("PROCESS_FIELD_63").equals("TRUE")))
+					msgDecoded = new Base24Ath(this.kwa);
+				else
+					msgDecoded = new Base24Ath(null);	
 
 				msgDecoded.fromMsg(decodedString);
 
@@ -1035,6 +1041,24 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 				}
 			};
+			StructuredData sd = originalMsg.getStructuredData();
+			
+			if(MsgType.isResponse(msg.getMsgType()) && msg.getProcessingCode().getTranType().equals("33") 
+					&& msg.isFieldSet(125)) {
+				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+									.replaceAll("[^(\\p{L}\\p{Nd}]+", "").replaceAll("[()_|]", ""),
+							43, '0', true));
+				sd.put("PROCESS_FIELD_125", "TRUE");
+				msg.clearField(128);
+			}
+			if(MsgType.isResponse(msg.getMsgType()) && msg.isFieldSet(63)) {
+				msg.putField(63, Pack.resize(Normalizer.normalize(msg.getField(63), Normalizer.Form.NFD)
+									.replaceAll("[^(\\p{L}\\p{Nd}]+", "").replaceAll("[()_|]", ""),
+							44, '0', true));
+				sd.put("PROCESS_FIELD_63", "TRUE");
+				msg.clearField(128);
+			}
+			originalMsg.putStructuredData(sd);
 
 			objectSuper.constructAutraResponseMessage(msg, originalMsg);
 
@@ -1161,20 +1185,35 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				action = new Action(null, constructEchoMsgIndicatorFailedMAC(msgFromRemote, errMac), null, null);
 			} else {
 
-				int intAutraAnt = ValidateAutra.validateAutra(msgFromRemote, udpClient, nameInterface, routingFilter);
+				// Validacion Enrutamiento Interfaz2 o Autra
+				int routingto = 0;
 
-				int intAutraNvo = 0;
+				switch (routingFilter) {
+				case "Test1":
+				case "Prod1":
 
-				if (intAutraAnt != intAutraNvo) {
-					getLogger().logLine("**********************************************************************");
-					getLogger().logLine("DIFERENCIA ValidacionAutra");
-					getLogger().logLine(msgFromRemote.toString());
-					getLogger().logLine("**********************************************************************");
-					getLogger().logLine("**********************************************************************");
+					routingto = ValidateAutra.getRouting(msgFromRemote, udpClient, nameInterface, routingFilter);
+
+					break;
+				case "Capa":
+					
+					routingto = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
+					
+					break;
+				case "Autra":
+
+					routingto = Constants.TransactionRouting.INT_AUTRA;
+
+					break;
+
+				default:
+
+					break;
+
 				}
 
-				switch (intAutraNvo) {
-				case 0:
+				switch (routingto) {
+				case Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION:
 
 					Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
 							General.VOIDSTRING, new HashMap<String, String>(), params) {
