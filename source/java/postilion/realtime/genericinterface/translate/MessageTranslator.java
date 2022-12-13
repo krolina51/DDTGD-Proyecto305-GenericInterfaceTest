@@ -1011,6 +1011,53 @@ public class MessageTranslator {
 							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
 					////	
 					
+					if(msgFromRemote.isFieldSet(125) 
+							&& (msgFromRemote.getField(125).length()>90 && msgFromRemote.getField(125).length()<=150)) {
+						objectValidations.putInforCollectedForStructData("TX_QR", "TRUE");
+						
+						String indicadorTransferencia = msgFromRemote.getField(125).substring(139,140);
+						String indicadorDevolucion = msgFromRemote.getField(125).substring(140,141);
+						objectValidations.putInforCollectedForStructData("TAG_D139", "_");
+						
+						switch (indicadorTransferencia) {
+						case "0":
+							objectValidations.putInforCollectedForStructData("INDICATIVO_TRANSFERENCIA", "QR_NO");
+							break;
+						case "1":
+							objectValidations.putInforCollectedForStructData("INDICATIVO_TRANSFERENCIA", "QR_PERSONA");
+							break;
+						case "2":
+							objectValidations.putInforCollectedForStructData("INDICATIVO_TRANSFERENCIA", "QR_COMERCIO");
+							break;	
+
+						default:
+							break;
+						}
+						
+						switch (indicadorDevolucion) {
+						case "0":
+							objectValidations.putInforCollectedForStructData("INDICATIVO_TX", "ORIGINAL");
+							objectValidations.putInforCollectedForStructData("TAG_E0E2", "Q003");
+							objectValidations.putInforCollectedForStructData("Transaccion_Unica", "Q003");
+							objectValidations.putInforCollectedForStructData("TAG_A9B2", "0");
+							objectValidations.putInforCollectedForStructData("TAG_9197", "0000");
+							objectValidations.putInforCollectedForStructData("TAG_4043", "000000");
+							break;
+						case "1":
+							objectValidations.putInforCollectedForStructData("INDICATIVO_TX", "DEVOLUCION");
+							objectValidations.putInforCollectedForStructData("TAG_E0E2", "Q004");
+							objectValidations.putInforCollectedForStructData("Transaccion_Unica", "Q004");
+							objectValidations.putInforCollectedForStructData("TAG_A9B2", "1");
+							objectValidations.putInforCollectedForStructData("TAG_9197", msgFromRemote.getField(125).substring(48,52));
+							objectValidations.putInforCollectedForStructData("TAG_4043", msgFromRemote.getField(125).substring(52,58));
+							break;
+
+						default:
+							break;
+						}
+					}
+						
+					
 					break;
 
 				}

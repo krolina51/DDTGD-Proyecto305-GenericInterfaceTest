@@ -14,6 +14,7 @@ import java.util.HashMap;
 
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.Parameters;
+import postilion.realtime.genericinterface.ValidateAutra;
 import postilion.realtime.genericinterface.eventrecorder.events.SQLExceptionEvent;
 import postilion.realtime.genericinterface.translate.ConstructFieldMessage;
 import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
@@ -272,7 +273,7 @@ public abstract class Super {
 		}
 	}
 
-	public void constructAutraMessage(Base24Ath msg, Iso8583Post msgToTM) throws XPostilion {
+	public void constructAutraMessage(Base24Ath msg, Iso8583Post msgToTM, ValidateAutra validateAutra) throws XPostilion {
 		String procCode = msg.getProcessingCode().toString();
 		if (procCode.equals("890000")) {
 			procCode = msg.getField(126).substring(22, 28);
@@ -370,13 +371,23 @@ public abstract class Super {
 		if (msg.isFieldSet(Iso8583.Bit._052_PIN_DATA))
 			msgToTM.putField(Iso8583.Bit._052_PIN_DATA,
 					Transform.fromHexToBin(msg.getField(Iso8583.Bit._052_PIN_DATA)));
+		
+		GenericInterface.getLogger().logLine("validateAutra"+validateAutra);
+		GenericInterface.getLogger().logLine("validateAutra.getP100Valor()"+validateAutra.getP100Valor());
 
-		if (this.nameInterface.toLowerCase().startsWith("autra"))
-			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
-		else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
-			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
-		else
-			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+		if(validateAutra != null && validateAutra.getP100Valor() != null) {
+			GenericInterface.getLogger().logLine("Entra if 100");
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, validateAutra.getP100Valor());
+		} else {
+			GenericInterface.getLogger().logLine("Entra else");
+			if (this.nameInterface.toLowerCase().startsWith("autra"))
+				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+			else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
+				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
+			else
+				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+			
+		}
 		
 
 		if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
@@ -402,6 +413,29 @@ public abstract class Super {
 				}				
 		}
 		
+		if(validateAutra != null && validateAutra.getP125Accion() != null && !validateAutra.getP125Accion().equals("FALSE")) {
+			if(validateAutra.getP125Accion().equals("AGREGAR")) {
+				sd.put("PROCCESS_FIELD_125", "TRUE");
+				msg.putField(125, validateAutra.getP125Valor());
+				msg.clearField(128);
+			} else if (validateAutra.getP125Accion().equals("BORRAR")) {
+				sd.put("PROCCESS_FIELD_125", "TRUE");
+				msg.clearField(125);
+				msg.clearField(128);
+				
+			} else if (validateAutra.getP125Accion().equals("AMPLIAR")) {
+				sd.put("PROCCESS_FIELD_125", "TRUE");
+				msg.putField(125, Pack.resize(msg.getField(125)+validateAutra.getP125Valor(), 150, ' ', true));
+				msg.clearField(128);
+			} else if (validateAutra.getP125Accion().equals("REDUCIR")) {
+				sd.put("PROCCESS_FIELD_125", "TRUE");
+				msg.putField(125, Pack.resize(msg.getField(125)+validateAutra.getP125Valor(), 90, ' ', true));
+				msg.clearField(128);
+			}
+		}
+			
+			
+		
 		if (this.nameInterface.toLowerCase().startsWith("generictestdes2")) {
 			sd.put("PASSTHROUGH", "TRUE");
 			if(msg.isFieldSet(128))
@@ -425,7 +459,7 @@ public abstract class Super {
 
 	}
 
-	public void constructAutraRevMessage(Base24Ath msg, Iso8583Post msgToTM) throws XPostilion {
+	public void constructAutraRevMessage(Base24Ath msg, Iso8583Post msgToTM, ValidateAutra validateAutra) throws XPostilion {
 		msgToTM.putMsgType(Iso8583.MsgType._0420_ACQUIRER_REV_ADV);
 		msgToTM.putField(Iso8583.Bit._003_PROCESSING_CODE, this.transformProcessingCodeForAutra(msg));
 
@@ -521,12 +555,19 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS,
 					msg.getField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS).toString());
 
-		if (this.nameInterface.toLowerCase().startsWith("autra"))
-			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
-		else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
-			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
-		else
-			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+		if(validateAutra != null && validateAutra.getP100Valor() != null) {
+			GenericInterface.getLogger().logLine("Entra if 100");
+			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, validateAutra.getP100Valor());
+		} else {
+			GenericInterface.getLogger().logLine("Entra else");
+			if (this.nameInterface.toLowerCase().startsWith("autra"))
+				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "50");
+			else if (this.nameInterface.toLowerCase().startsWith("generictestdes2"))
+				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
+			else
+				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
+			
+		}
 
 		if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
 			msgToTM.putField(Iso8583.Bit._102_ACCOUNT_ID_1, msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).toString());

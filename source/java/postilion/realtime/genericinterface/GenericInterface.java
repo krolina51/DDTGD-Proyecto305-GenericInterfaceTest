@@ -132,6 +132,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public String routingTransitoriasPath = "";
 	public String routingFilterPath = "D:\\Apl\\postilion\\genericinterfacetest";
 	public String routingLoadHashMap = "D:\\Apl\\postilion\\genericinterfacetest";
+	public String routingFilterV2Path = "D:\\Apl\\postilion\\genericinterfacetest";
+	public boolean applyV2Filter = false;
 	public String termConsecutiveSection = "";
 	public String sSignOn; // 0 - Don't Send SignOn on connection with
 							// the remote entity. 1 - Send SignOn
@@ -158,6 +160,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public boolean freeThreaded = false;
 
 	static Header default_header;
+	public boolean isLogOn = false;
 
 	private static Logger logger = new Logger(Constants.Config.URL_LOG, false);
 
@@ -204,6 +207,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Timer timer = new Timer();
 		TimerTask task = new CalendarLoader(this.calendarInfo, this.nameInterface);
 		timer.schedule(task, this.delay, this.period);
+		
+		setLogger(new Logger(Constants.Config.URL_LOG, this.isLogOn));
 
 		udpClient = new Client(ipUdpServer, portUdpServer, portUdpClient, nameInterface);
 
@@ -218,6 +223,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			fillMaps.fillFilters(routingFilterPath, this.nameInterface, this.udpClient);
 			break;
 		}
+		
+		fillMaps.fillFiltersV2(routingFilterV2Path, this.nameInterface, this.udpClient);
 
 		fillMaps.setAllCodesIsoToB24(DBHandler.getResponseCodes(false, "0", responseCodesVersion));
 		if (fillMaps.getAllCodesIsoToB24().size() == 0) {
@@ -296,9 +303,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				JSONArray channelsIds = (JSONArray) parameters.get("channelIds");
 				this.routingFilter = parameters.get("routing_filter").toString();
 				this.routingFilterPath = parameters.get("routing_filter_path").toString();
+				this.routingFilterV2Path = parameters.get("routing_filterV2_path").toString();
 				this.routingLoadHashMap = parameters.get("routing_load_hashMap").toString();
 				this.routingField100 = parameters.get("routing_field_100").toString();
 				businessValidation = (boolean) parameters.get("bussinessValidation");
+				isLogOn = (boolean) parameters.get("IS_LOG_ON");
 				try {
 					this.delay = (long) parameters.get("delay_timer");
 					this.period = (long) parameters.get("period_timer");
@@ -359,6 +368,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						.valueOf(BussinesRules.validatePortUdpServerParameter(cfgPortCryptoValidation));
 				this.termConsecutiveSection = parameters.get("terminal_consecutive_section").toString();
 				this.freeThreaded = (boolean) parameters.get("FREE_THREADED");
+				this.applyV2Filter = (boolean) parameters.get("APPLY_V2_FILTER");
 
 				if (channelsIds.size() != 0) {
 					CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
@@ -697,25 +707,26 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					if (!msg.isFieldSet(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID)) {
 						msg.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, Constants.General.DEFAULT_P41);
 					}
-
+					
+					
 					// Validacion Enrutamiento Interfaz2 o Autra
-					int routingto = 0;
+					ValidateAutra validateAutra = new ValidateAutra();
 
 					switch (routingFilter) {
 					case "Test1":
 					case "Prod1":
 
-						routingto = ValidateAutra.getRouting(msgFromRemote, udpClient, nameInterface, routingFilter);
+						validateAutra = ValidateAutra.getRoutingData(msgFromRemote, udpClient, nameInterface, routingFilter, applyV2Filter);
 
 						break;
 					case "Capa":
 						
-						routingto = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
+						validateAutra.setRute(Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION);
 						
 						break;
 					case "Autra":
 
-						routingto = Constants.TransactionRouting.INT_AUTRA;
+						validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
 
 						break;
 
@@ -725,7 +736,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 					}
 
-					switch (routingto) {
+					switch (validateAutra.getRute()) {
 					case Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION:
 
 						Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
@@ -771,7 +782,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							}
 						};
 
-						objectSuper.constructAutraMessage(msgFromRemote, msgToTm);
+						objectSuper.constructAutraMessage(msgFromRemote, msgToTm, validateAutra);
 
 						if (msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE).equals("910000")) {
 							msgToTm.putMsgType(Iso8583.MsgType._0600_ADMIN_REQ);
@@ -880,7 +891,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			GenericInterface.getLogger().logLine("B24_Message: " + decodedString);
 			Base24Ath msgDecoded = null;
 			if((msg.getStructuredData().get("PROCCESS_FIELD_22") != null && msg.getStructuredData().get("PROCCESS_FIELD_22").equals("TRUE"))
-					|| (msg.getStructuredData().get("PASSTHROUGH") != null && msg.getStructuredData().get("PASSTHROUGH").equals("TRUE")))
+					|| (msg.getStructuredData().get("PASSTHROUGH") != null && msg.getStructuredData().get("PASSTHROUGH").equals("TRUE"))
+					|| (msg.getStructuredData().get("PROCCESS_FIELD_125") != null && msg.getStructuredData().get("PROCCESS_FIELD_125").equals("TRUE")))
 				msgDecoded = new Base24Ath(kwa);
 			else
 				msgDecoded = new Base24Ath(null);
@@ -1025,13 +1037,21 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			throws Exception {
 
 		Action action = new Action();
+		
+		Base24Ath msg = (Base24Ath) msgFromRemote;
+		
+		int errMac = msg.failedMAC();
+		
 		Iso8583Post originalMsg = (Iso8583Post) sourceTranToTmHashtable
 				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
 						+ msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+		
+		if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR)
+			return new Action(null, constructEchoMsgIndicatorFailedMAC(msg, errMac), null, null);
 
 		if (originalMsg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
 				&& originalMsg.getStructuredData().get("B24_Message") != null) {
-			Base24Ath msg = (Base24Ath) msgFromRemote;
+			
 
 			Super objectSuper = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING, null,
 					params) {
@@ -1046,15 +1066,15 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			if(MsgType.isResponse(msg.getMsgType()) && msg.getProcessingCode().getTranType().equals("33") 
 					&& msg.isFieldSet(125)) {
 				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
-									.replaceAll("[^(\\p{L}\\p{Nd}]+", "").replaceAll("[()_|]", ""),
-							43, '0', true));
+							.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", "").replaceAll("[()_|]", ""),
+							43, ' ', true));
 				sd.put("PROCESS_FIELD_125", "TRUE");
 				msg.clearField(128);
 			}
 			if(MsgType.isResponse(msg.getMsgType()) && msg.isFieldSet(63)) {
 				msg.putField(63, Pack.resize(Normalizer.normalize(msg.getField(63), Normalizer.Form.NFD)
-									.replaceAll("[^(\\p{L}\\p{Nd}]+", "").replaceAll("[()_|]", ""),
-							44, '0', true));
+							.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", "").replaceAll("[()_|]", ""),
+							44, ' ', true));
 				sd.put("PROCESS_FIELD_63", "TRUE");
 				msg.clearField(128);
 			}
@@ -1186,23 +1206,23 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			} else {
 
 				// Validacion Enrutamiento Interfaz2 o Autra
-				int routingto = 0;
+				ValidateAutra validateAutra = new ValidateAutra();
 
 				switch (routingFilter) {
 				case "Test1":
 				case "Prod1":
 
-					routingto = ValidateAutra.getRouting(msgFromRemote, udpClient, nameInterface, routingFilter);
+					validateAutra = ValidateAutra.getRoutingData(msgFromRemote, udpClient, nameInterface, routingFilter, applyV2Filter);
 
 					break;
 				case "Capa":
 					
-					routingto = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
+					validateAutra.setRute(Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION);
 					
 					break;
 				case "Autra":
 
-					routingto = Constants.TransactionRouting.INT_AUTRA;
+					validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
 
 					break;
 
@@ -1212,7 +1232,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 				}
 
-				switch (routingto) {
+				switch (validateAutra.getRute()) {
 				case Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION:
 
 					Super objectValidations = new Super(true, General.VOIDSTRING, General.VOIDSTRING,
@@ -1260,7 +1280,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					};
 
 					GenericInterface.getLogger().logLine("msgToTm AUTRA:" + msgToTm.toString());
-					objectSuper.constructAutraRevMessage(msgFromRemote, msgToTm);
+					objectSuper.constructAutraRevMessage(msgFromRemote, msgToTm, validateAutra);
 					GenericInterface.getLogger().logLine("msgToTm AUTRA:" + msgToTm.toString());
 
 					action.putMsgToTranmgr(msgToTm);
@@ -1335,7 +1355,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		GenericInterface.getLogger().logLine("Entro processAcquirerRevAdvRspFromInterchange");
 		Base24Ath msg = (Base24Ath) msgFromRemote;
 		Action action = new Action();
-		String keyMsgFromRemote = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+		String keyMsgFromRemote = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 		Iso8583Post msgToTM = new Iso8583Post();
 		msgToTM = (Iso8583Post) sourceTranToTmHashtable.get(keyMsgFromRemote);
 

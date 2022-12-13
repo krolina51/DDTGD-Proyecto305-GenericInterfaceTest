@@ -70,6 +70,7 @@ public class HashMapBusinessLogic {
 	private Map<String, String> primerFiltroTest2 = new HashMap<>();
 	private Map<String, String> segundoFiltroTest2 = new HashMap<>();
 	private Map<String, String> segundoFiltro = new HashMap<>();
+	private Map<String, String> filtrosV2 = new HashMap<>();
 	private static Map<String, String> migratedOpCodesAtm = new HashMap<>();
 	private static Map<String, String> createFieldsRev = new HashMap<>();
 	private static Map<String, String> transformFieldsRev = new HashMap<>();
@@ -1329,6 +1330,14 @@ public class HashMapBusinessLogic {
 	public void putKeys(String keyKwa, DesKwa valueKwa) {
 		this.keys.put(keyKwa, valueKwa);
 	}
+	
+	public void putFiltrosV2(String key, String value) {
+		this.filtrosV2.put(key, value);
+	}
+	
+	public Map<String, String> getFiltrosV2() {
+		return filtrosV2;
+	}
 
 	/**
 	 * Llena HashMap deacuerdo a lo encontrado en el archivo Json ubicado en la ruta
@@ -1516,6 +1525,74 @@ public class HashMapBusinessLogic {
 			fr.close();
 		} catch (Exception e) {
 			EventReporter.reportGeneralEvent(nameInterface, GenericInterface.class.getName(), e, "N/D", "fillFilters",
+					udpClient);
+		}
+
+	}
+	
+	
+	/**
+	 * Llena HashMap deacuerdo a lo encontrado en el archivo Json ubicado en la ruta
+	 * routingFilterPath
+	 */
+	public void fillFiltersV2(String routingFilterPath, String nameInterface, Client udpClient) {
+
+		try (FileReader fr = new FileReader(routingFilterPath)) {
+			JSONParser parser = new JSONParser();
+			org.json.simple.JSONArray jsonArray = (org.json.simple.JSONArray) parser.parse(fr);
+			for (Object object : jsonArray) {
+				StringBuilder sbKey = new StringBuilder();
+				org.json.simple.JSONObject canal = (org.json.simple.JSONObject) object;
+
+				String strCanal = (String) canal.get("Canal");
+				String strCodProc = (String) canal.get("Codigo_Proceso");
+				String strModoEntrada = (String) canal.get("Modo_Entrada");
+				String strBin = (String) canal.get("BIN");
+				String strInterchange = (String) canal.get("Interchange");
+				String strRoute = (String) canal.get("Route");
+				String strTerminal = (String) canal.get("Terminal");
+				String strCampo100 = (String) canal.get("Campo100");
+				String strCampo125 = (String) canal.get("Campo125");
+				String strCampo125Contenido = (String) canal.get("Campo125Contenido");
+				
+				
+				sbKey.append(strInterchange).append("_");
+				sbKey.append(strCanal).append("_");
+				sbKey.append(strCodProc).append("_");
+				if(!strModoEntrada.equals("-"))
+					sbKey.append(strModoEntrada).append("_");
+				
+				// iteracion sobre bines
+				if (!strBin.equals("-")) {
+					String[] strBines = strBin.split(",");
+					for (int i = 0; i < strBines.length; i++) {
+						if (!filtrosV2.containsKey(sbKey.toString() + strBines[i]))
+							putFiltrosV2(sbKey.toString() + strBines[i], strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
+									+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125) 
+									+ "_" + strCampo125Contenido);
+						else
+							sbKey.append("_");
+					}
+				}
+				
+				// iteracion sobre terminales
+				if (!strTerminal.equals("-")) {
+					String[] strTerminales = strTerminal.split(",");
+					for (int i = 0; i < strTerminales.length; i++) {
+						if (!filtrosV2.containsKey(sbKey.toString() + strTerminales[i]))
+							putFiltrosV2(sbKey.toString() + strTerminales[i], strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
+									+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125)
+									+ "_" + strCampo125Contenido);
+						else
+							sbKey.append("_");
+					}
+					sbKey.append("_");
+				}
+
+			}
+			fr.close();
+		} catch (Exception e) {
+			EventReporter.reportGeneralEvent(nameInterface, GenericInterface.class.getName(), e, "N/D", "fillFiltersV2",
 					udpClient);
 		}
 
