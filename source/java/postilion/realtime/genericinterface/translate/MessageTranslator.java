@@ -957,7 +957,7 @@ public class MessageTranslator {
 					Extract.tagsModelTransferCredit(objectValidations, msgFromRemote);
 
 					objectValidations.putInforCollectedForStructData("Entidad", "0000");
-					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
+					objectValidations.putInforCollectedForStructData("Dispositivo", "_");
 					////
 					
 					//TAGS ISC
@@ -1015,8 +1015,8 @@ public class MessageTranslator {
 							&& (msgFromRemote.getField(125).length()>90 && msgFromRemote.getField(125).length()<=150)) {
 						objectValidations.putInforCollectedForStructData("TX_QR", "TRUE");
 						
-						String indicadorTransferencia = msgFromRemote.getField(125).substring(139,140);
-						String indicadorDevolucion = msgFromRemote.getField(125).substring(140,141);
+						String indicadorTransferencia = msgFromRemote.getField(125).substring(138,139);
+						String indicadorDevolucion = msgFromRemote.getField(125).substring(139,140);
 						objectValidations.putInforCollectedForStructData("TAG_D139", "_");
 						
 						switch (indicadorTransferencia) {
@@ -1045,8 +1045,8 @@ public class MessageTranslator {
 							break;
 						case "1":
 							objectValidations.putInforCollectedForStructData("INDICATIVO_TX", "DEVOLUCION");
-							objectValidations.putInforCollectedForStructData("TAG_E0E2", "Q004");
-							objectValidations.putInforCollectedForStructData("Transaccion_Unica", "Q004");
+							objectValidations.putInforCollectedForStructData("TAG_E0E2", "Q002");
+							objectValidations.putInforCollectedForStructData("Transaccion_Unica", "Q002");
 							objectValidations.putInforCollectedForStructData("TAG_A9B2", "1");
 							objectValidations.putInforCollectedForStructData("TAG_9197", msgFromRemote.getField(125).substring(48,52));
 							objectValidations.putInforCollectedForStructData("TAG_4043", msgFromRemote.getField(125).substring(52,58));

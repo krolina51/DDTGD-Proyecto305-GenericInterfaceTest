@@ -425,11 +425,13 @@ public abstract class Super {
 				
 			} else if (validateAutra.getP125Accion().equals("AMPLIAR")) {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
-				msg.putField(125, Pack.resize(msg.getField(125)+validateAutra.getP125Valor(), 150, ' ', true));
+				sd.put("AMPLIA125", "TRUE");
+				msg.putField(125, Pack.resize(msg.getField(125) != null ? msg.getField(125) : " "+validateAutra.getP125Valor(), 150, ' ', true));
 				msg.clearField(128);
 			} else if (validateAutra.getP125Accion().equals("REDUCIR")) {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
-				msg.putField(125, Pack.resize(msg.getField(125)+validateAutra.getP125Valor(), 90, ' ', true));
+				sd.put("REDUCE125", "TRUE");
+				msg.putField(125, Pack.resize(msg.getField(125) != null ? msg.getField(125) : " "+validateAutra.getP125Valor(), 90, ' ', true));
 				msg.clearField(128);
 			}
 		}

@@ -653,10 +653,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	 * @param msg
 	 * @return action a ejecutar con el comando
 	 * @throws XPostilion
+	 * @throws InterruptedException 
 	 ************************************************************************************/
 	@Override
 	public Action processTranReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
-			throws XPostilion {
+			throws XPostilion, InterruptedException {
 		Action action = new Action();
 		String retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 
@@ -684,6 +685,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			Base24Ath msgFromRemote = (Base24Ath) msg;
 			Base24Ath msgToRemote = new Base24Ath(kwa);
+			
+			//Thread.sleep(10000);
 
 			putRecordIntoSourceToTmHashtableB24(retRefNumber, msgFromRemote);
 
@@ -924,6 +927,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						&& msg.getStructuredData().get("B24_Message") != null) {
 					action.putMsgToRemote(constructRevAdvToRemote(msg));
 				} else {
+					msg.clearField(28);
+					msg.clearField(30);
 					MessageTranslator translator = new MessageTranslator(params);
 					Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
 
@@ -1078,6 +1083,24 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				sd.put("PROCESS_FIELD_63", "TRUE");
 				msg.clearField(128);
 			}
+
+			if(originalMsg.getStructuredData().get("AMPLIA125") != null && originalMsg.getStructuredData().get("AMPLIA125").equals("TRUE")) {
+				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", "").replaceAll("[()_|]", ""),
+						90, ' ', true));
+				sd.put("PROCESS_FIELD_125", "TRUE");
+				msg.clearField(128);
+			}
+			
+			if(originalMsg.getStructuredData().get("REDUCE125") != null && originalMsg.getStructuredData().get("REDUCE125").equals("TRUE")) {
+				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", "").replaceAll("[()_|]", ""),
+						150, ' ', true));
+				sd.put("PROCESS_FIELD_125", "TRUE");
+				msg.clearField(128);
+			}
+			
+			
 			originalMsg.putStructuredData(sd);
 
 			objectSuper.constructAutraResponseMessage(msg, originalMsg);

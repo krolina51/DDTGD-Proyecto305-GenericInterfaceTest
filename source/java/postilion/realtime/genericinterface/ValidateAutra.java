@@ -118,6 +118,7 @@ public class ValidateAutra {
 		String keyTerminal = null;
 		String keyBin = null;
 		String keyTarjeta = null;
+		String keyAll = null;
 		String value[] = null;
 		try {
 			
@@ -135,6 +136,7 @@ public class ValidateAutra {
 				channel = BussinesRules.channelIdentifier(msg, nameInterface, udpClient);
 				keyTerminal = nameInterface+"_"+channel+"_"+procCode+"_"+terminalId;
 				keyBin = nameInterface+"_"+channel+"_"+procCode+"_"+bin;
+				keyAll = nameInterface+"_"+channel+"_"+procCode+"_";
 				
 				GenericInterface.getLogger().logLine("keyTerminal " + keyTerminal);
 				GenericInterface.getLogger().logLine("keybin " + keyBin);
@@ -164,6 +166,24 @@ public class ValidateAutra {
 				// Verifica bines
 				if(GenericInterface.fillMaps.getFiltrosV2().containsKey(keyBin)) {
 					value = GenericInterface.fillMaps.getFiltrosV2().get(keyBin).split("_");
+					validateAutra.setRuta(value[0]);
+					validateAutra.setRute(value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION 
+							: Constants.TransactionRouting.INT_AUTRA);
+					validateAutra.setP100Valor(value[1]);
+					validateAutra.setP125Accion(value[2]);
+					validateAutra.setP125Valor(value[3]);
+					
+					GenericInterface.getLogger().logLine("validateAutra Ruta:" + validateAutra.getRuta());
+					GenericInterface.getLogger().logLine("validateAutra Rute:" + validateAutra.getRute());
+					GenericInterface.getLogger().logLine("validateAutra p100:" + validateAutra.getP100Valor());
+					GenericInterface.getLogger().logLine("validateAutra p125 valor:" + validateAutra.getP125Valor());
+					GenericInterface.getLogger().logLine("validateAutra p125 accion:" + validateAutra.getP125Accion());
+					return validateAutra;
+				}
+				
+				// Verifica solo pcode
+				if(GenericInterface.fillMaps.getFiltrosV2().containsKey(keyAll)) {
+					value = GenericInterface.fillMaps.getFiltrosV2().get(keyAll).split("_");
 					validateAutra.setRuta(value[0]);
 					validateAutra.setRute(value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION 
 							: Constants.TransactionRouting.INT_AUTRA);

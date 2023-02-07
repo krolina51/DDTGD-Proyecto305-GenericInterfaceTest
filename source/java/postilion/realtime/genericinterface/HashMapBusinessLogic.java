@@ -1570,8 +1570,6 @@ public class HashMapBusinessLogic {
 							putFiltrosV2(sbKey.toString() + strBines[i], strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
 									+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125) 
 									+ "_" + strCampo125Contenido);
-						else
-							sbKey.append("_");
 					}
 				}
 				
@@ -1583,10 +1581,15 @@ public class HashMapBusinessLogic {
 							putFiltrosV2(sbKey.toString() + strTerminales[i], strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
 									+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125)
 									+ "_" + strCampo125Contenido);
-						else
-							sbKey.append("_");
 					}
-					sbKey.append("_");
+				}
+				
+				// todos los bines y terminales
+				if(strBin.equals("ALL") && strTerminal.equals("ALL")) {
+					if (!filtrosV2.containsKey(sbKey.toString()))
+						putFiltrosV2(sbKey.toString(), strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
+								+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125)
+								+ "_" + strCampo125Contenido);
 				}
 
 			}
