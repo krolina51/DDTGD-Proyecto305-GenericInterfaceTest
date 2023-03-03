@@ -305,6 +305,8 @@ public class MessageTranslator {
 				}
 
 			}
+			
+			
 
 			if (sd != null) {
 				msgToRmto = constructFieldsFromSd(msgToRmto, sd);
@@ -407,6 +409,11 @@ public class MessageTranslator {
 						msgToRmto.clearField(Integer.parseInt(item));
 					}
 				}
+			}
+			
+			if(msgB24Orig != null) {
+				msgToRmto.putField(Iso8583.Bit._004_AMOUNT_TRANSACTION, msgB24Orig.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION));
+				msgToRmto.putField(Iso8583.Bit._035_TRACK_2_DATA, msgB24Orig.getField(Iso8583.Bit._035_TRACK_2_DATA));
 			}
 
 		} catch (XPostilion e) {
@@ -690,6 +697,12 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
 					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
 					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
+					objectValidations.putInforCollectedForStructData("FI_CREDITO_REV", "0000");
+					objectValidations.putInforCollectedForStructData("FI_DEBITO_REV", "0000");
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR_REV", "000000000000000000");
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE_REV", "   ");
+					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE_REV", "   ");
+					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR_REV", "000000000000000000");
 
 					objectValidations.putInforCollectedForStructData("B24_Field_3",
 							msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
@@ -858,6 +871,12 @@ public class MessageTranslator {
 					// Se envia el CHANNEL en 4 para que ISC identifique que son tx sin tarjeta
 					// presente
 					objectValidations.putInforCollectedForStructData("CHANNEL", "4");
+					objectValidations.putInforCollectedForStructData("FI_CREDITO_REV", "0000");
+					objectValidations.putInforCollectedForStructData("FI_DEBITO_REV", "0000");
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR_REV", "000000000000000000");
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE_REV", "   ");
+					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE_REV", "   ");
+					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR_REV", "000000000000000000");
 
 					break;
 
@@ -955,9 +974,10 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("Codigo_FI_Origen", "1005");
 					objectValidations.putInforCollectedForStructData("Canal", "01");
 					Extract.tagsModelTransferCredit(objectValidations, msgFromRemote);
+					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
 
 					objectValidations.putInforCollectedForStructData("Entidad", "0000");
-					objectValidations.putInforCollectedForStructData("Dispositivo", "_");
+					
 					////
 					
 					//TAGS ISC
@@ -1012,12 +1032,16 @@ public class MessageTranslator {
 					////	
 					
 					if(msgFromRemote.isFieldSet(125) 
-							&& (msgFromRemote.getField(125).length()>90 && msgFromRemote.getField(125).length()<=150)) {
+							&& (msgFromRemote.getField(125).length()>90 && msgFromRemote.getField(125).length()<=150)
+							&& (!msgFromRemote.getField(125).substring(138,139).equals(" ") && !msgFromRemote.getField(125).substring(138,139).equals("0"))
+							&& !msgFromRemote.getField(125).substring(139,140).equals(" ")) {
 						objectValidations.putInforCollectedForStructData("TX_QR", "TRUE");
 						
 						String indicadorTransferencia = msgFromRemote.getField(125).substring(138,139);
 						String indicadorDevolucion = msgFromRemote.getField(125).substring(139,140);
 						objectValidations.putInforCollectedForStructData("TAG_D139", "_");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
+						objectValidations.putInforCollectedForStructData("Dispositivo", "_");
 						
 						switch (indicadorTransferencia) {
 						case "0":

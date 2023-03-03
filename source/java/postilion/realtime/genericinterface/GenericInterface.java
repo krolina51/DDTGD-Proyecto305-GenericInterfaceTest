@@ -956,7 +956,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	}
 
 	public Base24Ath constructRevAdvToRemote(Iso8583Post msg) throws XPostilion {
-		Base24Ath msg0200ToRev = new Base24Ath(null);
+		Base24Ath msg0200ToRev = new Base24Ath(kwa);
 		String retRefNumber = "N/D";
 		try {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);

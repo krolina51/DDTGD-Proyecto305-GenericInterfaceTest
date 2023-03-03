@@ -131,6 +131,28 @@ public class ValidateAutra {
 				return validateAutra;
 			}
 			
+			if(nameInterface.toLowerCase().equals("genericinternet")
+					&& (procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
+					&& msg.isFieldSet(125)
+					&& (msg.getField(125).length()>90 && msg.getField(125).length()<=150)
+					&& (msg.getField(125).substring(138,139).equals(" ") || msg.getField(125).substring(138,139).equals("0"))) {
+				validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
+				return validateAutra;
+			}
+			if(nameInterface.toLowerCase().equals("genericinternet")
+					&& (procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
+					&& msg.isFieldSet(125)
+					&& msg.getField(125).length()<=90) {
+				validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
+				return validateAutra;
+			}
+			if(nameInterface.toLowerCase().equals("genericinternet")
+					&& (procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
+					&& !msg.isFieldSet(125)) {
+				validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
+				return validateAutra;
+			}
+			
 			if(applyV2Filter) {
 				GenericInterface.getLogger().logLine("APLICA FILTRO V2" );
 				channel = BussinesRules.channelIdentifier(msg, nameInterface, udpClient);
@@ -199,6 +221,8 @@ public class ValidateAutra {
 					return validateAutra;
 				}
 			}
+			
+			
 				
 			channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13).equals(" ")? "E":msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13);
 
