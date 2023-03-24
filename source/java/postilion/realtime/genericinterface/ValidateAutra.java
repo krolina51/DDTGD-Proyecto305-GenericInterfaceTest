@@ -137,6 +137,7 @@ public class ValidateAutra {
 					&& (msg.getField(125).length()>90 && msg.getField(125).length()<=150)
 					&& (msg.getField(125).substring(138,139).equals(" ") || msg.getField(125).substring(138,139).equals("0"))) {
 				validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
+				validateAutra.setP125Accion("REDUCIR");
 				return validateAutra;
 			}
 			if(nameInterface.toLowerCase().equals("genericinternet")

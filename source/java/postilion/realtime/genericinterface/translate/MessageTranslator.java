@@ -415,6 +415,12 @@ public class MessageTranslator {
 				msgToRmto.putField(Iso8583.Bit._004_AMOUNT_TRANSACTION, msgB24Orig.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION));
 				msgToRmto.putField(Iso8583.Bit._035_TRACK_2_DATA, msgB24Orig.getField(Iso8583.Bit._035_TRACK_2_DATA));
 			}
+			
+			if(msgB24Orig != null && msg.getMessageType().equals("0430")) {
+				if(msgB24Orig.isFieldSet(Iso8583.Bit._017_DATE_CAPTURE)) msgToRmto.putField(Iso8583.Bit._017_DATE_CAPTURE, msgB24Orig.getField(Iso8583.Bit._017_DATE_CAPTURE));
+				if(msgB24Orig.isFieldSet(Iso8583.Bit._095_REPLACEMENT_AMOUNTS)) msgToRmto.putField(Iso8583.Bit._095_REPLACEMENT_AMOUNTS, msgB24Orig.getField(Iso8583.Bit._095_REPLACEMENT_AMOUNTS));
+				if(msgB24Orig.isFieldSet(125)) msgToRmto.putField(125, msgB24Orig.getField(125));
+			}
 
 		} catch (XPostilion e) {
 			msgToRmto = null;
@@ -1042,6 +1048,9 @@ public class MessageTranslator {
 						objectValidations.putInforCollectedForStructData("TAG_D139", "_");
 						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
 						objectValidations.putInforCollectedForStructData("Dispositivo", "_");
+						objectValidations.putInforCollectedForStructData("Nombre_Establecimiento_QR", msgFromRemote.getField(125).substring(0,20));
+						objectValidations.putInforCollectedForStructData("PAN_Tarjeta", msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,6)
+								.concat(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(11,24)));
 						
 						switch (indicadorTransferencia) {
 						case "0":

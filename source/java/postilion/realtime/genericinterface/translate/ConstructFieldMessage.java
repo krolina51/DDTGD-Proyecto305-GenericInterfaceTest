@@ -3492,5 +3492,36 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 		return command.toString();
 	}
+	
+	/**************************************************************************************
+	 *Construye campos de respuesta desde el structured data o mensaje original
+	 * 
+	 * @param object mensaje que va hacia la interchange.
+	 * @return String con el campo 48 obtenido del 0210
+	 * 
+	 * @throws XPostilion
+	 *************************************************************************************/
+	public String constructFieldFromOriginalMsgOrSD(Object object, Integer num) throws XPostilion {
+		String field = null;
+		if (object instanceof Base24Ath) {
+			Base24Ath msg = (Base24Ath) object;
+			if (msg.isFieldSet(num))
+				field = msg.getField(num);
+
+		} else if (object instanceof Iso8583Post) {
+			Iso8583Post msgFromTm = (Iso8583Post) object;
+			if (msgFromTm.isPrivFieldSet(22) && msgFromTm.getStructuredData().get("B24_Field_" + num.toString()) != null) {
+				field = msgFromTm.getStructuredData().get("B24_Field_" + num.toString());
+			} else {
+
+				Base24Ath msgOriginalB24 = (Base24Ath) this.sourceTranToTmHashtableB24
+						.get(msgFromTm.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR) + msgFromTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+				if (msgOriginalB24.isFieldSet(num))
+					field = msgOriginalB24.getField(num);
+			}
+		}
+		return field;
+
+	}
 
 }
