@@ -135,7 +135,7 @@ public class ValidateAutra {
 					&& (procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
 					&& msg.isFieldSet(125)
 					&& (msg.getField(125).length()>90 && msg.getField(125).length()<=150)
-					&& (msg.getField(125).substring(138,139).equals(" ") || msg.getField(125).substring(138,139).equals("0"))) {
+					&& (!msg.getField(125).substring(138,139).equals("1") && !msg.getField(125).substring(138,139).equals("2"))) {
 				validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
 				validateAutra.setP125Accion("REDUCIR");
 				return validateAutra;

@@ -387,6 +387,11 @@ public class MessageTranslator {
 										methodName, msg, i));
 				}
 			}
+			
+			if(msgB24Orig != null && msg.getMessageType().equals("0430")) {
+				if(msgB24Orig.isFieldSet(Iso8583.Bit._095_REPLACEMENT_AMOUNTS)) msgToRmto.putField(Iso8583.Bit._095_REPLACEMENT_AMOUNTS, msgB24Orig.getField(Iso8583.Bit._095_REPLACEMENT_AMOUNTS));
+				if(msgB24Orig.isFieldSet(125)) msgToRmto.putField(125, msgB24Orig.getField(125));
+			}
 
 			// Busca si hay que eliminar campos dado el processingCode
 
@@ -414,12 +419,6 @@ public class MessageTranslator {
 			if(msgB24Orig != null) {
 				msgToRmto.putField(Iso8583.Bit._004_AMOUNT_TRANSACTION, msgB24Orig.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION));
 				msgToRmto.putField(Iso8583.Bit._035_TRACK_2_DATA, msgB24Orig.getField(Iso8583.Bit._035_TRACK_2_DATA));
-			}
-			
-			if(msgB24Orig != null && msg.getMessageType().equals("0430")) {
-				if(msgB24Orig.isFieldSet(Iso8583.Bit._017_DATE_CAPTURE)) msgToRmto.putField(Iso8583.Bit._017_DATE_CAPTURE, msgB24Orig.getField(Iso8583.Bit._017_DATE_CAPTURE));
-				if(msgB24Orig.isFieldSet(Iso8583.Bit._095_REPLACEMENT_AMOUNTS)) msgToRmto.putField(Iso8583.Bit._095_REPLACEMENT_AMOUNTS, msgB24Orig.getField(Iso8583.Bit._095_REPLACEMENT_AMOUNTS));
-				if(msgB24Orig.isFieldSet(125)) msgToRmto.putField(125, msgB24Orig.getField(125));
 			}
 
 		} catch (XPostilion e) {

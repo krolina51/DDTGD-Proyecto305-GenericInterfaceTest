@@ -990,11 +990,16 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			if (msgIsoPost210.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
 				msg0200ToRev.putField(Iso8583.Bit._103_ACCOUNT_ID_2,
 						msgIsoPost210.getField(Iso8583.Bit._103_ACCOUNT_ID_2));
+			
+//			if(msg0200ToRev.isFieldSet(125) && msg0200ToRev.getField(125).length() < 90)
+//				msg0200ToRev.putField(125, Pack.resize(msg.getField(125), 90, ' ', true));
 
 			msg0200ToRev.clearField(Iso8583.Bit._052_PIN_DATA);
 			msg0200ToRev.clearField(105);
 			msg0200ToRev.clearField(112);
+			
 			msg0200ToRev.clearField(126);
+			msg0200ToRev.clearField(128);
 
 			GenericInterface.getLogger().logLine("Base24Ath Rev: " + msg0200ToRev.toString());
 		} catch (XPostilion e) {
