@@ -1042,6 +1042,8 @@ public class MessageTranslator {
 							&& !msgFromRemote.getField(125).substring(139,140).equals(" ")) {
 						objectValidations.putInforCollectedForStructData("TX_QR", "TRUE");
 						
+						//Thread.sleep(1000);
+						
 						String indicadorTransferencia = msgFromRemote.getField(125).substring(138,139);
 						String indicadorDevolucion = msgFromRemote.getField(125).substring(139,140);
 						objectValidations.putInforCollectedForStructData("TAG_D139", "_");
