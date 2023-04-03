@@ -965,6 +965,62 @@ public class MessageTranslator {
 				
 				switch (msgFromRemote.getProcessingCode().toString()) {
 
+				case Constants.Channels.PCODE_PAGO_SP_CNB_A:// ***
+				case Constants.Channels.PCODE_PAGO_SP_CNB_C:// ***
+					
+					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
+					objectValidations.putInforCollectedForStructData("DEBIT_CARD_NR",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(4,19));
+					
+					//TAGS ISC
+					if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
+							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("1")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "5000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "B");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "BS");
+						
+					} else if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
+							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("2")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "6000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "W");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "WP");
+					} else if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0099")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "9000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "V");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IV");
+					} else {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "8000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "T");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
+					}
+					
+					break;
+					
+				// PAGO DE OBLIGACIONES CNB.
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_CORRIENTE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_CORRIENTE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_CORRIENTE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_CORRIENTE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_HIPOTECARIO_EFECTIVO:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_HIPOTECARIO_CHEQUE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_EFECTIVO:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_CHEQUE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_EFECTIVO:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_CHEQUE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_EFECTIVO:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CHEQUE:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_AHORROS:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_CORRIENTE:
+					
+					
+					
+					break;
+				
 				//Transferencias Internet
 				case Constants.Channels.PCODE_TRANSFERENCIAS_AHORROS_A_AHORROS:// ***
 				case Constants.Channels.PCODE_TRANSFERENCIAS_AHORROS_A_CORRIENTE:// ***
