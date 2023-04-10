@@ -964,7 +964,7 @@ public class MessageTranslator {
 				objectValidations.putInforCollectedForStructData("CHANNEL", "8");
 				
 				switch (msgFromRemote.getProcessingCode().toString()) {
-
+				//PAGO CONVENIOS 
 				case Constants.Channels.PCODE_PAGO_SP_CNB_A:// ***
 				case Constants.Channels.PCODE_PAGO_SP_CNB_C:// ***
 					
@@ -994,32 +994,34 @@ public class MessageTranslator {
 						objectValidations.putInforCollectedForStructData("TAG_D139", "T");
 						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
 					}
+					objectValidations.putInforCollectedForStructData("P_CODE",
+							msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
 					
+					objectValidations.putInforCollectedForStructData("B24_Field_35",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
+					Iso.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
 					break;
 					
 				// PAGO DE OBLIGACIONES CNB.
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_AHORROS:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITO_HIPOTECARIO_CORRIENTE:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_AHORROS:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TARJETA_CREDITO_CORRIENTE:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_AHORROS:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_CORRIENTE:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_AHORROS:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_CORRIENTE:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_HIPOTECARIO_EFECTIVO:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_HIPOTECARIO_CHEQUE:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_EFECTIVO:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_CHEQUE:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_EFECTIVO:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_CHEQUE:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_EFECTIVO:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CHEQUE:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_AHORROS:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_CORRIENTE:
 					
+					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
 					
+					objectValidations.putInforCollectedForStructData("P_CODE",
+							msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
 					
-					break;
+					objectValidations.putInforCollectedForStructData("B24_Field_35",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
+					Iso.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+				break;
 				
 				//Transferencias Internet
 				case Constants.Channels.PCODE_TRANSFERENCIAS_AHORROS_A_AHORROS:// ***
