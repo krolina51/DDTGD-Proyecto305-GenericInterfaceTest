@@ -995,6 +995,8 @@ public class MessageTranslator {
 						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
 					}
 					
+					
+					
 					break;
 					
 				// PAGO DE OBLIGACIONES CNB.
