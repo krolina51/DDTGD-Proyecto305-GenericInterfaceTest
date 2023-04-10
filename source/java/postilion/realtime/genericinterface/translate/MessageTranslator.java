@@ -1000,6 +1000,34 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("B24_Field_35",
 							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
 					Iso.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+					
+					
+					//TAGS EXTRACT
+					// ***************************************************************************************************	
+					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT",
+							"INTERNET_PAGO_SERVICIOS_PUBLICOS");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_PSP", "INTERNET_PSP");
+					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V3");
+					Extract.tagsModelPspGeneral(objectValidations, msgFromRemote, udpClient, nameInterface);
+					objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_CBN_PSP", "CREDITO");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_PSP",
+					objectValidations.getInforCollectedForStructData().get("TRANSACTION_TYPE_PSP") + "_CREDITO");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_CBN_PSP_S", "CREDITO");
+					objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "05");
+					objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_Debitada", "AHO");
+					objectValidations.putInforCollectedForStructData("DEBIT_CARD_CLASS", "15CLASE12NB1");
+					objectValidations.putInforCollectedForStructData("DEBIT_CARD_NR", "0066010000000000");
+					objectValidations.putInforCollectedForStructData("Vencimiento", "0000");
+					objectValidations.putInforCollectedForStructData("Ind_4xmil", "0");
+					objectValidations.putInforCollectedForStructData("DEBIT_CUSTOMER_ID", "0000000000000");
+					objectValidations.putInforCollectedForStructData("Indicador_Tipo_Servicio", "2");
+					objectValidations.putInforCollectedForStructData("Identificacion_Canal", "C2");
+					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
+					objectValidations.putInforCollectedForStructData("Numero_Factura",
+							msgFromRemote.getField(Base24Ath.Bit.DATA_ADDTIONAL).substring(msgFromRemote.getField(Base24Ath.Bit.DATA_ADDTIONAL).length()-19));	
+					objectValidations.putInforCollectedForStructData("Tarjeta_Amparada", msgFromRemote.getTrack2Data().getPan());							
+					
 					break;
 					
 				// PAGO DE OBLIGACIONES CNB.
@@ -1021,6 +1049,51 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("B24_Field_35",
 							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
 					Iso.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+					
+					
+					//TAGS EXTRACT
+					// ***************************************************************************************************					
+					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT", "INTERNET_PAGOOBLIGACION");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_CNB_TYPE", "INTERNET_PAGOOBLIGACION");
+					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
+					objectValidations.putInforCollectedForStructData("Codigo_FI_Origen", "1005");
+					objectValidations.putInforCollectedForStructData("Canal", "01");
+					Extract.tagsModelPaymentOfObligationsCredit(objectValidations, msgFromRemote);
+					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
+
+					objectValidations.putInforCollectedForStructData("Entidad", "0000");
+					
+					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,6).concat("0000000000000"));
+					objectValidations.putInforCollectedForStructData("PRIM_ACCOUNT_NR", msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7));
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
+					objectValidations.putInforCollectedForStructData("PAN_Tarjeta", msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,6).concat("0000000000000"));
+					objectValidations.putInforCollectedForStructData("Indicador_Aval", "1");
+					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
+					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
+					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
+					objectValidations.putInforCollectedForStructData("FI_DEBITO", "0002");
+					
+					if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
+							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("1")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "5000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "B");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "BS");
+						
+					} else if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
+							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("2")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "6000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "W");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "WP");
+					} else if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0099")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "9000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "V");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IV");
+					} else {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "8000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "T");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
+					}
+					
 				break;
 				
 				//Transferencias Internet
