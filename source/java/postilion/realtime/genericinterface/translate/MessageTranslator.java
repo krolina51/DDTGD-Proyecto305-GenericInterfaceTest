@@ -1039,7 +1039,28 @@ public class MessageTranslator {
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_CORRIENTE:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_AHORROS:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_VEHICULOS_CORRIENTE:
-					
+					//TAGS ISC
+					if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
+							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("1")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "5000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "B");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "BS");
+						
+					} else if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
+							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("2")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "6000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "W");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "WP");
+					} else if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0099")) {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "9000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "V");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IV");
+					} else {
+						objectValidations.putInforCollectedForStructData("TAG_D140", "8000");
+						objectValidations.putInforCollectedForStructData("TAG_D139", "T");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
+					}
+	
 					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
 							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
 					
