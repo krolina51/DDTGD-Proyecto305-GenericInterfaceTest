@@ -1554,6 +1554,7 @@ public class HashMapBusinessLogic {
 				String strCampo100 = (String) canal.get("Campo100");
 				String strCampo125 = (String) canal.get("Campo125");
 				String strCampo125Contenido = (String) canal.get("Campo125Contenido");
+				String strExcepcion = (String) canal.get("Excepcion");
 				
 				
 				sbKey.append(strInterchange).append("_");
@@ -1561,6 +1562,8 @@ public class HashMapBusinessLogic {
 				sbKey.append(strCodProc).append("_");
 				if(!strModoEntrada.equals("-"))
 					sbKey.append(strModoEntrada).append("_");
+				if(!strExcepcion.equals("-"))
+					sbKey.append(strExcepcion).append("_");
 				
 				// iteracion sobre bines
 				if (!strBin.equals("-")) {

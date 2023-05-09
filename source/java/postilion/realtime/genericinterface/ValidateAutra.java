@@ -120,8 +120,10 @@ public class ValidateAutra {
 		String keyTarjeta = null;
 		String keyAll = null;
 		String value[] = null;
+		String excepcion = null;
 		try {
 			
+			// **********************************************************************************
 			// Verifica transferencias masivas, enruta Capa
 			String[] terminalsID = { "8354", "8110", "9631", "9632" };
 			String terminalId = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4, 8);
@@ -130,8 +132,36 @@ public class ValidateAutra {
 				validateAutra.setRute(Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION);
 				return validateAutra;
 			}
+			// **********************************************************************************
 			
-			if(nameInterface.toLowerCase().equals("genericinternet")
+			// **********************************************************************************
+			// VERIFICA TERMINALES CEL2CEL
+			String[] terminalsIDCel2Cel = { "8590", "8591", "8593", "8594" };
+			String terminalIdCel2Cel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4, 8);
+			
+			// **********************************************************************************
+			// VERIFICAR EXCEPCIONES TRANSFERENCIAS
+			if((procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
+					&& msg.isFieldSet(125)
+					&& (msg.getField(125).length()>90 && msg.getField(125).length()<=150)
+					&& (msg.getField(125).substring(138,139).equals("1") || msg.getField(125).substring(138,139).equals("2"))) {
+				// ES QR
+				//excepcion = "QR";
+				validateAutra.setRute(Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION);
+				return validateAutra;
+				
+			} else if((procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
+					&& (Arrays.stream(terminalsIDCel2Cel).anyMatch(terminalIdCel2Cel::equals))) {
+				// ES TRANSFERENCIA CEL2CEL
+				excepcion = "CEL2CEL";
+			} else if((procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))) {
+				// ES TRANSFERENCIA NORMAL
+				excepcion = "NORMAL";
+			}
+			// **********************************************************************************
+			
+			
+			/*if(nameInterface.toLowerCase().equals("genericinternet")
 					&& (procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
 					&& msg.isFieldSet(125)
 					&& (msg.getField(125).length()>90 && msg.getField(125).length()<=150)
@@ -152,14 +182,14 @@ public class ValidateAutra {
 					&& !msg.isFieldSet(125)) {
 				validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
 				return validateAutra;
-			}
+			}*/
 			
 			if(applyV2Filter) {
 				GenericInterface.getLogger().logLine("APLICA FILTRO V2" );
 				channel = BussinesRules.channelIdentifier(msg, nameInterface, udpClient);
-				keyTerminal = nameInterface+"_"+channel+"_"+procCode+"_"+terminalId;
-				keyBin = nameInterface+"_"+channel+"_"+procCode+"_"+bin;
-				keyAll = nameInterface+"_"+channel+"_"+procCode+"_";
+				keyTerminal = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_"+terminalId :  nameInterface+"_"+channel+"_"+procCode+"_"+terminalId;
+				keyBin = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_"+bin : nameInterface+"_"+channel+"_"+procCode+"_"+bin;
+				keyAll = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_" : nameInterface+"_"+channel+"_"+procCode+"_";
 				
 				GenericInterface.getLogger().logLine("keyTerminal " + keyTerminal);
 				GenericInterface.getLogger().logLine("keybin " + keyBin);

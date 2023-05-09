@@ -1072,6 +1072,8 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
 					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
 					objectValidations.putInforCollectedForStructData("FI_DEBITO", "0002");
+					objectValidations.putInforCollectedForStructData("Codigo_de_Red", msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4, 8));
+					objectValidations.putInforCollectedForStructData("Numero_Terminal", "0000");
 					
 					if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0,4).equals("0088") 
 							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("1")) {

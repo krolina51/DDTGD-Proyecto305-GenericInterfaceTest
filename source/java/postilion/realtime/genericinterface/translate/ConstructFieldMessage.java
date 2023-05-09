@@ -236,7 +236,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 				"getToAccount " + msg.getProcessingCode().getToAccount(), "LOG", this.nameInterface));
 
 		sbField.append(Constants.General.NETWORKID_ATH).append(Constants.General.NETWORKNAME_ATH)
-				.append(msg.getProcessingCode().getFromAccount()).append(msg.getProcessingCode().getToAccount())
+				.append("0000")
 				.append(Constants.General.CARD_ISSUER_AUTH);
 
 		this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
