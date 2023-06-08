@@ -939,6 +939,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				}
 				return action;
 			default:
+				msg.clearField(28);
+				msg.clearField(30);
+				MessageTranslator translator = new MessageTranslator(params);
+				Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
+
+				putRecordIntoSourceToTmHashtable(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+						+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msg);
+				action.putMsgToRemote(msgToRemote);
 				break;
 			}
 		}
@@ -1495,6 +1503,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					new InvalidMacRdbnNtwrk(new String[] { rsp.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR) }));
 			rsp.putField(Base24Ath.Bit.CRYPTO_SERVICE_MSG, // 123
 					Constants.KeyExchange.CSM_ERROR_GRAL_SRC);
+			if (rsp.isFieldSet(Iso8583.Bit._064_MAC_NORMAL))
+				rsp.clearField(Iso8583.Bit._064_MAC_NORMAL);
+			else if (rsp.isFieldSet(Iso8583.Bit._128_MAC_EXTENDED))
+				rsp.clearField(Iso8583.Bit._128_MAC_EXTENDED);
 		} catch (Exception e) {
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
 					rsp.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructEchoMsgIndicatorFailedMAC",
