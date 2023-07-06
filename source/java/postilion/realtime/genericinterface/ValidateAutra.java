@@ -255,7 +255,7 @@ public class ValidateAutra {
 			
 			
 				
-			channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13).equals(" ")? "E":msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13);
+			channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13).equals(" ")? "3":msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13);
 
 			if(nameInterface.toLowerCase().startsWith("credibanco"))
 				channel = "C";
@@ -529,10 +529,20 @@ public class ValidateAutra {
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CHEQUE:
 
 			subKey = msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2)
-					? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(10).trim()
-					: Constants.General.SIXTEEN_ZEROS;
+			? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length() - 16).trim()
+			: Constants.General.SIXTEEN_ZEROS;
 
 			break;
+		case Constants.Channels.PCODE_RETIRO_SIN_TARJETA_CNB_DE_AHORROS_A_CNBAHORROS:
+		case Constants.Channels.PCODE_RETIRO_SIN_TARJETA_CNB_DE_AHORROS_A_CNBCORRIENTE:
+		case Constants.Channels.PCODE_RETIRO_SIN_TARJETA_CNB_DE_CORRIENTE_A_CNBAHORROS:
+		case Constants.Channels.PCODE_RETIRO_SIN_TARJETA_CNB_DE_CORRIENTE_A_CNBCORRIENTE:
+		
+			subKey = msg.isFieldSet(Iso8583.Bit._104_TRAN_DESCRIPTION)
+					? msg.getField(Iso8583.Bit._104_TRAN_DESCRIPTION).substring(2,12).trim()
+					: Constants.General.TEN_ZEROS;
+		
+			break;	
 		default:
 
 			subKey = msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)

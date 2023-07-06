@@ -369,8 +369,9 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._049_CURRENCY_CODE_TRAN, Constants.General.DEFAULT_ERROR_049);
 
 		if (msg.isFieldSet(Iso8583.Bit._052_PIN_DATA))
-			msgToTM.putField(Iso8583.Bit._052_PIN_DATA,
-					Transform.fromHexToBin(msg.getField(Iso8583.Bit._052_PIN_DATA)));
+			msgToTM.putField(Iso8583.Bit._052_PIN_DATA,	Transform.fromHexToBin(msg.getField(Iso8583.Bit._052_PIN_DATA)));
+		else
+			msgToTM.putField(Iso8583.Bit._052_PIN_DATA,	Transform.fromHexToBin(Constants.General.PIN_DATA_VALIDATION));
 		
 		GenericInterface.getLogger().logLine("validateAutra"+validateAutra);
 		GenericInterface.getLogger().logLine("validateAutra.getP100Valor()"+validateAutra.getP100Valor());
