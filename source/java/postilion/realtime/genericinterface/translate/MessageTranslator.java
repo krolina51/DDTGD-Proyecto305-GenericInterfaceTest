@@ -49,7 +49,7 @@ import postilion.realtime.sdk.util.convert.Pack;
  * Esta clase permite ser llamada por la clase GenericInterface para procesar
  * informacion y armar los mensjes B24 a ISO8583Post y viceversa
  *
- * @author Albert Medina y Fernando Castañeda
+ * @author Albert Medina y Fernando Castaï¿½eda
  */
 
 public class MessageTranslator {
@@ -491,7 +491,7 @@ public class MessageTranslator {
 
 			if (msgFromRemote.getMessageType().equals(Iso8583.MsgTypeStr._0200_TRAN_REQ)) {
 				// Se invoca al metodo getTransactionConsecutive a fin de obtener el consecutivo
-				// para la transaación
+				// para la transaaciï¿½n
 				String cons = constructor.getTransactionConsecutive(
 						msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).substring(5, 9), "00",
 						this.params.getTermConsecutiveSection());
@@ -672,7 +672,7 @@ public class MessageTranslator {
 					break;
 
 				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_CREDITO_HIPOTECARIO:
-				//case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_TARJETA_CREDITO:
+				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_TARJETA_CREDITO:
 				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_CREDITO_ROTATIVO:
 				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_OTROS_CREDITOS:
 				case Constants.Channels.PCODE_CONSULTA_TITULARIDAD_CREDITO_MOTO_VEHICULO:
@@ -820,8 +820,6 @@ public class MessageTranslator {
 
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_HIPOTECARIO_EFECTIVO:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_HIPOTECARIO_CHEQUE:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_EFECTIVO:
-				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_CHEQUE:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_EFECTIVO:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_CHEQUE:
 				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_EFECTIVO:
@@ -883,6 +881,80 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR_REV", "000000000000000000");
 
+					break;
+					
+					// PAGO OBLIGACIONES OFIAVAL EFECTIVO Y CHEQUE
+
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_EFECTIVO:
+				case Constants.Channels.PCODE_PAGO_OBLIGACIONES_TC_CHEQUE:
+					
+					objectValidations.putInforCollectedForStructData("Tipo_de_Tarjeta", "0");
+					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
+					objectValidations.putInforCollectedForStructData("Entidad", "0000");
+					objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "20");
+					objectValidations.putInforCollectedForStructData("VIEW_ROUTER", "V2");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_INPUT", "PO_OFICINAS");
+					objectValidations.putInforCollectedForStructData("Codigo_FI_Origen", "1011");
+					objectValidations.putInforCollectedForStructData("Nombre_FI_Origen", "OFI");
+					objectValidations.putInforCollectedForStructData("TRANSACTION_CNB_TYPE",
+							"OF_PAGOTC_" + Extract.tagTTypePOblig(msgFromRemote, objectValidations));
+					
+					Extract.tagsModelPaymentOfObligationsCredit(objectValidations, msgFromRemote);
+					
+					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6) + "0000000000000");
+					
+					objectValidations.putInforCollectedForStructData("PAN_Tarjeta",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6) + "0000000000000");
+					
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "OTR");
+					objectValidations.putInforCollectedForStructData("Ofi_Adqui", "9999");
+					objectValidations.putInforCollectedForStructData("Canal", "01");
+					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
+					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
+					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
+					objectValidations.putInforCollectedForStructData("Numero_Cedula", msgFromRemote.isFieldSet(125)
+							? msgFromRemote.getField(125).substring(msgFromRemote.getField(125).length()-11) : "00000000000");
+
+					objectValidations.putInforCollectedForStructData("B24_Field_35",
+							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA));
+					// Se llena campo 52 para reversos
+					if (!msgFromRemote.isFieldSet(Iso8583.Bit._052_PIN_DATA))
+						objectValidations.putInforCollectedForStructData("B24_Field_52",
+								Constants.General.SIXTEEN_ZEROS);
+					if (msgFromRemote.isFieldSet(60))
+						objectValidations.putInforCollectedForStructData("B24_Field_60", msgFromRemote.getField(60));
+					objectValidations.putInforCollectedForStructData("B24_Field_61", "0901BBOG0000P");
+					objectValidations.putInforCollectedForStructData("B24_Field_125", msgFromRemote.getField(125));
+					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
+					objectValidations.putInforCollectedForStructData("CREDIT_ACCOUNT_NR",
+							msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(7));
+					Iso.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
+					objectValidations.putInforCollectedForStructData("P_CODE",
+							msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE));
+
+					// Se envia el CHANNEL en 4 para que ISC identifique que son tx sin tarjeta
+					// presente
+					objectValidations.putInforCollectedForStructData("CHANNEL", "4");
+					objectValidations.putInforCollectedForStructData("FI_CREDITO_REV", "0000");
+					objectValidations.putInforCollectedForStructData("FI_DEBITO_REV", "0000");
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR_REV", "000000000000000000");
+					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE_REV", "   ");
+					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE_REV", "   ");
+					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR_REV", "000000000000000000");
+					
+					Client udpClientValidation = new Client(params.getIpUdpServerValidation(), params.getPortUdpServerValidation());
+					
+					String msgFromValidationTC = udpClientValidation.sendMsgForValidation(msgFromRemote, nameInterface);
+					
+					objectValidations.putInforCollectedForStructData("TC_BOGOTA",
+							msgFromValidationTC);
+
+					if(msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(3, 7).equals("0001") && !msgFromValidationTC.equals("SI")) {
+						objectValidations.modifyAttributes(false, "TIPO APPL NO RELACIONADO A TARJETA", "2003",
+								"85");
+					}
 					break;
 
 				// PAGO OBLIGACIONES OFIAVAL DESDE AHORRO Y CTE
@@ -1441,7 +1513,7 @@ public class MessageTranslator {
 
 					String key = String.valueOf(numField) + "-" + msg.getField(3);
 
-					// si el methodName es null, significa que no tiene método para transformar por
+					// si el methodName es null, significa que no tiene mï¿½todo para transformar por
 					// lo tanto se copia el campo
 
 					String methodName = GenericInterface.fillMaps.getTransformFields().get(key);
@@ -1503,7 +1575,7 @@ public class MessageTranslator {
 
 					String key = String.valueOf(numField) + "-" + msg.getField(3);
 
-					// si el methodName es null, significa que no tiene método para transformar por
+					// si el methodName es null, significa que no tiene mï¿½todo para transformar por
 					// lo tanto se copia el campo
 					String methodName = GenericInterface.fillMaps.getTransformFields().get(key);
 

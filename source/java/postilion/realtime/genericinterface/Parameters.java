@@ -51,6 +51,9 @@ public class Parameters {
 	private CalendarDTO calendarInfo = null;
 	private String termConsecutiveSection = "";
 	private String responseCodesVersion = null;
+	private String ipUdpServerValidation = "0";
+	private String portUdpServerValidation = "0";
+	private boolean alternativeKeyTM = false;
 
 	public DesKwa getKwa() {
 		return kwa;
@@ -276,13 +279,41 @@ public class Parameters {
 	public void setResponseCodesVersion(String responseCodesVersion) {
 		this.responseCodesVersion = responseCodesVersion;
 	}
+	
+
+	public String getIpUdpServerValidation() {
+		return ipUdpServerValidation;
+	}
+
+	public void setIpUdpServerValidation(String ipUdpServerValidation) {
+		this.ipUdpServerValidation = ipUdpServerValidation;
+	}
+
+	public String getPortUdpServerValidation() {
+		return portUdpServerValidation;
+	}
+
+	public void setPortUdpServerValidation(String portUdpServerValidation) {
+		this.portUdpServerValidation = portUdpServerValidation;
+	}
+	
+	
+
+	public boolean isAlternativeKeyTM() {
+		return alternativeKeyTM;
+	}
+
+	public void setAlternativeKeyTM(boolean alternativeKeyTM) {
+		this.alternativeKeyTM = alternativeKeyTM;
+	}
 
 	public Parameters(DesKwa kwa, TimedHashtable sourceTranToTmHashtable, TimedHashtable sourceTranToTmHashtableB24,
 			String issuerId, Client udpClient, String nameInterface, String ipCryptoValidation,
 			int portCryptoValidation, HashMap<String, DesKwa> keys, String routingField100,
 			Map<String, ResponseCode> allCodesIsoToB24, Map<String, ResponseCode> allCodesIscToIso,
 			Map<String, ResponseCode> allCodesIsoToB24TM, Map<String, ResponseCode> allCodesB24ToIso,
-			CalendarDTO calendarInfo, String termConsecutiveSection, String responseCodesVersion) {
+			CalendarDTO calendarInfo, String termConsecutiveSection, String responseCodesVersion, String ipServerValidation, String portServerValidation,
+			boolean alternativeKeyTM) {
 		this.kwa = kwa;
 		this.sourceTranToTmHashtable = sourceTranToTmHashtable;
 		this.sourceTranToTmHashtableB24 = sourceTranToTmHashtableB24;
@@ -300,6 +331,9 @@ public class Parameters {
 		this.calendarInfo = calendarInfo;
 		this.termConsecutiveSection = termConsecutiveSection;
 		this.responseCodesVersion = responseCodesVersion;
+		this.ipUdpServerValidation = ipServerValidation;
+		this.portUdpServerValidation = portServerValidation;
+		this.alternativeKeyTM = alternativeKeyTM;
 	}
 
 	public Parameters() {

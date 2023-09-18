@@ -114,8 +114,10 @@ public class ValidateAutra {
 		String bin = pan.substring(0, 6);
 		StringBuilder keyCuenta = new StringBuilder();
 		ValidateAutra validateAutra = new ValidateAutra();
+		String cuenta = construyeCtasValidacionAutra(procCode, msg);
 		String channel = null;
 		String keyTerminal = null;
+		String keyCuentaFv2 = null;
 		String keyBin = null;
 		String keyTarjeta = null;
 		String keyAll = null;
@@ -189,6 +191,7 @@ public class ValidateAutra {
 				channel = BussinesRules.channelIdentifier(msg, nameInterface, udpClient);
 				keyTerminal = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_"+terminalId :  nameInterface+"_"+channel+"_"+procCode+"_"+terminalId;
 				keyBin = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_"+bin : nameInterface+"_"+channel+"_"+procCode+"_"+bin;
+				keyCuentaFv2 = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_"+cuenta : nameInterface+"_"+channel+"_"+procCode+"_"+cuenta;
 				keyAll = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_" : nameInterface+"_"+channel+"_"+procCode+"_";
 				
 				GenericInterface.getLogger().logLine("keyTerminal " + keyTerminal);
@@ -219,6 +222,24 @@ public class ValidateAutra {
 				// Verifica bines
 				if(GenericInterface.fillMaps.getFiltrosV2().containsKey(keyBin)) {
 					value = GenericInterface.fillMaps.getFiltrosV2().get(keyBin).split("_");
+					validateAutra.setRuta(value[0]);
+					validateAutra.setRute(value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION 
+							: Constants.TransactionRouting.INT_AUTRA);
+					validateAutra.setP100Valor(value[1]);
+					validateAutra.setP125Accion(value[2]);
+					validateAutra.setP125Valor(value[3]);
+					
+					GenericInterface.getLogger().logLine("validateAutra Ruta:" + validateAutra.getRuta());
+					GenericInterface.getLogger().logLine("validateAutra Rute:" + validateAutra.getRute());
+					GenericInterface.getLogger().logLine("validateAutra p100:" + validateAutra.getP100Valor());
+					GenericInterface.getLogger().logLine("validateAutra p125 valor:" + validateAutra.getP125Valor());
+					GenericInterface.getLogger().logLine("validateAutra p125 accion:" + validateAutra.getP125Accion());
+					return validateAutra;
+				}
+				
+				// Verifica cuentas
+				if(GenericInterface.fillMaps.getFiltrosV2().containsKey(keyCuentaFv2)) {
+					value = GenericInterface.fillMaps.getFiltrosV2().get(keyCuentaFv2).split("_");
 					validateAutra.setRuta(value[0]);
 					validateAutra.setRute(value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION 
 							: Constants.TransactionRouting.INT_AUTRA);
@@ -527,6 +548,10 @@ public class ValidateAutra {
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_CHEQUE:
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_EFECTIVO:
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CHEQUE:
+		case Constants.Channels.PCODE_TRANSFERENCIAS_AHORROS_A_AHORROS:
+		case Constants.Channels.PCODE_TRANSFERENCIAS_AHORROS_A_CORRIENTE:
+		case Constants.Channels.PCODE_TRANSFERENCIAS_CORRIENTE_A_AHORROS:
+		case Constants.Channels.PCODE_TRANSFERENCIAS_CORRIENTE_A_CORRIENTE:
 
 			subKey = msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2)
 			? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length() - 16).trim()

@@ -1551,6 +1551,7 @@ public class HashMapBusinessLogic {
 				String strInterchange = (String) canal.get("Interchange");
 				String strRoute = (String) canal.get("Route");
 				String strTerminal = (String) canal.get("Terminal");
+				String strCuenta = (String) canal.get("Cuenta");
 				String strCampo100 = (String) canal.get("Campo100");
 				String strCampo125 = (String) canal.get("Campo125");
 				String strCampo125Contenido = (String) canal.get("Campo125Contenido");
@@ -1587,8 +1588,19 @@ public class HashMapBusinessLogic {
 					}
 				}
 				
+				// iteracion sobre cuentas
+				if (!strCuenta.equals("-")) {
+					String[] strCuentas = strCuenta.split(",");
+					for (int i = 0; i < strCuentas.length; i++) {
+						if (!filtrosV2.containsKey(sbKey.toString() + strCuentas[i]))
+							putFiltrosV2(sbKey.toString() + strCuentas[i], strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
+									+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125)
+									+ "_" + strCampo125Contenido);
+					}
+				}
+				
 				// todos los bines y terminales
-				if(strBin.equals("ALL") && strTerminal.equals("ALL")) {
+				if(strBin.equals("ALL") && strTerminal.equals("ALL") && strCuenta.equals("ALL")) {
 					if (!filtrosV2.containsKey(sbKey.toString()))
 						putFiltrosV2(sbKey.toString(), strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
 								+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125)

@@ -11,6 +11,7 @@ import java.util.Base64;
 
 import postilion.realtime.genericinterface.GenericInterface;
 import postilion.realtime.genericinterface.eventrecorder.events.TryCatchException;
+import postilion.realtime.genericinterface.translate.bitmap.Base24Ath;
 import postilion.realtime.genericinterface.translate.util.EventReporter;
 import postilion.realtime.genericinterface.translate.util.Utils;
 import postilion.realtime.genericinterface.translate.validations.Validation;
@@ -59,6 +60,28 @@ public class Client {
 				EventRecorder.recordEvent(e);
 				GenericInterface.getLogger()
 						.logLine("Exception in Constructor:  Client: " + Utils.getStringMessageException(e));
+			}
+		}
+	}
+	
+	public Client(String ipAddress, String port) {
+
+		if (!ipAddress.equals("0") && !port.equals("0")) {
+			try {
+
+				if (validateIp(ipAddress))
+					this.ipAddress = InetAddress.getByName(ipAddress);
+				else
+					throw new Exception("IP parameter for server UDP, is not a IP valid");
+
+				if (validatePort(port))
+					this.port = Integer.valueOf(port);
+				else
+					throw new Exception("Port parameter for server UDP, is not a Port valid");
+				
+			} catch (Exception e) {
+				EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
+						"Unknown", "Client", null);
 			}
 		}
 	}
@@ -115,7 +138,7 @@ public class Client {
 	}
 
 	/**
-	 * Valida si la información en el archivo es una ip.
+	 * Valida si la informaciï¿½n en el archivo es una ip.
 	 * 
 	 * @param ip
 	 * @return true si es un ip
@@ -132,7 +155,7 @@ public class Client {
 	}
 
 	/**
-	 * Valida si la información en el archivo es un puerto.
+	 * Valida si la informaciï¿½n en el archivo es un puerto.
 	 * 
 	 * @param port
 	 * @return true si es un puerto
@@ -296,6 +319,123 @@ public class Client {
 
 		String msg = llKey + lKey + key + llValue + lValue + value;
 		return (Base64.getEncoder().encodeToString(msg.getBytes())).getBytes();
+	}
+	
+	/**
+	 * Open a socket to send data over UDP protocol
+	 * 
+	 * @param data            to send
+	 * @param waitForResponse
+	 * @throws XPostilion
+	 */
+	public String sendMsgForValidationTitular(Base24Ath msg, String interchangeName) throws XPostilion {
+		String dataResponse = "";
+
+		try {
+			
+			GenericInterface.getLogger().logLine("tc: " + msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(8,24));
+			String tc =  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(8,24);
+			byte[] data = ("TX_TITULARIDAD_"+tc).getBytes();
+
+			try {
+				DatagramSocket socket = new DatagramSocket();
+				socket.setSoTimeout(1500);
+//				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress, port);
+				GenericInterface.getLogger().logLine("data: " + data);
+				GenericInterface.getLogger().logLine("data.length: " + data.length);
+				GenericInterface.getLogger().logLine("ipAddress: " + ipAddress);
+				GenericInterface.getLogger().logLine("port: " + port);
+//				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
+//						50000 + Integer.parseInt(p11.substring(p11.length() - 1)));
+				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
+						port);
+				GenericInterface.getLogger().logLine("request getSocketAddress: " + request.getSocketAddress());
+				GenericInterface.getLogger().logLine("request getAddress: " + request.getAddress());
+				GenericInterface.getLogger().logLine("Send request: " + request.getData());
+				socket.send(request);
+				byte[] bufer = new byte[5172];// 4072
+				DatagramPacket respuesta = new DatagramPacket(bufer, bufer.length);
+				socket.receive(respuesta);
+				GenericInterface.getLogger().logLine("respuesta.getData()).trim(): " + respuesta.getData());
+				dataResponse = new String(respuesta.getData()).trim();
+				GenericInterface.getLogger().logLine("data incoming: " + dataResponse);
+				socket.close();
+			} catch (SocketTimeoutException e) {
+				dataResponse = "TIMEOUT";
+			} catch (IOException e) {
+				EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "sendMsg", null);
+			} 
+			
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
+					"N/A", "sendMsg", null);
+			dataResponse = "ERROR";
+		} catch (IllegalArgumentException e) {
+
+			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
+					"N/A", "sendMsg", null);
+			dataResponse = "ERROR";
+		}
+		return dataResponse;
+	}
+	
+	/**
+	 * Open a socket to send data over UDP protocol
+	 * 
+	 * @param data            to send
+	 * @param waitForResponse
+	 * @throws XPostilion
+	 */
+	public String sendMsgForValidation(Base24Ath msg, String interchangeName) throws XPostilion {
+		String dataResponse = "";
+
+		try {
+			
+			GenericInterface.getLogger().logLine("103: " + msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length()-16));
+			byte[] data = msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length()-16).getBytes();
+
+			try {
+				DatagramSocket socket = new DatagramSocket();
+				socket.setSoTimeout(1500);
+//				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress, port);
+				GenericInterface.getLogger().logLine("data: " + data);
+				GenericInterface.getLogger().logLine("data.length: " + data.length);
+				GenericInterface.getLogger().logLine("ipAddress: " + ipAddress);
+				GenericInterface.getLogger().logLine("port: " + port);
+//				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
+//						50000 + Integer.parseInt(p11.substring(p11.length() - 1)));
+				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
+						port);
+				GenericInterface.getLogger().logLine("request getSocketAddress: " + request.getSocketAddress());
+				GenericInterface.getLogger().logLine("request getAddress: " + request.getAddress());
+				GenericInterface.getLogger().logLine("Send request: " + request.getData());
+				socket.send(request);
+				byte[] bufer = new byte[5172];// 4072
+				DatagramPacket respuesta = new DatagramPacket(bufer, bufer.length);
+				socket.receive(respuesta);
+				GenericInterface.getLogger().logLine("respuesta.getData()).trim(): " + respuesta.getData());
+				dataResponse = new String(respuesta.getData()).trim();
+				GenericInterface.getLogger().logLine("data incoming: " + dataResponse);
+				socket.close();
+			} catch (SocketTimeoutException e) {
+				dataResponse = "TIMEOUT";
+			} catch (IOException e) {
+				EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
+						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "sendMsg", null);
+			} 
+			
+		} catch (XPostilion e) {
+			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
+					"N/A", "sendMsg", null);
+			dataResponse = "ERROR";
+		} catch (IllegalArgumentException e) {
+
+			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
+					"N/A", "sendMsg", null);
+			dataResponse = "ERROR";
+		}
+		return dataResponse;
 	}
 
 }

@@ -457,8 +457,13 @@ public abstract class Super {
 		
 		sd.put("B24_Message", encodedString);
 		msgToTM.putStructuredData(sd);
-		msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
-				new ConstructFieldMessage(this.params).constructSwitchKey(msg, "ATM"));
+		if(this.params.isAlternativeKeyTM())
+			msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
+					new ConstructFieldMessage(this.params).constructSwitchKeyAutra(msg));
+		else
+			msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
+					new ConstructFieldMessage(this.params).constructSwitchKey(msg, "ATM"));
+		
 
 	}
 

@@ -53,7 +53,7 @@ import postilion.realtime.sdk.util.convert.Pack;
 import postilion.realtime.sdk.util.convert.Transform;
 
 /**
- * Construye los campos que son excepción en el mensaje hacia Transaction
+ * Construye los campos que son excepciï¿½n en el mensaje hacia Transaction
  * Manager
  */
 public class ConstructFieldMessage extends MessageTranslator {
@@ -692,6 +692,31 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return switchKey.toString();
 	}
+	
+	/**************************************************************************************
+	 * Contruye el campo privado SwitchKey (Bit 2) hacia el TM.
+	 * 
+	 * @param msg Mensaje.
+	 * @return Retorna un objeto String data con el campo construido.
+	 * @throws Exception En caso de error.
+	 *************************************************************************************/
+	public String constructSwitchKeyAutra(Iso8583 msg) throws XPostilion {
+		StringBuilder switchKey = new StringBuilder();
+		try {
+
+			switchKey.append(MsgType.toString(msg.getMsgType()))
+					.append(msg.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR))
+					.append(msg.getField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME))
+					.append(msg.isFieldSet(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE)
+							? msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE) : "10000000001")
+					.append("0");
+					
+		} catch (Exception e) {
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
+					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructSwitchKey", this.udpClient);
+		}
+		return switchKey.toString();
+	}
 
 	/**************************************************************************************
 	 * Build and return the Data Capture is get from structure data.
@@ -853,12 +878,12 @@ public class ConstructFieldMessage extends MessageTranslator {
 	}
 
 	/**
-	 * Valida si es necesario poner el valor de la comisión en el campo 126 hacia el
+	 * Valida si es necesario poner el valor de la comisiï¿½n en el campo 126 hacia el
 	 * remoto
 	 * 
 	 * @param msg_to_remote mensaje a enviar a el remoto
-	 * @return variable booleana true indica que es necesario poner la comisión
-	 * @throws XPostilion al intentar obtener el código de respuesta y el campo 126
+	 * @return variable booleana true indica que es necesario poner la comisiï¿½n
+	 * @throws XPostilion al intentar obtener el cï¿½digo de respuesta y el campo 126
 	 */
 
 	public String constructField126IsoTranslate(Object object, Integer num) {
@@ -2960,7 +2985,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 	 * Adecua los campo 28, 29, 30, 31 para el mensaje Iso8583Post
 	 * 
 	 * @param object mensaje en base24
-	 * @param num    número del campo a transformar
+	 * @param num    nï¿½mero del campo a transformar
 	 * @return String del campo adecuado
 	 * @throws XPostilion
 	 */
@@ -2984,7 +3009,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 	 * Transforma el campo 103 a la longitud de 28 para mensajes 0210 en base24
 	 * 
 	 * @param object mensaje en Iso8583Post
-	 * @param num    número del campo a transformar (103)
+	 * @param num    nï¿½mero del campo a transformar (103)
 	 * @return String del campo adecuado
 	 * @throws XPostilion
 	 */
@@ -3350,7 +3375,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 	}
 
 	/**************************************************************************************
-	 * Metodo para consultar consecutivo para la transacción
+	 * Metodo para consultar consecutivo para la transacciï¿½n
 	 *
 	 * @param atmId
 	 * @return
@@ -3377,7 +3402,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 			Client udpClient) throws XPostilion {
 		String strCut = null;
 		try {
-			// Método retiro y consulta ATM
+			// Mï¿½todo retiro y consulta ATM
 			String p41 = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID);
 			String red = p41.substring(4, 8);
 			String channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13);

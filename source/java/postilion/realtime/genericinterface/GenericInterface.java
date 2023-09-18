@@ -125,6 +125,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public String ipUdpServer = "0";
 	public String portUdpServer = "0";
 	public String portUdpClient = "0";
+	public String ipServerValidation = "0";
+	public String portServerValidation = "0";
+	
 	public String ipServerAT = "0";
 	public String portServerAT = "0";
 	public String routingFilter = "";
@@ -139,6 +142,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							// the remote entity. 1 - Send SignOn
 							// on connection with the remote entity
 	public static String exceptionMessage = null;
+	public boolean alternativeKeyTM = false;
 
 	public long delay = 0;
 	public long period = 60_000;
@@ -149,6 +153,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 	public Client udpClient = null;
 	public Client udpClientAT = null;
+	public Client udpClientValidation = null;
 
 	public Parameters params;
 
@@ -271,7 +276,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				nameInterface, ipCryptoValidation, portCryptoValidation, fillMaps.getKeys(), routingField100,
 				fillMaps.getAllCodesIsoToB24(), fillMaps.getAllCodesIscToIso(), fillMaps.getAllCodesIsoToB24TM(),
 				fillMaps.getAllCodesB24ToIso(), this.calendarInfo, this.termConsecutiveSection,
-				this.responseCodesVersion);
+				this.responseCodesVersion, this.ipServerValidation, this.portServerValidation, this.alternativeKeyTM);
 		factory = new FactoryCommonRules(params);
 
 	}
@@ -369,6 +374,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				this.termConsecutiveSection = parameters.get("terminal_consecutive_section").toString();
 				this.freeThreaded = (boolean) parameters.get("FREE_THREADED");
 				this.applyV2Filter = (boolean) parameters.get("APPLY_V2_FILTER");
+				this.ipServerValidation = validateIpUdpServerParameter(
+						parameters.get("IP_UDP_VALIDATIONS").toString());
+				this.portServerValidation = validatePortUdpServerParameter(
+						parameters.get("PORT_UDP_VALIDATIONS").toString());
+				this.alternativeKeyTM = (boolean) parameters.get("ALTERNATIVE_SWITCHKEY_TM");
 
 				if (channelsIds.size() != 0) {
 					CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
@@ -885,7 +895,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		putRecordIntoSourceToTmHashtable(
 				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
 				msg);
-		//Thread.sleep(2000);
+		//Thread.sleep(9000);
 		Action action = new Action();
 		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
 				&& msg.getStructuredData().get("B24_Message") != null) {
@@ -2176,7 +2186,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	/**
 	 * Procesa un mensaje de respuesta sign_on de la Interchange.
 	 * 
-	 * @param interchange Información de la interchange en Postilion.
+	 * @param interchange Informaciï¿½n de la interchange en Postilion.
 	 * @param msg         Mensaje desde ATH.
 	 * @return Action con el mensaje a enviar.
 	 * @throws Exception En caso de error.
@@ -2370,6 +2380,56 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		action.putMsgToRemote(msg);
 		return action;
+	}
+	
+	/**
+	 * 
+	 * Validate parameter for connection to udp server
+	 * 
+	 * @param cfgIpUdpServer server's ip
+	 * @throws XNodeParameterValueInvalid if parameter is invalid
+	 */
+	public String validateIpUdpServerParameter(String cfgIpUdpServer) throws XNodeParameterValueInvalid {
+		String ip = null;
+		if (cfgIpUdpServer != null && !cfgIpUdpServer.equals("0")) {
+			if (Client.validateIp(cfgIpUdpServer)) {
+				ip = cfgIpUdpServer;
+			} else {
+				EventRecorder.recordEvent(
+						new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, cfgIpUdpServer));
+				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, cfgIpUdpServer);
+			}
+		} else {
+			EventRecorder.recordEvent(
+					new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, General.NULLSTRING));
+			throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_IP_UDP_SERVER, General.NULLSTRING);
+		}
+		return ip;
+	}
+	
+	/**
+	 * 
+	 * Validate parameter for connection to udp server
+	 * 
+	 * @param cfgPortUdpServer server's port
+	 * @throws XNodeParameterValueInvalid if parameter is invalid
+	 */
+	public String validatePortUdpServerParameter(String cfgPortUdpServer) throws XNodeParameterValueInvalid {
+		String port = null;
+		if (cfgPortUdpServer != null && !cfgPortUdpServer.equals("0")) {
+			if (Client.validatePort(cfgPortUdpServer)) {
+				port = cfgPortUdpServer;
+			} else {
+				EventRecorder.recordEvent(new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER,
+						cfgPortUdpServer));
+				throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER, cfgPortUdpServer);
+			}
+		} else {
+			EventRecorder.recordEvent(
+					new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER, General.NULLSTRING));
+			throw new XNodeParameterValueInvalid(Constants.RuntimeParm.VALIDATE_PORT_UDP_SERVER, General.NULLSTRING);
+		}
+		return port;
 	}
 
 }
