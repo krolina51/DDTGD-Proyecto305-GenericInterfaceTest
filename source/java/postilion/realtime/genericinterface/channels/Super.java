@@ -686,7 +686,7 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._013_DATE_LOCAL, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._015_DATE_SETTLE))
-			msgToTM.putField(Iso8583.Bit._015_DATE_SETTLE, msg.getField(Iso8583.Bit._015_DATE_SETTLE).toString());
+			msgToTM.putField(Iso8583.Bit._015_DATE_SETTLE, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._017_DATE_CAPTURE))
 			msgToTM.putField(Iso8583.Bit._017_DATE_CAPTURE, msg.getField(Iso8583.Bit._017_DATE_CAPTURE).toString());
