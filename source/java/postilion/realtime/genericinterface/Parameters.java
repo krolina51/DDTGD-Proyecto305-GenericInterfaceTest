@@ -39,6 +39,11 @@ public class Parameters {
 	private String portUdpServer = "0";
 
 	private Client udpClient = null;
+	
+	private String ipUdpServerV2 = "0";
+	private String portUdpServerV2 = "0";
+
+	private Client udpClientV2 = null;
 
 	private String nameInterface = "";
 	private boolean encodeData = false;
@@ -306,6 +311,32 @@ public class Parameters {
 	public void setAlternativeKeyTM(boolean alternativeKeyTM) {
 		this.alternativeKeyTM = alternativeKeyTM;
 	}
+	
+	
+
+	public String getIpUdpServerV2() {
+		return ipUdpServerV2;
+	}
+
+	public void setIpUdpServerV2(String ipUdpServerV2) {
+		this.ipUdpServerV2 = ipUdpServerV2;
+	}
+
+	public String getPortUdpServerV2() {
+		return portUdpServerV2;
+	}
+
+	public void setPortUdpServerV2(String portUdpServerV2) {
+		this.portUdpServerV2 = portUdpServerV2;
+	}
+
+	public Client getUdpClientV2() {
+		return udpClientV2;
+	}
+
+	public void setUdpClientV2(Client udpClientV2) {
+		this.udpClientV2 = udpClientV2;
+	}
 
 	public Parameters(DesKwa kwa, TimedHashtable sourceTranToTmHashtable, TimedHashtable sourceTranToTmHashtableB24,
 			String issuerId, Client udpClient, String nameInterface, String ipCryptoValidation,
@@ -313,7 +344,7 @@ public class Parameters {
 			Map<String, ResponseCode> allCodesIsoToB24, Map<String, ResponseCode> allCodesIscToIso,
 			Map<String, ResponseCode> allCodesIsoToB24TM, Map<String, ResponseCode> allCodesB24ToIso,
 			CalendarDTO calendarInfo, String termConsecutiveSection, String responseCodesVersion, String ipServerValidation, String portServerValidation,
-			boolean alternativeKeyTM) {
+			boolean alternativeKeyTM, Client udpClientV2) {
 		this.kwa = kwa;
 		this.sourceTranToTmHashtable = sourceTranToTmHashtable;
 		this.sourceTranToTmHashtableB24 = sourceTranToTmHashtableB24;
@@ -334,6 +365,7 @@ public class Parameters {
 		this.ipUdpServerValidation = ipServerValidation;
 		this.portUdpServerValidation = portServerValidation;
 		this.alternativeKeyTM = alternativeKeyTM;
+		this.udpClientV2 = udpClientV2;
 	}
 
 	public Parameters() {

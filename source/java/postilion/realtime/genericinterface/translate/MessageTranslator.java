@@ -60,6 +60,7 @@ public class MessageTranslator {
 	private Map<String, ConfigAllTransaction> structureMap = new HashMap<>();
 	private Map<String, ResponseCode> allCodesIsoToB24TM = new HashMap<>();
 	private Client udpClient = null;
+	private Client udpClientV2 = null;
 	private String nameInterface = "";
 	protected String responseCodesVersion = "1";
 	private Parameters params;
@@ -74,6 +75,7 @@ public class MessageTranslator {
 		this.sourceTranToTmHashtable = params.getSourceTranToTmHashtable();
 		this.sourceTranToTmHashtableB24 = params.getSourceTranToTmHashtableB24();
 		this.udpClient = params.getUdpClient();
+		this.udpClientV2 = params.getUdpClientV2();
 		this.nameInterface = params.getNameInterface();
 		this.responseCodesVersion = params.getResponseCodesVersion();
 		this.params = params;
@@ -1249,6 +1251,10 @@ public class MessageTranslator {
 					if(Arrays.stream(terminalsID).anyMatch(terminalId::equals)) {
 						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
 						objectValidations.putInforCollectedForStructData("Transaccion_Unica", "C202");
+						if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("0")
+								&& msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13).equals("2")) {
+							objectValidations.putInforCollectedForStructData("Identificacion_Canal", "PB");
+						}
 					}
 					
 					objectValidations.putInforCollectedForStructData("B24_Field_35",
@@ -1491,9 +1497,15 @@ public class MessageTranslator {
 			this.udpClient.sendData(Client.getMsgKeyValue(retRefNumber,
 					"Entro poner hashmap si trae algo el map" + objectValidations.toString(), "LOG",
 					this.nameInterface));
+			this.udpClientV2.sendData(Client.getMsgKeyValue(retRefNumber,
+					"Entro poner hashmap si trae algo el map" + objectValidations.toString(), "LOG",
+					this.nameInterface));
 			for (Map.Entry<String, String> info : inforCollectedForStructData.entrySet()) {
 				sd.put(info.getKey(), info.getValue());
 				this.udpClient.sendData(Client.getMsgKeyValue(retRefNumber,
+						"Entro poner hashmap si trae algo el map Key: " + info.getKey() + " Value: " + info.getValue(),
+						"LOG", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(retRefNumber,
 						"Entro poner hashmap si trae algo el map Key: " + info.getKey() + " Value: " + info.getValue(),
 						"LOG", this.nameInterface));
 			}
