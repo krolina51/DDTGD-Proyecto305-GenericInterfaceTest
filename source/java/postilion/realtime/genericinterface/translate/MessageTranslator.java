@@ -1249,6 +1249,10 @@ public class MessageTranslator {
 					if(Arrays.stream(terminalsID).anyMatch(terminalId::equals)) {
 						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
 						objectValidations.putInforCollectedForStructData("Transaccion_Unica", "C202");
+						if(msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25,26).equals("0")
+								&& msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13).equals("2")) {
+							objectValidations.putInforCollectedForStructData("Identificacion_Canal", "PB");
+						}
 					}
 					
 					objectValidations.putInforCollectedForStructData("B24_Field_35",
