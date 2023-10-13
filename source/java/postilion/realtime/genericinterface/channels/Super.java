@@ -52,6 +52,7 @@ public abstract class Super {
 	private HashMap<String, String> inforCollectedForStructData = new HashMap<String, String>();
 	private String issuerId = null;
 	private Client udpClient = null;
+	private Client udpClientV2 = null;
 	private String nameInterface = "";
 	private boolean encodeData = false;
 	private boolean exeptionValidateExpiryDate = false;
@@ -71,6 +72,7 @@ public abstract class Super {
 	public Super(Parameters params) {
 		this.issuerId = params.getIssuerId();
 		this.udpClient = params.getUdpClient();
+		this.udpClient = params.getUdpClientV2();
 		this.nameInterface = params.getNameInterface();
 		this.encodeData = params.isEncodeData();
 		this.exeptionValidateExpiryDate = params.isExeptionValidateExpiryDate();
@@ -1022,6 +1024,8 @@ public abstract class Super {
 		try {
 			this.udpClient.sendData(Client.getMsgKeyValue("999999",
 					"channelIdentifier: nameInterface:" + this.nameInterface, "LOG", this.nameInterface));
+			this.udpClientV2.sendData(Client.getMsgKeyValue("999999",
+					"channelIdentifier: nameInterface:" + this.nameInterface, "LOG", this.nameInterface));
 			String p41 = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID);
 			String red = p41.substring(4, 8);
 
@@ -1100,6 +1104,10 @@ public abstract class Super {
 				p37, "accountNumber:" + accountNumber + " typeAccountInput:" + typeAccountInput
 						+ " encriptedaccountNumber:" + securityManager.encrypt(accountNumber),
 				"LOG", this.nameInterface));
+		this.udpClientV2.sendData(Client.getMsgKeyValue(
+				p37, "accountNumber:" + accountNumber + " typeAccountInput:" + typeAccountInput
+				+ " encriptedaccountNumber:" + securityManager.encrypt(accountNumber),
+				"LOG", this.nameInterface));
 
 		CallableStatement stmt = null;
 		ResultSet rs = null;
@@ -1123,10 +1131,13 @@ public abstract class Super {
 			rs = stmt.executeQuery();
 			this.udpClient.sendData(Client.getMsgKeyValue(p37, "Termino ejecucion GET_ACCOUNT_ADITIONAL_INFO_CNB",
 					"LOG", this.nameInterface));
+			this.udpClientV2.sendData(Client.getMsgKeyValue(p37, "Termino ejecucion GET_ACCOUNT_ADITIONAL_INFO_CNB",
+					"LOG", this.nameInterface));
 			rs.next();
 
 			if (rs.getString(1) != null) {
 				this.udpClient.sendData(Client.getMsgKeyValue(p37, "Encontro datos cuenta", "LOG", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(p37, "Encontro datos cuenta", "LOG", this.nameInterface));
 				String customer_id = rs.getString(1);// customer_id
 				String extended_fields = rs.getString(2) == null ? "" : rs.getString(2);// extended_fields
 				String pan_encrypted = rs.getString(3) == null ? "" : rs.getString(3);// pan_encrypted
@@ -1142,6 +1153,16 @@ public abstract class Super {
 						Client.getMsgKeyValue(p37, "c1_first_name:" + c1_first_name, "LOG", this.nameInterface));
 				this.udpClient.sendData(Client.getMsgKeyValue(p37,
 						"pan:" + securityManager.decryptToString(pan_encrypted), "LOG", this.nameInterface));
+				this.udpClientV2
+				.sendData(Client.getMsgKeyValue(p37, "customer_id:" + customer_id, "LOG", this.nameInterface));
+				this.udpClientV2.sendData(
+						Client.getMsgKeyValue(p37, "extended_fields:" + extended_fields, "LOG", this.nameInterface));
+				this.udpClientV2.sendData(
+						Client.getMsgKeyValue(p37, "pan_encrypted:" + pan_encrypted, "LOG", this.nameInterface));
+				this.udpClientV2.sendData(
+						Client.getMsgKeyValue(p37, "c1_first_name:" + c1_first_name, "LOG", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
+						"pan:" + securityManager.decryptToString(pan_encrypted), "LOG", this.nameInterface));
 
 				tagsEncodeSensitiveData("CLIENT2_ACCOUNT_NR", accountNumber, objectValidations);
 				objectValidations.putInforCollectedForStructData("CLIENT2_ACCOUNT_TYPE", typeAccountInput);
@@ -1153,6 +1174,8 @@ public abstract class Super {
 
 				this.udpClient
 						.sendData(Client.getMsgKeyValue(p37, "Puso datos en structure", "LOG", this.nameInterface));
+				this.udpClientV2
+				.sendData(Client.getMsgKeyValue(p37, "Puso datos en structure", "LOG", this.nameInterface));
 
 				JdbcManager.commit(con, stmt, rs);
 			} else {
@@ -1163,6 +1186,8 @@ public abstract class Super {
 
 			objectValidations.putInforCollectedForStructData("P_CODE", "000000");
 			this.udpClient.sendData(
+					Client.getMsgKeyValue(p37, "SALIENDO DE accountsByNumberClientCNB", "LOG", this.nameInterface));
+			this.udpClientV2.sendData(
 					Client.getMsgKeyValue(p37, "SALIENDO DE accountsByNumberClientCNB", "LOG", this.nameInterface));
 
 		} catch (SQLException e) {
@@ -1175,12 +1200,15 @@ public abstract class Super {
 			e.printStackTrace(new PrintWriter(outError));
 			this.udpClient.sendData(Client.getMsgKeyValue(p37,
 					"catch metodo accountsByNumberClientCNB : " + outError.toString(), "ERR", this.nameInterface));
+			this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
+					"catch metodo accountsByNumberClientCNB : " + outError.toString(), "ERR", this.nameInterface));
 
 		} finally {
 			try {
 				JdbcManager.cleanup(con, stmt, rs);
 			} catch (SQLException e) {
 				this.udpClient.sendData(Client.getMsgKeyValue(p37, e.getMessage(), "ERR", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(p37, e.getMessage(), "ERR", this.nameInterface));
 				EventRecorder.recordEvent(new SQLExceptionEvent(new String[] { Account.POSTCARD_DATABASE,
 						StoreProcedures.GET_ACCOUNT_ADITIONAL_INFO_CNB, e.getMessage() }));
 			}
@@ -1216,6 +1244,8 @@ public abstract class Super {
 			try {
 				this.udpClient.sendData(Client.getMsgKeyValue(p37, "entro al primer cp cuando se coge del p35  pan: "
 						+ panHash + " fecha de expiracion: " + expiryDate, "LOG", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(p37, "entro al primer cp cuando se coge del p35  pan: "
+						+ panHash + " fecha de expiracion: " + expiryDate, "LOG", this.nameInterface));
 
 				con = JdbcManager.getConnection(Account.POSTCARD_DATABASE);
 				stmt = con.prepareCall(StoreProcedures.GET_CUSTOMES_ID_DEFAULT_ACCOUNT_TYPE_NAME);
@@ -1246,6 +1276,11 @@ public abstract class Super {
 								+ defaultAccountType + " name: " + customerName + " issure: " + issuerNr
 								+ " extendedfield: " + extendedField + " seq_nr: " + sequenceNr,
 						"LOG", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
+						"validacion CNBCliente. primer SP customerID " + customerId + " ceuntaDefecto: "
+								+ defaultAccountType + " name: " + customerName + " issure: " + issuerNr
+								+ " extendedfield: " + extendedField + " seq_nr: " + sequenceNr,
+								"LOG", this.nameInterface));
 				GenericInterface.getLogger()
 						.logLine("validacion CNBCliente. primer SP customerID " + customerId + " ceuntaDefecto: "
 								+ defaultAccountType + " name: " + customerName + " issure: " + issuerNr
@@ -1254,6 +1289,8 @@ public abstract class Super {
 				if (!(issuerNr == 0)) {
 
 					this.udpClient.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
+							+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
+					this.udpClientV2.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
 							+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
 
 					GenericInterface.getLogger().logLine("Esto entra al segundo sp: issuerNr:" + issuerNr
@@ -1282,6 +1319,10 @@ public abstract class Super {
 								"cuenta que viene 102: con subString : " + accountInput + " cuentas que tra el sp2: "
 										+ Utils.getClearAccount(accountId) + " tipo de cuenta sp " + accountType,
 								"LOG", this.nameInterface));
+						this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
+								"cuenta que viene 102: con subString : " + accountInput + " cuentas que tra el sp2: "
+										+ Utils.getClearAccount(accountId) + " tipo de cuenta sp " + accountType,
+										"LOG", this.nameInterface));
 
 						GenericInterface.getLogger()
 								.logLine("cuenta que viene 102: con subString : " + accountInput
@@ -1321,6 +1362,8 @@ public abstract class Super {
 									accountConflict = true;
 									this.udpClient.sendData(Client.getMsgKeyValue(p37,
 											">>>>> There is an account conflict <<<<<<<", "LOG", this.nameInterface));
+									this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
+											">>>>> There is an account conflict <<<<<<<", "LOG", this.nameInterface));
 								}
 							} else {
 								accountTypeClient = accountTypeDefaultTypeAccount;// account type
@@ -1348,6 +1391,13 @@ public abstract class Super {
 											+ sequenceNr + " accountTypeClient: " + accountTypeClient
 											+ " accountNumber: " + accountNumber + " processingCode :" + processingCode,
 									"LOG", this.nameInterface));
+							this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
+									"final del metodo accountsClienteCBN: cuando mira p35 " + customerId
+									+ " ceuntaDefecto: " + defaultAccountType + " name: " + customerName
+									+ " issure: " + issuerNr + " extendedfield: " + extendedField + " seq_nr: "
+									+ sequenceNr + " accountTypeClient: " + accountTypeClient
+									+ " accountNumber: " + accountNumber + " processingCode :" + processingCode,
+									"LOG", this.nameInterface));
 
 						} else {
 							objectValidations.modifyAttributes(false, "CUENTA NO ASOCIADA", "0001", "14");
@@ -1371,6 +1421,8 @@ public abstract class Super {
 				e.printStackTrace(new PrintWriter(outError));
 				this.udpClient.sendData(Client.getMsgKeyValue(p37,
 						"catch metodo accountsClienteCBN : " + outError.toString(), "ERR", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
+						"catch metodo accountsClienteCBN : " + outError.toString(), "ERR", this.nameInterface));
 
 			} finally {
 				JdbcManager.cleanup(con, stmt, rs);
@@ -1393,6 +1445,8 @@ public abstract class Super {
 			Connection con = null;
 			try {
 				this.udpClient.sendData(Client.getMsgKeyValue(p37, "entro al primer cp cuando se coge del p35  pan: "
+						+ panHash + " fecha de expiracion: " + expiryDate, "LOG", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(p37, "entro al primer cp cuando se coge del p35  pan: "
 						+ panHash + " fecha de expiracion: " + expiryDate, "LOG", this.nameInterface));
 
 				con = JdbcManager.getConnection(Account.POSTCARD_DATABASE);
@@ -1422,10 +1476,17 @@ public abstract class Super {
 								+ defaultAccountType + " name: " + customerName + " issure: " + issuerNr
 								+ " extendedfield: " + extendedField + " seq_nr: " + sequenceNr,
 						"LOG", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
+						"validacion CNBCliente. primer SP customerID " + customerId + " ceuntaDefecto: "
+								+ defaultAccountType + " name: " + customerName + " issure: " + issuerNr
+								+ " extendedfield: " + extendedField + " seq_nr: " + sequenceNr,
+								"LOG", this.nameInterface));
 
 				if (!(issuerNr == 0)) {
 
 					this.udpClient.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
+							+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
+					this.udpClientV2.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
 							+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
 					cst = con.prepareCall(StoreProcedures.CM_LOAD_CARD_ACCOUNTS);
 					cst.setInt(1, issuerNr);
@@ -1450,6 +1511,10 @@ public abstract class Super {
 						this.udpClient.sendData(Client.getMsgKeyValue(
 								p37, "cuenta que viene 102: con subString : " + accountInput
 										+ " cuentas que tra el sp2: " + Utils.getClearAccount(accountId),
+								"LOG", this.nameInterface));
+						this.udpClientV2.sendData(Client.getMsgKeyValue(
+								p37, "cuenta que viene 102: con subString : " + accountInput
+								+ " cuentas que tra el sp2: " + Utils.getClearAccount(accountId),
 								"LOG", this.nameInterface));
 
 						if (accountType.equals(typeAccountInput)) {
@@ -1507,6 +1572,13 @@ public abstract class Super {
 									+ " accountTypeClient: " + accountTypeClient + " accountNumber: " + accountNumber
 									+ " processingCode :" + processingCode,
 							"LOG", this.nameInterface));
+					this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
+							"final del metodo accountsClienteCBN: cuando mira p35 " + customerId + " ceuntaDefecto: "
+									+ defaultAccountType + " name: " + customerName + " issure: " + issuerNr
+									+ " extendedfield: " + extendedField + " seq_nr: " + sequenceNr
+									+ " accountTypeClient: " + accountTypeClient + " accountNumber: " + accountNumber
+									+ " processingCode :" + processingCode,
+									"LOG", this.nameInterface));
 
 				} else {
 					objectValidations.modifyAttributes(false, " NO EXITE TARJETA CLIENTE", "8014",
@@ -1525,6 +1597,8 @@ public abstract class Super {
 				StringWriter outError = new StringWriter();
 				e.printStackTrace(new PrintWriter(outError));
 				this.udpClient.sendData(Client.getMsgKeyValue(p37,
+						"catch metodo accountsClienteCBN : " + outError.toString(), "LOG", this.nameInterface));
+				this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
 						"catch metodo accountsClienteCBN : " + outError.toString(), "LOG", this.nameInterface));
 
 			} finally {

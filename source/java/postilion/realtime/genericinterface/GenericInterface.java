@@ -128,6 +128,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public String ipServerValidation = "0";
 	public String portServerValidation = "0";
 	
+	public String ipUdpServerV2 = "0";
+	public String portUdpServerV2 = "0";
+	public String portUdpClientV2 = "0";
+	
 	public String ipServerAT = "0";
 	public String portServerAT = "0";
 	public String routingFilter = "";
@@ -152,6 +156,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	protected int keyExchangeState = Base24Ath.KeyExchangeState.IDLE;
 
 	public Client udpClient = null;
+	public Client udpClientV2 = null;
 	public Client udpClientAT = null;
 	public Client udpClientValidation = null;
 
@@ -216,6 +221,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		setLogger(new Logger(Constants.Config.URL_LOG, this.isLogOn));
 
 		udpClient = new Client(ipUdpServer, portUdpServer, portUdpClient, nameInterface);
+		udpClientV2 = new Client(ipUdpServerV2, portUdpServerV2, portUdpClientV2, nameInterface);
 
 		fillMaps.loadHashMap(routingLoadHashMap, this.nameInterface, this.udpClient);
 
@@ -276,7 +282,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				nameInterface, ipCryptoValidation, portCryptoValidation, fillMaps.getKeys(), routingField100,
 				fillMaps.getAllCodesIsoToB24(), fillMaps.getAllCodesIscToIso(), fillMaps.getAllCodesIsoToB24TM(),
 				fillMaps.getAllCodesB24ToIso(), this.calendarInfo, this.termConsecutiveSection,
-				this.responseCodesVersion, this.ipServerValidation, this.portServerValidation, this.alternativeKeyTM);
+				this.responseCodesVersion, this.ipServerValidation, this.portServerValidation, this.alternativeKeyTM,
+				udpClientV2);
 		factory = new FactoryCommonRules(params);
 
 	}
@@ -379,6 +386,12 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				this.portServerValidation = validatePortUdpServerParameter(
 						parameters.get("PORT_UDP_VALIDATIONS").toString());
 				this.alternativeKeyTM = (boolean) parameters.get("ALTERNATIVE_SWITCHKEY_TM");
+				String cfgIpUdpServerV2 = parameters.get("cfgIpUdpServerV2").toString();
+				String cfgPortUdpServerV2 = parameters.get("cfgPortUdpServerV2").toString();
+				String cfgPortUdpClientV2 = parameters.get("cfgPortUdpClientV2").toString();
+				this.ipUdpServerV2 = BussinesRules.validateIpUdpServerParameter(cfgIpUdpServerV2);
+				this.portUdpServerV2 = BussinesRules.validatePortUdpServerParameter(cfgPortUdpServerV2);
+				this.portUdpClientV2 = BussinesRules.validatePortUdpServerParameter(cfgPortUdpClientV2);
 
 				if (channelsIds.size() != 0) {
 					CryptoCfgManager crypcfgman = CryptoManager.getStaticConfiguration();
@@ -433,6 +446,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			fillMaps = new HashMapBusinessLogic();
 			if(udpClient != null)
 				udpClient.close();
+			if(udpClientV2 != null)
+				udpClientV2.close();
 			init(interchange);
 		} catch (Exception e) {
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",
@@ -455,6 +470,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			IMessage msg = null;
 
 			udpClient.sendData(Client.getMsgKeyValue("N/A",
+					"**Recibiendo nuevo mensaje de respuesta**\n" + Transform.getString(data, Transform.Encoding.ASCII),
+					"LOG", nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue("N/A",
 					"**Recibiendo nuevo mensaje de respuesta**\n" + Transform.getString(data, Transform.Encoding.ASCII),
 					"LOG", nameInterface));
 
@@ -495,6 +513,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			GenericInterface.getLogger().logLine(Utils.getStringMessageException(e));
 			exceptionMessage = Transform.fromBinToHex(Transform.getString(data));
 			udpClient.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "ERR",
+					nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "ERR",
 					nameInterface));
 
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D", "newMsg",
@@ -702,6 +722,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
 
 //			Base24Ath msgFromRemoteT = new Base24Ath(kwa);
 			Iso8583Post msgToTm = new Iso8583Post();
@@ -769,9 +791,15 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						if (!objectValidations.getValidationResult()) {
 							udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 									"Error de formato", "LOG", nameInterface));
+							udpClientV2.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+									"Error de formato", "LOG", nameInterface));
 							action.putMsgToTranmgr(translator.construct0220ToTm(msg, interchange.getName()));
 							msgToRemote = translator.constructBase24(msgFromRemote, objectValidations);
 							udpClient.sendData(
+									Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+											Transform.fromBinToHex(Transform.getString(msgToRemote.toMsg(false))),
+											"B24", nameInterface));
+							udpClientV2.sendData(
 									Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 											Transform.fromBinToHex(Transform.getString(msgToRemote.toMsg(false))),
 											"B24", nameInterface));
@@ -840,8 +868,12 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		udpClient.sendData(Client.getMsgKeyValue(retRefNumber, "LA RESPUESTA 0210 TRAE ESTOS VALORES EN EL 102:"
 				+ msg.getField("102") + " y estos en el 103: " + msg.getField("103"), "LOG", nameInterface));
+		udpClientV2.sendData(Client.getMsgKeyValue(retRefNumber, "LA RESPUESTA 0210 TRAE ESTOS VALORES EN EL 102:"
+				+ msg.getField("102") + " y estos en el 103: " + msg.getField("103"), "LOG", nameInterface));
 
 		udpClient.sendData(Client.getMsgKeyValue(retRefNumber, Transform.fromBinToHex(Transform.getString(msg.toMsg())),
+				"ISO", nameInterface));
+		udpClientV2.sendData(Client.getMsgKeyValue(retRefNumber, Transform.fromBinToHex(Transform.getString(msg.toMsg())),
 				"ISO", nameInterface));
 
 		if (!msg.getField(Iso8583.Bit._039_RSP_CODE).equals("00"))
@@ -866,6 +898,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				GenericInterface.getLogger().logLine("Respuesta 0210 Desencapsulada:" + msgDecoded.toString());
 				udpClient.sendData(Client.getMsgKeyValue(msgDecoded.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						Transform.fromBinToHex(Transform.getString(msgDecoded.getBinaryData())), "B24", nameInterface));
+				udpClientV2.sendData(Client.getMsgKeyValue(msgDecoded.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						Transform.fromBinToHex(Transform.getString(msgDecoded.getBinaryData())), "B24", nameInterface));
 				if (!nameInterface.toLowerCase().startsWith("credibanco"))
 					action.putMsgToRemote(msgDecoded);
 
@@ -874,12 +908,16 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
 				udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
+				udpClientV2.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
 				GenericInterface.getLogger().logLine("210CONSTRUCTISO8583:" + msgToRemote2);
 				action.putMsgToRemote(msgToRemote2);
 			}
 
 		} catch (Exception e) {
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"ERRISO30" + Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ERR", nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"ERRISO30" + Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ERR", nameInterface));
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, retRefNumber,
 					"processTranReqRspFromTranmgr", this.udpClient);
@@ -1228,6 +1266,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		} catch (Exception e) {
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"ERRISO30" + Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ERR", nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"ERRISO30" + Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ERR", nameInterface));
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
 					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processTranAdvRspFromTranmgr", this.udpClient);
 		}
@@ -1245,6 +1285,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Action action = new Action();
 		Base24Ath msgFromRemote = (Base24Ath) msg;
 		udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
+		udpClientV2.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
 		Iso8583Post msgToTm = new Iso8583Post();
 		putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgFromRemote);
@@ -1305,9 +1347,15 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					if (!objectValidations.getValidationResult()) {
 						udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 								"Error de formato", "LOG", nameInterface));
+						udpClientV2.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+								"Error de formato", "LOG", nameInterface));
 						action.putMsgToTranmgr(translator.construct0220ToTm(msg, interchange.getName()));
 						msgFromRemote = translator.constructBase24(msgFromRemote, objectValidations);
 						udpClient.sendData(
+								Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+										Transform.fromBinToHex(Transform.getString(msgFromRemote.toMsg(false))), "B24",
+										nameInterface));
+						udpClientV2.sendData(
 								Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 										Transform.fromBinToHex(Transform.getString(msgFromRemote.toMsg(false))), "B24",
 										nameInterface));
@@ -1351,6 +1399,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			action.putMsgToTranmgr(msg220);
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"ERRISO30 Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"ERRISO30 Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
 					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processAcquirerRevAdvFromInterchange",
 					this.udpClient);
@@ -1380,6 +1430,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				GenericInterface.getLogger().logLine("Respuesta 0430 Desencapsulada:" + msgDecoded.toString());
 				udpClient.sendData(Client.getMsgKeyValue(msgDecoded.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						Transform.fromBinToHex(Transform.getString(msgDecoded.getBinaryData())), "B24", nameInterface));
+				udpClientV2.sendData(Client.getMsgKeyValue(msgDecoded.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						Transform.fromBinToHex(Transform.getString(msgDecoded.getBinaryData())), "B24", nameInterface));
 				action.putMsgToRemote(msgDecoded);
 
 			} else {
@@ -1388,12 +1440,16 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				Base24Ath msgToRemote2 = translator.constructBase24((Iso8583Post) msg);
 				udpClient.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
+				udpClientV2.sendData(Client.getMsgKeyValue(msgToRemote2.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						Transform.fromBinToHex(Transform.getString(msgToRemote2.toMsg(false))), "B24", nameInterface));
 				GenericInterface.getLogger().logLine("430CONSTRUCTISO8583:" + msgToRemote2);
 
 				action.putMsgToRemote(msgToRemote2);
 			}
 		} catch (Exception e) {
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"ERRISO30 Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"ERRISO30 Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
 					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processAcquirerRevAdvRspFromTranmgr",
@@ -1448,6 +1504,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Base24Ath msgFromRemote = (Base24Ath) msg;
 		udpClient.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
+		udpClientV2.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
 //		Iso8583Post msgToTm = new Iso8583Post();
 //		Base24Ath msgToRemote = new Base24Ath(kwa);
 		MessageTranslator translator = new MessageTranslator(params);
@@ -1485,6 +1543,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			Iso8583Post msg220 = translator.construct0220ToTm(msg, nameInterface);
 			action.putMsgToTranmgr(msg220);
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"ERRISO30 Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"ERRISO30 Exception en Mensaje: " + msg.toString(), "ERR", nameInterface));
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e,
 					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "processTranAdvFromInterchange", this.udpClient);
@@ -1728,6 +1788,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		udpClient.sendData(
 				Client.getMsgKeyValue("N/A", "key " + key + " checkdigits " + checkDigits, "LOG", nameInterface));
+		udpClientV2.sendData(
+				Client.getMsgKeyValue("N/A", "key " + key + " checkdigits " + checkDigits, "LOG", nameInterface));
 
 		try {
 
@@ -1761,6 +1823,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 				translator.constructAutra0800Message(msg, msgToTM);
 				udpClient.sendData(Client.getMsgKeyValue("N/A",
+						interchange.getSourceNodeKwp().getContents().getValueUnderKsk(), "KWP", interchange.getName()));
+				udpClientV2.sendData(Client.getMsgKeyValue("N/A",
 						interchange.getSourceNodeKwp().getContents().getValueUnderKsk(), "KWP", interchange.getName()));
 				if (kwa != null)
 					udpClient.sendData(
@@ -1879,6 +1943,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 					"entro metodo processKeyRequestReqFromInterchange ********** ", "LOG", nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+					"entro metodo processKeyRequestReqFromInterchange ********** ", "LOG", nameInterface));
 
 			Base24Ath msgToRemote = constructNwrkMngMsgRspToRemote(msg);
 			msgToRemote.copyFieldFrom(Iso8583.Bit.SECURITY_INFO, msgFromAth); // 053
@@ -1890,6 +1956,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			if (interchange.isSourceNode()) {
 				udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
+						"entro al if metodo processKeyRequestReqFromInterchange ", "LOG", nameInterface));
+				udpClientV2.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 						"entro al if metodo processKeyRequestReqFromInterchange ", "LOG", nameInterface));
 
 				Base24Ath sourceMsg = null;
