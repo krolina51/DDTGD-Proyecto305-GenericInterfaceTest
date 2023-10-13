@@ -446,6 +446,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			fillMaps = new HashMapBusinessLogic();
 			if(udpClient != null)
 				udpClient.close();
+			if(udpClientV2 != null)
+				udpClientV2.close();
 			init(interchange);
 		} catch (Exception e) {
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D",

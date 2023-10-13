@@ -1339,6 +1339,10 @@ public class MessageTranslator {
 				Iso.putField(Iso8583Post.Bit._100_RECEIVING_INST_ID_CODE,
 						constructor.constructField100(msgFromRemote, Iso8583Post.Bit._100_RECEIVING_INST_ID_CODE));
 			}
+			sd.put("B24_Field_4", msgFromRemote.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION));
+			if(msgFromRemote.getField(Iso8583.Bit._003_PROCESSING_CODE).equals(Constants.Channels.PCODE_CONSULTA_DE_COSTO_CNB)) {
+				Iso.putField(Iso8583.Bit._004_AMOUNT_TRANSACTION, "000000000000");
+			}
 
 			fillStructuredData(objectValidations, sd, retRefNumber);
 
