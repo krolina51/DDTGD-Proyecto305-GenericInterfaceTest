@@ -1133,14 +1133,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			if(MsgType.isResponse(msg.getMsgType()) && msg.getProcessingCode().getTranType().equals("33") 
 					&& msg.isFieldSet(125)) {
 				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
-							.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", "").replaceAll("[()_|]", ""),
+							.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
 							43, ' ', true));
 				sd.put("PROCESS_FIELD_125", "TRUE");
 				msg.clearField(128);
 			}
 			if(MsgType.isResponse(msg.getMsgType()) && msg.isFieldSet(63)) {
 				msg.putField(63, Pack.resize(Normalizer.normalize(msg.getField(63), Normalizer.Form.NFD)
-							.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", "").replaceAll("[()_|]", ""),
+							.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
 							44, ' ', true));
 				sd.put("PROCESS_FIELD_63", "TRUE");
 				msg.clearField(128);
@@ -1148,7 +1148,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			if(originalMsg.getStructuredData().get("AMPLIA125") != null && originalMsg.getStructuredData().get("AMPLIA125").equals("TRUE")) {
 				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
-						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", "").replaceAll("[()_|]", ""),
+						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
 						90, ' ', true));
 				sd.put("PROCESS_FIELD_125", "TRUE");
 				msg.clearField(128);
@@ -1156,7 +1156,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			
 			if(originalMsg.getStructuredData().get("REDUCE125") != null && originalMsg.getStructuredData().get("REDUCE125").equals("TRUE")) {
 				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
-						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", "").replaceAll("[()_|]", ""),
+						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
 						150, ' ', true));
 				sd.put("PROCESS_FIELD_125", "TRUE");
 				msg.clearField(128);
