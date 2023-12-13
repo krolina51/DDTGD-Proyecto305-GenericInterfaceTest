@@ -31,6 +31,8 @@ public class HashMapBusinessLogic {
 	private Map<String, String> createFields220ToTM = new HashMap<>();
 	private Map<String, String> deleteFieldsRequest = new HashMap<>();
 	private Map<String, String> createFieldsRequest = new HashMap<>();
+	private Map<String, String> deleteFieldsRevRequest = new HashMap<>();
+	private Map<String, String> createFieldsRevRequest = new HashMap<>();
 	private Map<String, String> transformFieldsMultipleCases = new HashMap<>();
 	private Map<String, String> transformFields = new HashMap<>();
 	private Map<String, String> skipCopyFields = new HashMap<>();
@@ -48,6 +50,9 @@ public class HashMapBusinessLogic {
 	private Map<String, String> createFieldsResponseAdv = new HashMap<>();
 	private Map<String, String> copyFieldsResponseAdv = new HashMap<>();
 	private Map<String, String> deleteFieldsResponseAdv = new HashMap<>();
+	private Map<String, String> deleteFieldsRevAuto = new HashMap<>();
+	private Map<String, String> createFieldsRevAuto = new HashMap<>();
+	private Map<String, String> copyFieldsRevAutoSD = new HashMap<>();
 
 	private HashMap<String, DesKwa> keys = new HashMap<>();
 
@@ -1339,6 +1344,48 @@ public class HashMapBusinessLogic {
 		return filtrosV2;
 	}
 
+	public Map<String, String> getDeleteFieldsRevAuto() {
+		return deleteFieldsRevAuto;
+	}
+
+	public void setDeleteFieldsRevAuto(Map<String, String> deleteFieldsRevAuto) {
+		this.deleteFieldsRevAuto = deleteFieldsRevAuto;
+	}
+
+	public Map<String, String> getCreateFieldsRevAuto() {
+		return createFieldsRevAuto;
+	}
+
+	public void setCreateFieldsRevAuto(Map<String, String> createFieldsRevAuto) {
+		this.createFieldsRevAuto = createFieldsRevAuto;
+	}
+
+	public Map<String, String> getCopyFieldsRevAutoSD() {
+		return copyFieldsRevAutoSD;
+	}
+
+	public void setCopyFieldsRevAutoSD(Map<String, String> copyFieldsRevAutoSD) {
+		this.copyFieldsRevAutoSD = copyFieldsRevAutoSD;
+	}
+	
+	
+
+	public Map<String, String> getDeleteFieldsRevRequest() {
+		return deleteFieldsRevRequest;
+	}
+
+	public void setDeleteFieldsRevRequest(Map<String, String> deleteFieldsRevRequest) {
+		this.deleteFieldsRevRequest = deleteFieldsRevRequest;
+	}
+
+	public Map<String, String> getCreateFieldsRevRequest() {
+		return createFieldsRevRequest;
+	}
+
+	public void setCreateFieldsRevRequest(Map<String, String> createFieldsRevRequest) {
+		this.createFieldsRevRequest = createFieldsRevRequest;
+	}
+
 	/**
 	 * Llena HashMap deacuerdo a lo encontrado en el archivo Json ubicado en la ruta
 	 * routingFilterPath
@@ -1465,6 +1512,21 @@ public class HashMapBusinessLogic {
 				break;
 			case "deleteFieldsResponseAdv":
 				deleteFieldsResponseAdv.put(parts[0], parts[1]);
+				break;
+			case "deleteFieldsRevAuto":
+				deleteFieldsRevAuto.put(parts[0], parts[1]);
+				break;
+			case "createFieldsRevAuto":
+				createFieldsRevAuto.put(parts[0], parts[1]);
+				break;
+			case "copyFieldsRevAutoSD":
+				copyFieldsRevAutoSD.put(parts[0], parts[1]);
+				break;
+			case "deleteFieldsRevRequest":
+				deleteFieldsRevRequest.put(parts[0], parts[1]);
+				break;
+			case "createFieldsRevRequest":
+				createFieldsRevRequest.put(parts[0], parts[1]);
 				break;
 			default:
 				break;

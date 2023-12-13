@@ -304,7 +304,7 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._013_DATE_LOCAL, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._015_DATE_SETTLE))
-			msgToTM.putField(Iso8583.Bit._015_DATE_SETTLE, msg.getField(Iso8583.Bit._015_DATE_SETTLE).toString());
+			msgToTM.putField(Iso8583.Bit._015_DATE_SETTLE, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._017_DATE_CAPTURE))
 			msgToTM.putField(Iso8583.Bit._017_DATE_CAPTURE, msg.getField(Iso8583.Bit._017_DATE_CAPTURE).toString());
@@ -492,7 +492,7 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._013_DATE_LOCAL, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._015_DATE_SETTLE))
-			msgToTM.putField(Iso8583.Bit._015_DATE_SETTLE, msg.getField(Iso8583.Bit._015_DATE_SETTLE).toString());
+			msgToTM.putField(Iso8583.Bit._015_DATE_SETTLE, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._017_DATE_CAPTURE))
 			msgToTM.putField(Iso8583.Bit._017_DATE_CAPTURE, msg.getField(Iso8583.Bit._017_DATE_CAPTURE).toString());
@@ -729,7 +729,9 @@ public abstract class Super {
 					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._038_AUTH_ID_RSP))
-			msgToTM.putField(Iso8583.Bit._038_AUTH_ID_RSP, msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString());
+			msgToTM.putField(Iso8583.Bit._038_AUTH_ID_RSP, esNumerica(msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString())
+					? msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString()
+							: "000000");
 
 		if (msg.isFieldSet(Iso8583.Bit._039_RSP_CODE))
 			msgToTM.putField(Iso8583.Bit._039_RSP_CODE, msg.getField(Iso8583.Bit._039_RSP_CODE).toString());
@@ -839,7 +841,7 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._013_DATE_LOCAL, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._015_DATE_SETTLE))
-			msgToTM.putField(Iso8583.Bit._015_DATE_SETTLE, msg.getField(Iso8583.Bit._015_DATE_SETTLE).toString());
+			msgToTM.putField(Iso8583.Bit._015_DATE_SETTLE, msg.getField(Iso8583.Bit._013_DATE_LOCAL).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._017_DATE_CAPTURE))
 			msgToTM.putField(Iso8583.Bit._017_DATE_CAPTURE, msg.getField(Iso8583.Bit._017_DATE_CAPTURE).toString());
@@ -1696,6 +1698,10 @@ public abstract class Super {
 			objectValidations.modifyAttributes(false, "Cuenta No Inscrita", "9956", RspCode._53_NO_SAVINGS_ACCOUNT);
 			break;
 		}
+	}
+	
+	public boolean esNumerica(String cadena) {
+		  return cadena.matches("^-?\\d+(\\.\\d+)?$");
 	}
 
 	public abstract void validations(Base24Ath msg, Super objectValidations);
