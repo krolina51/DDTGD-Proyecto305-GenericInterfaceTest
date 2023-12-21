@@ -16,7 +16,7 @@ import postilion.realtime.sdk.util.convert.AmountFormat;
 import postilion.realtime.sdk.util.convert.Transform;
 
 public class Base24Ath extends Iso8583 {
-	/** Variable para validación del MAC. */
+	/** Variable para validaciï¿½n del MAC. */
 	private int failed_MAC = 0;
 	/** Header de los mensajes. */
 	private Header header = new Header();
@@ -36,7 +36,7 @@ public class Base24Ath extends Iso8583 {
 		
 	}
 
-	/** Constantes de bit de la mensajería ATH. */
+	/** Constantes de bit de la mensajerï¿½a ATH. */
 	public static final class Bit {
 		public static final int _048_ATM_ADDITIONAL_DATA = 48;
 		public static final int ADDITIONAL_AMOUNTS = 54;
@@ -76,7 +76,7 @@ public class Base24Ath extends Iso8583 {
 		public static final int INTERCHANGE_IS_SOURCE_AND_SINK = 3;
 	}
 
-	/** Códigos de respuesta. */	
+	/** Cï¿½digos de respuesta. */	
 	public static final class RspCode {
 		public static final String _05_DENIED						= new String ("05");
 		public static final String _12_BAD_CHECK_DIGITS				= new String ("12");
@@ -134,7 +134,7 @@ public class Base24Ath extends Iso8583 {
 		public static final String MOBILETOACCOUNT			= "11";
 	}
 
-	/** Versión. */
+	/** Versiï¿½n. */
 	public static final class Version {
 		public static final String REL_NR_34					= new String("34");
 		public static final String REL_NR_40					= new String("40");
@@ -218,7 +218,7 @@ public class Base24Ath extends Iso8583 {
 		public static final int PENDING				= 1;
 	}
 
-	/** Indicador de partición. */	
+	/** Indicador de particiï¿½n. */	
 	public static final class IndParticion {
 		public static final int IND_PART_PRIMARIA	= 31;
 		public static final int IND_PART_SECUNDARIA	= 47;
@@ -254,6 +254,7 @@ public class Base24Ath extends Iso8583 {
 		public static final int SETTLE_CURRENCY_LEN		= 3;
 		public static final int MAC_LEN					= 16;
 		public static final int IN_MAC_LEN				= 16;
+		public static final int IN_MAC_LEN_FISERV		= 17;
 		public static final int CHECK_DIGIT				= 4;
 		public static final int CHECK_DIGIT_6			= 6;
 	}
@@ -356,10 +357,107 @@ public class Base24Ath extends Iso8583 {
         }	
 		return offset;
 	}
+	
+	/**
+	 * Este metodo convierte un arreglo de bytes que llega en una instancia de clase
+	 * Iso8583Ath.  Despues de esto, los metodos fromMsg() y getField() pueden ser
+	 * usados para traer el valor de cada campo.
+	 * @see postilion.realtime.sdk.message.bitmap.Iso8583#fromMsg(byte[], int)
+	 */
+	public int fromMsg(byte[] msg, int offset, String nameInterface) throws XBitmapUnableToExtract,
+			XStreamBase, XPostilion {
+	   offset += header.fromMsg(msg, 0);
+	   offset = super.fromMsg(msg, offset);
+		String info_code = getField(Iso8583.Bit.NETWORK_MNG_INFO_CODE);	
+		if( kwa!=null 
+			&& (	info_code == null 
+				 ||(		!info_code.equals(Iso8583.NwrkMngInfoCode._001_SIGN_ON)
+						&& !info_code.equals(Iso8583.NwrkMngInfoCode._002_SIGN_OFF)
+						&& !info_code.equals(Iso8583.NwrkMngInfoCode._301_ECHO_TEST) ) ) )
+		{
+			// Obtiene el codigo de autenticacion que trae el mensaje
+			int mac_field = Iso8583.Bit._064_MAC_NORMAL;
+			
+			if( !isFieldSet(mac_field) )
+			{
+				mac_field = Iso8583.Bit._128_MAC_EXTENDED;
+			}
+			if( isFieldSet(mac_field) )
+			{
+				String mac_from_rdbn = getField(mac_field).substring(0,8);
+				byte[] msg_nvo = null;
+//				this.clearField(mac_field);
+				// Calcula el codigo de autenticacion de mensajes como un Hexadecimal de 8 digitos
+				if(nameInterface.toLowerCase().equals("firstdata")) {
+					msg_nvo = new byte[msg.length - Length.IN_MAC_LEN_FISERV];    
+					
+					System.arraycopy(msg,0,msg_nvo,0,msg.length - Length.IN_MAC_LEN_FISERV);
+				} else {
+					msg_nvo = new byte[msg.length - Length.IN_MAC_LEN];    
+					
+					System.arraycopy(msg,0,msg_nvo,0,msg.length - Length.IN_MAC_LEN);
+				}
+				
+				String mac_generated = kwa.authenticate(msg_nvo);
+				// La autenticacion del mensaje se determina comparando el MAC que viene de Ath 
+				// con el generado por Postilion
+				if( mac_generated.equals(mac_from_rdbn) )
+				{
+					failed_MAC = 0;
+				}
+				else
+				{
+					failed_MAC = 197;
+				}
+			}
+			else
+			{
+				failed_MAC = 197;
+			}
+		}
+		//--------------------------------------------------------------------------------
+		//						Es el fin de la implementacion de MAC
+		//--------------------------------------------------------------------------------
+
+		// Se recibe un mensaje "9XXX" que no es soportado por versiones Postilion 3.5.
+		// Esta clase de mensajes se reciben cuando Ath rechaza el mensaje por MAC invalido.
+		if(	msg[0]=='9' )
+		{
+//			EventRecorder.recordEvent( new RspMacInvalid(
+//												new String[] 
+//													{getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR)}));
+		}
+
+		//----------------------------------------------------------------------------------
+		//										Field 100
+		//----------------------------------------------------------------------------------/
+
+		// Ath podria enviar nulls o caracteres especiales en el campo 100 Rec_Id_Code,
+		// si esto pasa se deben reemplazar por ceros
+		String RecInst_Id = getField (Iso8583.Bit._100_RECEIVING_INST_ID_CODE);
+		if( isFieldSet(Iso8583.Bit._100_RECEIVING_INST_ID_CODE) && !Validator.isValidN(RecInst_Id) )
+		{
+			int i, fin;
+			byte RecInst_Id_byte [] = Transform.getData(RecInst_Id);
+			
+			for( fin=RecInst_Id_byte.length, i=0; i<fin; i++ )
+			{
+				if( !Validator.isValidN(RecInst_Id_byte,i,1) )
+				{
+					RecInst_Id_byte[i]=(byte)'0';
+				}
+			}
+			String valid_RecInst_Id = Transform.getString(RecInst_Id_byte);
+			clearField (Iso8583.Bit._100_RECEIVING_INST_ID_CODE);
+
+			putField ( Iso8583.Bit._100_RECEIVING_INST_ID_CODE, valid_RecInst_Id );
+        }	
+		return offset;
+	}
 
 	/**
-	 * Retorna el resultado de la validación del MAC.
-	 * @return True si el MAC es inválido.
+	 * Retorna el resultado de la validaciï¿½n del MAC.
+	 * @return True si el MAC es invï¿½lido.
 	 */
 	public int failedMAC() {
 		return failed_MAC;
@@ -459,7 +557,7 @@ public class Base24Ath extends Iso8583 {
 	}
 	
 	/**
-	 * Este método retorna true si el mensaje corresponde a "Primary Bytes" o
+	 * Este mï¿½todo retorna true si el mensaje corresponde a "Primary Bytes" o
 	 * false si el mensaje corresponde a "Secundary Bytes"
 	 * 
 	 * @return True si esta presente si solo esta presente el primary byte.
@@ -540,7 +638,7 @@ public class Base24Ath extends Iso8583 {
 	/**
 	 * Retorna el valor del Atm Additional Response Data (Ath ISO8583 field 44).
 	 *
-	 * @return El valor del campo. Si es vacío retorna null.
+	 * @return El valor del campo. Si es vacï¿½o retorna null.
 	 * @throws XPostilion En caso de error.
 	 * @see AthAtmAdditionalResponseData
 	 */
@@ -558,7 +656,7 @@ public class Base24Ath extends Iso8583 {
 	/**
 	 * Establece el valor del ATM Additional Response Data (Ath ISO8583 field 44).
 	 * 
-	 * @param value Establece el valor del ATM Additional Response Data. Si es null, el campo se limpía.
+	 * @param value Establece el valor del ATM Additional Response Data. Si es null, el campo se limpï¿½a.
 	 * @see AthAtmAdditionalResponseData
 	 */
 	public final void putAthAtmAdditionalResponseData(
@@ -733,11 +831,11 @@ public class Base24Ath extends Iso8583 {
 		}
 	}
 
-	/** Instancia del array estático Iso8583. */
+	/** Instancia del array estï¿½tico Iso8583. */
 	protected static Iso8583.Template iso_Ath_formatters = null;
 	
 	
-	/** Instancia del array estático Iso8583. */
+	/** Instancia del array estï¿½tico Iso8583. */
 	protected static Iso8583.Template iso_Ath_formatters_custom = null;
 	
 	/**
