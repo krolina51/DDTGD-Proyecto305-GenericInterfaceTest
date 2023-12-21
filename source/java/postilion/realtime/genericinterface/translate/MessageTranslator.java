@@ -143,6 +143,7 @@ public class MessageTranslator {
 		try {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
+			String strTypeMsg = msg.getMessageType();
 
 			msgToRmto.putHeader(constructAtmHeaderSinkNode(msg));
 			msgToRmto.putMsgType(msg.getMsgType());
@@ -150,6 +151,26 @@ public class MessageTranslator {
 			StructuredData sd = new StructuredData();
 			sd = msg.getStructuredData();
 			String pCode126 = sd.get("B24_Field_126") != null ? sd.get("B24_Field_126").substring(22, 28) : null;
+			
+
+			Map<String, String> deleteFieldsRequest = null;
+			Map<String, String> createFieldsRequest = null;
+
+			switch (strTypeMsg) {
+			case "0200":
+				deleteFieldsRequest = GenericInterface.fillMaps.getDeleteFieldsRequest();
+				createFieldsRequest = GenericInterface.fillMaps.getCreateFieldsRequest();
+				break;
+			case "0420":
+			case "0421":
+				deleteFieldsRequest = GenericInterface.fillMaps.getDeleteFieldsRevRequest();
+				createFieldsRequest = GenericInterface.fillMaps.getCreateFieldsRevRequest();
+				break;
+
+			default:
+
+				break;
+			}
 			for (int i = 3; i <= 126; i++) {
 				if (sd != null && sd.get("B24_Field_" + String.valueOf(i)) != null)
 					msgToRmto.putField(i, sd.get("B24_Field_" + String.valueOf(i)));
@@ -162,23 +183,23 @@ public class MessageTranslator {
 
 				String methodName = null;
 
-				if (GenericInterface.fillMaps.getCreateFieldsRequest().containsKey(key1)) {
-					methodName = GenericInterface.fillMaps.getCreateFieldsRequest().get(key1);
+				if (createFieldsRequest.containsKey(key1)) {
+					methodName = createFieldsRequest.get(key1);
 					if (!methodName.equals("N/A"))
 						msgToRmto.putField(i,
 								invoke.invokeMethodConfig(
 										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
 										methodName, msg, i));
 
-				} else if (GenericInterface.fillMaps.getCreateFieldsRequest().containsKey(key2)) {
-					methodName = GenericInterface.fillMaps.getCreateFieldsRequest().get(key2);
+				} else if (createFieldsRequest.containsKey(key2)) {
+					methodName = createFieldsRequest.get(key2);
 					if (!methodName.equals("N/A"))
 						msgToRmto.putField(i,
 								invoke.invokeMethodConfig(
 										"postilion.realtime.genericinterface.translate.ConstructFieldMessage",
 										methodName, msg, i));
-				} else if (GenericInterface.fillMaps.getCreateFieldsRequest().containsKey(key3)) {
-					methodName = GenericInterface.fillMaps.getCreateFieldsRequest().get(key3);
+				} else if (createFieldsRequest.containsKey(key3)) {
+					methodName = createFieldsRequest.get(key3);
 					if (!methodName.equals("N/A"))
 						msgToRmto.putField(i,
 								invoke.invokeMethodConfig(
@@ -189,7 +210,7 @@ public class MessageTranslator {
 			}
 
 			String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-			Set<String> set = GenericInterface.fillMaps.getDeleteFieldsRequest().keySet().stream()
+			Set<String> set = deleteFieldsRequest.keySet().stream()
 					.filter(s -> s.length() <= 3).collect(Collectors.toSet());
 
 			if (set.size() > 0) {
@@ -200,8 +221,8 @@ public class MessageTranslator {
 				}
 			}
 
-			if (GenericInterface.fillMaps.getDeleteFieldsRequest().containsKey(PCode)) {
-				String[] parts = GenericInterface.fillMaps.getDeleteFieldsRequest().get(PCode).split("-");
+			if (deleteFieldsRequest.containsKey(PCode)) {
+				String[] parts = deleteFieldsRequest.get(PCode).split("-");
 				for (String item : parts) {
 					if (msgToRmto.isFieldSet(Integer.parseInt(item))) {
 						msgToRmto.clearField(Integer.parseInt(item));
@@ -212,10 +233,16 @@ public class MessageTranslator {
 				objectBusinessCalendar = new BusinessCalendar("DefaultBusinessCalendar");
 				Date businessCalendarDate = this.objectBusinessCalendar.getNextBusinessDate();
 				String settlementDate = new SimpleDateFormat("MMdd").format(businessCalendarDate);
-//				SettlementDate date = new SettlementDate(this.params.getCalendarInfo().getCalendar());
-//				date.calculateDate(msg);
 				msgToRmto.putField(Iso8583.Bit._017_DATE_CAPTURE, settlementDate);
 			}
+//			if(msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+//					&& msg.getStructuredData().get("ANULACION") != null
+//					&& msg.getStructuredData().get("ANULACION").equals("TRUE")
+//					&& msg.isFieldSet(Iso8583Post.Bit._059_ECHO_DATA)) {
+//				String[] dataP59 = msg.getField(Iso8583Post.Bit._059_ECHO_DATA).split("\\|");
+//				if(dataP59.length>=1)
+//					msgToRmto.putField(Iso8583.Bit._038_AUTH_ID_RSP, dataP59[0]);
+//			}
 			
 
 		} catch (XPostilion e) {
@@ -1090,7 +1117,7 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "05");
 					objectValidations.putInforCollectedForStructData("Tipo_de_Cuenta_Debitada", "AHO");
 					objectValidations.putInforCollectedForStructData("DEBIT_CARD_CLASS", "15CLASE12NB1");
-					objectValidations.putInforCollectedForStructData("DEBIT_CARD_NR", "0066010000000000");
+					//objectValidations.putInforCollectedForStructData("DEBIT_CARD_NR", "0066010000000000");
 					objectValidations.putInforCollectedForStructData("Vencimiento", "0000");
 					objectValidations.putInforCollectedForStructData("Ind_4xmil", "0");
 					objectValidations.putInforCollectedForStructData("DEBIT_CUSTOMER_ID", "0000000000000");
@@ -1270,7 +1297,7 @@ public class MessageTranslator {
 					
 					if(msgFromRemote.isFieldSet(125) 
 							&& (msgFromRemote.getField(125).length()>90 && msgFromRemote.getField(125).length()<=150)
-							&& (!msgFromRemote.getField(125).substring(138,139).equals(" ") && !msgFromRemote.getField(125).substring(138,139).equals("0"))
+							&& (msgFromRemote.getField(125).substring(138,139).equals("1") || msgFromRemote.getField(125).substring(138,139).equals("2"))
 							&& !msgFromRemote.getField(125).substring(139,140).equals(" ")) {
 						objectValidations.putInforCollectedForStructData("TX_QR", "TRUE");
 						

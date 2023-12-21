@@ -842,6 +842,96 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return null;
 	}
+	
+	/**************************************************************************************
+	 * Build and return field 22 Default.
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value 22 default
+	 *************************************************************************************/
+	public static String constructField15Fiserv(Object object, Integer num) {
+
+		try {
+			return Constants.General.FOUR_ZEROS;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**************************************************************************************
+	 * Build and return field 22 Default.
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value 22 default
+	 *************************************************************************************/
+	public static String constructField102Fiserv(Object object, Integer num) {
+
+		try {
+			return "0000000000000000000";
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**************************************************************************************
+	 * Build and return field 22 Default.
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value 22 default
+	 *************************************************************************************/
+	public static String constructField123Fiserv(Object object, Integer num) {
+
+		try {
+			return "00000000000000000000";
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**************************************************************************************
+	 * Build and return field 22 Default.
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value 22 default
+	 *************************************************************************************/
+	public static String constructField73Anulacion(Object object, Integer num) {
+
+		try {
+			return "000000";
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**************************************************************************************
+	 * Build and return field 22 Default.
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value 22 default
+	 *************************************************************************************/
+	public static String constructField54Anulacion(Object object, Integer num) {
+		Iso8583Post msgFromTm = (Iso8583Post) object;
+		String field54 = "000000001000000000000000000000000000001000000";
+		try {
+			if(msgFromTm.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+					&& msgFromTm.getStructuredData().get("ANULACION") != null
+					&& msgFromTm.getStructuredData().get("ANULACION").equals("TRUE")
+					&& msgFromTm.isFieldSet(Iso8583Post.Bit._059_ECHO_DATA)) {
+				String[] dataP59 = msgFromTm.getField(Iso8583Post.Bit._059_ECHO_DATA).split("\\|");
+				if(dataP59.length>=2)
+					field54 = "000".concat(dataP59[1]).concat("000000000000000000").concat(dataP59[1]) ;
+			}
+			
+			return field54;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	/**************************************************************************************
 	 * Build and return field 43 Default.
@@ -3456,14 +3546,24 @@ public class ConstructFieldMessage extends MessageTranslator {
 	}
 
 	public String constructField90AutraRevResponse(Iso8583Post msg210fromTM, Iso8583Post msg) throws XPostilion {
-
 		StringBuilder sb = new StringBuilder();
-		sb.append(msg.getField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0, 4));
-		sb.append((msg210fromTM.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)));
-		sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
-		sb.append((msg210fromTM.getField(Iso8583.Bit._012_TIME_LOCAL) + "00"));
-		sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
-		sb.append("0000000000");
+		if(this.params.isAlternativeKeyTM()) {
+			sb.append(MsgType.toString(msg.getMsgType()))
+			.append(msg210fromTM.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR))
+			.append(msg210fromTM.getField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME))
+			.append(msg210fromTM.isFieldSet(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE)
+					? msg210fromTM.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE) : "10000000001")
+			.append("00000000000");
+		}else {
+			sb.append(msg.getField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0, 4));
+			sb.append((msg210fromTM.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)));
+			sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
+			sb.append((msg210fromTM.getField(Iso8583.Bit._012_TIME_LOCAL) + "00"));
+			sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
+			sb.append("0000000000");
+		}
+		
+		
 
 		return sb.toString();
 	}
