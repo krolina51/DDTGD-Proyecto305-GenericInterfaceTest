@@ -1257,7 +1257,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			}
 			originalMsg.putMsgType(msgFromRemote.getMsgType());
 			//originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
-			originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, esNumerica(msgFromRemote.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString())
+			originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, esAlfaNumerica(msgFromRemote.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString())
 					? msgFromRemote.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString()
 							: "000000");
 			originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
@@ -1318,8 +1318,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		return action;
 	}
 	
-	public boolean esNumerica(String cadena) {
-		  return cadena.matches("^-?\\d+(\\.\\d+)?$");
+	public boolean esAlfaNumerica(String cadena) {
+		  return cadena.matches("[a-zA-Z0-9]+");
 	}
 
 	/**************************************************************************************

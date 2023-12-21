@@ -729,7 +729,7 @@ public abstract class Super {
 					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._038_AUTH_ID_RSP))
-			msgToTM.putField(Iso8583.Bit._038_AUTH_ID_RSP, esNumerica(msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString())
+			msgToTM.putField(Iso8583.Bit._038_AUTH_ID_RSP, esAlfaNumerica(msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString())
 					? msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString()
 							: "000000");
 
@@ -1700,8 +1700,8 @@ public abstract class Super {
 		}
 	}
 	
-	public boolean esNumerica(String cadena) {
-		  return cadena.matches("^-?\\d+(\\.\\d+)?$");
+	public boolean esAlfaNumerica(String cadena) {
+		  return cadena.matches("[a-zA-Z0-9]+");
 	}
 
 	public abstract void validations(Base24Ath msg, Super objectValidations);
