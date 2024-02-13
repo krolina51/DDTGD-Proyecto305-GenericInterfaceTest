@@ -233,7 +233,7 @@ public class Extract {
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "03");
 		objectValidations.putInforCollectedForStructData("Nombre_Transaccion", "PAGOLC");
 
-		objectValidations.putInforCollectedForStructData("Mod_Credito", "9");
+		
 		objectValidations.putInforCollectedForStructData("Indicador_AVAL", "1");
 		objectValidations.putInforCollectedForStructData("Ent_Adq",
 				(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
@@ -1059,8 +1059,9 @@ public class Extract {
 			return "TC_CHEQUE";
 
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_EFECTIVO:
-			objectValidations.putInforCollectedForStructData("Mod_Credito", "2");
-			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "2");
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "8");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "8");			
+			objectValidations.putInforCollectedForStructData("Mod_Credito_REV", "2");
 
 			return "ROTATIVO_EFECTIVO";
 
@@ -1071,8 +1072,9 @@ public class Extract {
 			return "ROTATIVO_CHEQUE";
 
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_EFECTIVO:
-			objectValidations.putInforCollectedForStructData("Mod_Credito", "3");
-			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "3");
+		    objectValidations.putInforCollectedForStructData("Mod_Credito", "9");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "9");			
+			objectValidations.putInforCollectedForStructData("Mod_Credito_REV", "3");
 			return "OTROS_EFECTIVO";
 
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CHEQUE:
