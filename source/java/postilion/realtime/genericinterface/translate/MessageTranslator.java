@@ -868,14 +868,14 @@ public class MessageTranslator {
 					Extract.tagsModelPaymentOfObligationsCredit(objectValidations, msgFromRemote);
 					
 					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",
-							msgFromRemote.getField("0077"+Iso8583.Bit._102_ACCOUNT_ID_1).substring(4, 6) + "0000000000000");
+							"0077"+msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(2, 4) + "0000000000000");
 					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1_REV",
-							msgFromRemote.getField("0077010000000000000"));
+							"0077010000000000000");
 					
 					objectValidations.putInforCollectedForStructData("PAN_Tarjeta",
-							msgFromRemote.getField("0077"+Iso8583.Bit._102_ACCOUNT_ID_1).substring(4, 6) + "0000000000000");
+							"0077"+msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(2, 4) + "0000000000000");
 					objectValidations.putInforCollectedForStructData("PAN_Tarjeta_REV",
-							msgFromRemote.getField("0077010000000000000"));
+							"0077010000000000000");
 					
 					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "OTR");
 					objectValidations.putInforCollectedForStructData("Ofi_Adqui", "9999");
