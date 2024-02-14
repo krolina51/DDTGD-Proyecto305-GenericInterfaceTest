@@ -868,13 +868,18 @@ public class MessageTranslator {
 					Extract.tagsModelPaymentOfObligationsCredit(objectValidations, msgFromRemote);
 					
 					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",
-							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6) + "0000000000000");
+							"0077"+msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(2, 4) + "0000000000000");
+					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1_REV",
+							"0077010000000000000");
 					
 					objectValidations.putInforCollectedForStructData("PAN_Tarjeta",
-							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6) + "0000000000000");
+							"0077"+msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(2, 4) + "0000000000000");
+					objectValidations.putInforCollectedForStructData("PAN_Tarjeta_REV",
+							"0077010000000000000");
 					
 					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE", "OTR");
 					objectValidations.putInforCollectedForStructData("Ofi_Adqui", "9999");
+					objectValidations.putInforCollectedForStructData("Ofi_Adqui_REV", "0000");
 					objectValidations.putInforCollectedForStructData("Canal", "01");
 					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
 					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
@@ -909,10 +914,12 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR_REV", "000000000000000000");
-					
+					objectValidations.putInforCollectedForStructData("Codigo_Establecimiento", "          ");
+					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque", "1");
+					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque_REV", "0");
 					objectValidations.putInforCollectedForStructData("TIPO_TX", "EFECTIVO");
 					objectValidations.putInforCollectedForStructData("TAG_924A", msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0,4));
-
+					
 					break;
 					
 					// PAGO OBLIGACIONES OFIAVAL EFECTIVO Y CHEQUE
