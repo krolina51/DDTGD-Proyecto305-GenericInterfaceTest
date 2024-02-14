@@ -209,7 +209,7 @@ public class MessageTranslator {
 
 			}
 
-			String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+			String PCode = sd.get("CHANNEL_PCODE") != null ? sd.get("CHANNEL_PCODE")+"_"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE) : msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
 			Set<String> set = deleteFieldsRequest.keySet().stream()
 					.filter(s -> s.length() <= 3).collect(Collectors.toSet());
 
@@ -909,6 +909,9 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR_REV", "000000000000000000");
+					
+					objectValidations.putInforCollectedForStructData("TIPO_TX", "EFECTIVO");
+					objectValidations.putInforCollectedForStructData("TAG_924A", msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0,4));
 
 					break;
 					
@@ -1759,7 +1762,12 @@ public class MessageTranslator {
 			Header atmHeader = new Header();
 			atmHeader.putField(Header.Field.ISO_LITERAL, Header.Iso.ISO);
 			atmHeader.putField(Header.Field.RESPONDER_CODE, Header.SystemCode.UNDETERMINED);
-			atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.POS);
+			if(msg.getStructuredData().get("indicator_product") != null && msg.getStructuredData().get("indicator_product").equals("1"))
+				atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.ATM);
+			else if(msg.getStructuredData().get("indicator_product") != null && msg.getStructuredData().get("indicator_product").equals("2"))
+				atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.POS);
+			else
+				atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.POS);
 			atmHeader.putField(Header.Field.RELEASE_NUMBER, Base24Ath.Version.REL_NR_34);
 			atmHeader.putField(Header.Field.STATUS, Header.Status.OK);
 			atmHeader.putField(Header.Field.ORIGINATOR_CODE, Header.OriginatorCode.CINCO);
