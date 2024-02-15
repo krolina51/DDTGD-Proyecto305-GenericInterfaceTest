@@ -1584,6 +1584,25 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 				}
 			};
+			
+			StructuredData sd = msgToTM.getStructuredData();
+			
+			if(msgToTM.getStructuredData().get("AMPLIA125") != null && msgToTM.getStructuredData().get("AMPLIA125").equals("TRUE")) {
+				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
+						90, ' ', true));
+				sd.put("PROCESS_FIELD_125", "TRUE");
+				msg.clearField(128);
+			}
+			
+			if(msgToTM.getStructuredData().get("REDUCE125") != null && msgToTM.getStructuredData().get("REDUCE125").equals("TRUE")) {
+				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
+						150, ' ', true));
+				sd.put("PROCESS_FIELD_125", "TRUE");
+				msg.clearField(128);
+			}
+			
 			objectSuper.constructAutraRevResponseMessage(msg, msgToTM);
 			action.putMsgToTranmgr(msgToTM);
 		} else {

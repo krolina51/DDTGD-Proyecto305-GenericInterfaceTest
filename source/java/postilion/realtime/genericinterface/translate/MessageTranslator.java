@@ -990,7 +990,7 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("TC_BOGOTA",
 							msgFromValidationTC);
 
-					if(msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(3, 7).equals("0001") && !msgFromValidationTC.equals("SI")) {
+					if(msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(3, 7).equals("0001") && !msgFromValidationTC.startsWith("SI")) {
 						objectValidations.modifyAttributes(false, "TIPO APPL NO RELACIONADO A TARJETA", "2003",
 								"85");
 					}
