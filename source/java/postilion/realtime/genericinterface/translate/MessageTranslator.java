@@ -990,7 +990,7 @@ public class MessageTranslator {
 					String msgFromValidationTC = udpClientValidation.sendMsgForValidation(msgFromRemote, nameInterface);
 					
 					objectValidations.putInforCollectedForStructData("TC_BOGOTA",
-							msgFromValidationTC);
+							msgFromValidationTC.substring(0,2));
 
 					if(msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(3, 7).equals("0001") && !msgFromValidationTC.startsWith("SI")) {
 						objectValidations.modifyAttributes(false, "TIPO APPL NO RELACIONADO A TARJETA", "2003",
