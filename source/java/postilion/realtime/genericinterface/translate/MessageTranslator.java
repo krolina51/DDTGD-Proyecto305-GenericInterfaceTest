@@ -982,6 +982,8 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR_REV", "000000000000000000");
+					objectValidations.putInforCollectedForStructData("TIPO_TX", "EFECTIVO");
+					objectValidations.putInforCollectedForStructData("TAG_924A", msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0,4));
 					
 					Client udpClientValidation = new Client(params.getIpUdpServerValidation(), params.getPortUdpServerValidation());
 					
