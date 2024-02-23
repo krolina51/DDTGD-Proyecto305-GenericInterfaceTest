@@ -233,7 +233,6 @@ public class Extract {
 		objectValidations.putInforCollectedForStructData("Codigo_Transaccion", "03");
 		objectValidations.putInforCollectedForStructData("Nombre_Transaccion", "PAGOLC");
 
-		
 		objectValidations.putInforCollectedForStructData("Indicador_AVAL", "1");
 		objectValidations.putInforCollectedForStructData("Ent_Adq",
 				(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
@@ -241,7 +240,7 @@ public class Extract {
 						: msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0, 4));
 		objectValidations.putInforCollectedForStructData("Codigo_de_Red",
 				(msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
-				? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(0, 4)
+						? msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(0, 4)
 						: msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0, 4));
 
 		// tarjetas y cuentas por cuadrar segun modelo en el pcode no aparece el segundo
@@ -416,8 +415,8 @@ public class Extract {
 //**************************MODELOS RETIRO OTP CNB*******************************************************************	
 //**************************MODELOS PAGO DE SERVICIOS****************************************************************	
 	// MIXTA
-	public static void tagsModelPaymentOfServicesMixed(Super objectValidations, Base24Ath msg,Client udpClient,
-			String nameInterface ) throws XPostilion {
+	public static void tagsModelPaymentOfServicesMixed(Super objectValidations, Base24Ath msg, Client udpClient,
+			String nameInterface) throws XPostilion {
 
 		tagsModelPspGeneral(objectValidations, msg, udpClient, nameInterface);
 
@@ -1000,13 +999,36 @@ public class Extract {
 	 */
 	public static void putTagClientCardNr(Super objectValidations, Base24Ath msg) throws XPostilion {
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA))
-			objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1",
-					msg.getTrack2Data().getPan());
+			objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", msg.getTrack2Data().getPan());
 		else
 			objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", "0000000000000000000");
 
 	}
-	
+
+	public static String tagTTypePObligInternet(Base24Ath msg, Super objectValidations) throws XFieldUnableToConstruct {
+
+		switch (msg.getProcessingCode().toString()) {
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_AHORROS:
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA_CORRIENTE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "8");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "8");
+			objectValidations.putInforCollectedForStructData("Mod_Credito_REV", "3");
+			return "CREDITOROTATIVO_CREDISERVICES_DINEROEXTRA";
+
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_AHORROS:
+		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CREDITOS_CORRIENTE:
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "9");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "9");
+			objectValidations.putInforCollectedForStructData("Mod_Credito_REV", "3");
+			return "OTROS_CREDITOS";
+
+		default:
+			return "OTROS";
+		}
+
+	}
+
 	public static String tagTTypePOblig(Base24Ath msg, Super objectValidations) throws XFieldUnableToConstruct {
 
 		switch (msg.getProcessingCode().toString()) {
@@ -1060,7 +1082,7 @@ public class Extract {
 
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_EFECTIVO:
 			objectValidations.putInforCollectedForStructData("Mod_Credito", "8");
-			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "8");			
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "8");
 			objectValidations.putInforCollectedForStructData("Mod_Credito_REV", "2");
 
 			return "ROTATIVO_EFECTIVO";
@@ -1072,8 +1094,8 @@ public class Extract {
 			return "ROTATIVO_CHEQUE";
 
 		case Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_EFECTIVO:
-		    objectValidations.putInforCollectedForStructData("Mod_Credito", "9");
-			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "9");			
+			objectValidations.putInforCollectedForStructData("Mod_Credito", "9");
+			objectValidations.putInforCollectedForStructData("Mod_CreditoX1", "9");
 			objectValidations.putInforCollectedForStructData("Mod_Credito_REV", "3");
 			return "OTROS_EFECTIVO";
 
