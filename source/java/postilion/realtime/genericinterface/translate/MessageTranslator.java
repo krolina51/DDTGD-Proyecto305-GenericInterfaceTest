@@ -209,9 +209,9 @@ public class MessageTranslator {
 
 			}
 
-			String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
-			Set<String> set = deleteFieldsRequest.keySet().stream().filter(s -> s.length() <= 3)
-					.collect(Collectors.toSet());
+			String PCode = sd.get("CHANNEL_PCODE") != null ? sd.get("CHANNEL_PCODE")+"_"+msg.getField(Iso8583.Bit._003_PROCESSING_CODE) : msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
+			Set<String> set = deleteFieldsRequest.keySet().stream()
+					.filter(s -> s.length() <= 3).collect(Collectors.toSet());
 
 			if (set.size() > 0) {
 				for (String item : set) {
@@ -919,7 +919,7 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("Codigo_Establecimiento", "          ");
 					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque", "1");
 					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque_REV", "0");
-
+					
 					break;
 
 				// PAGO OBLIGACIONES OFIAVAL EFECTIVO Y CHEQUE
@@ -984,17 +984,17 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("MIX_ACCOUNT_NR_REV", "000000000000000000");
-
-					Client udpClientValidation = new Client(params.getIpUdpServerValidation(),
-							params.getPortUdpServerValidation());
-
+					
+					Client udpClientValidation = new Client(params.getIpUdpServerValidation(), params.getPortUdpServerValidation());
+					
 					String msgFromValidationTC = udpClientValidation.sendMsgForValidation(msgFromRemote, nameInterface);
+					
+					objectValidations.putInforCollectedForStructData("TC_BOGOTA",
+							msgFromValidationTC);
 
-					objectValidations.putInforCollectedForStructData("TC_BOGOTA", msgFromValidationTC);
-
-					if (msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(3, 7).equals("0001")
-							&& !msgFromValidationTC.equals("SI")) {
-						objectValidations.modifyAttributes(false, "TIPO APPL NO RELACIONADO A TARJETA", "2003", "85");
+					if(msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(3, 7).equals("0001") && !msgFromValidationTC.equals("SI")) {
+						objectValidations.modifyAttributes(false, "TIPO APPL NO RELACIONADO A TARJETA", "2003",
+								"85");
 					}
 					break;
 
@@ -1818,7 +1818,12 @@ public class MessageTranslator {
 			Header atmHeader = new Header();
 			atmHeader.putField(Header.Field.ISO_LITERAL, Header.Iso.ISO);
 			atmHeader.putField(Header.Field.RESPONDER_CODE, Header.SystemCode.UNDETERMINED);
-			atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.POS);
+			if(msg.getStructuredData().get("indicator_product") != null && msg.getStructuredData().get("indicator_product").equals("1"))
+				atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.ATM);
+			else if(msg.getStructuredData().get("indicator_product") != null && msg.getStructuredData().get("indicator_product").equals("2"))
+				atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.POS);
+			else
+				atmHeader.putField(Header.Field.PRODUCT_INDICATOR, Header.ProductIndicator.POS);
 			atmHeader.putField(Header.Field.RELEASE_NUMBER, Base24Ath.Version.REL_NR_34);
 			atmHeader.putField(Header.Field.STATUS, Header.Status.OK);
 			atmHeader.putField(Header.Field.ORIGINATOR_CODE, Header.OriginatorCode.CINCO);

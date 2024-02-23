@@ -592,6 +592,31 @@ public abstract class Super {
 		
 		StructuredData sd = new StructuredData();
 		
+		if(validateAutra != null && validateAutra.getP125Accion() != null && !validateAutra.getP125Accion().equals("FALSE")) {
+			if(validateAutra.getP125Accion().equals("AGREGAR")) {
+				sd.put("PROCCESS_FIELD_125", "TRUE");
+				msg.putField(125, validateAutra.getP125Valor());
+				msg.clearField(128);
+			} else if (validateAutra.getP125Accion().equals("BORRAR")) {
+				sd.put("PROCCESS_FIELD_125", "TRUE");
+				msg.clearField(125);
+				msg.clearField(128);
+				
+			} else if (validateAutra.getP125Accion().equals("AMPLIAR")) {
+				sd.put("PROCCESS_FIELD_125", "TRUE");
+				sd.put("AMPLIA125", "TRUE");
+				msg.putField(125, Pack.resize(msg.getField(125) != null ? msg.getField(125) : " "+validateAutra.getP125Valor(), 150, ' ', true));
+				msg.clearField(128);
+			} else if (validateAutra.getP125Accion().equals("REDUCIR")) {
+				sd.put("PROCCESS_FIELD_125", "TRUE");
+				sd.put("REDUCE125", "TRUE");
+				msg.putField(125, Pack.resize(msg.getField(125) != null ? msg.getField(125) : " "+validateAutra.getP125Valor(), 90, ' ', true));
+				msg.clearField(128);
+			}
+		}
+		
+		
+		
 		sd.put("FIELD_35",  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
 
 		String OriginalInput = new String(msg.toMsg(false));
