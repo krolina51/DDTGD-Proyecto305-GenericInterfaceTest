@@ -118,8 +118,8 @@ public class ValidateCorrespondentMsg {
 				sd.put("INDICADOR_TRANSACCION", "M");
 
 		} catch (XPostilion e) {
-			EventReporter.reportGeneralEvent(this.nameInterface, ValidateCorrespondentMsg.class.getName(), e, retRefNumber,
-					"getSDCorresponsalValidate", this.udpClient);
+			EventReporter.reportGeneralEvent(this.nameInterface, ValidateCorrespondentMsg.class.getName(), e,
+					retRefNumber, "getSDCorresponsalValidate", this.udpClient);
 		}
 
 	}

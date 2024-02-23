@@ -128,11 +128,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	public String portUdpClient = "0";
 	public String ipServerValidation = "0";
 	public String portServerValidation = "0";
-	
+
 	public String ipUdpServerV2 = "0";
 	public String portUdpServerV2 = "0";
 	public String portUdpClientV2 = "0";
-	
+
 	public String ipServerAT = "0";
 	public String portServerAT = "0";
 	public String routingFilter = "";
@@ -218,7 +218,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Timer timer = new Timer();
 		TimerTask task = new CalendarLoader(this.calendarInfo, this.nameInterface);
 		timer.schedule(task, this.delay, this.period);
-		
+
 		setLogger(new Logger(Constants.Config.URL_LOG, this.isLogOn));
 
 		udpClient = new Client(ipUdpServer, portUdpServer, portUdpClient, nameInterface);
@@ -235,7 +235,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			fillMaps.fillFilters(routingFilterPath, this.nameInterface, this.udpClient);
 			break;
 		}
-		
+
 		fillMaps.fillFiltersV2(routingFilterV2Path, this.nameInterface, this.udpClient);
 
 		fillMaps.setAllCodesIsoToB24(DBHandler.getResponseCodes(false, "0", responseCodesVersion));
@@ -382,8 +382,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				this.termConsecutiveSection = parameters.get("terminal_consecutive_section").toString();
 				this.freeThreaded = (boolean) parameters.get("FREE_THREADED");
 				this.applyV2Filter = (boolean) parameters.get("APPLY_V2_FILTER");
-				this.ipServerValidation = validateIpUdpServerParameter(
-						parameters.get("IP_UDP_VALIDATIONS").toString());
+				this.ipServerValidation = validateIpUdpServerParameter(parameters.get("IP_UDP_VALIDATIONS").toString());
 				this.portServerValidation = validatePortUdpServerParameter(
 						parameters.get("PORT_UDP_VALIDATIONS").toString());
 				this.alternativeKeyTM = (boolean) parameters.get("ALTERNATIVE_SWITCHKEY_TM");
@@ -422,8 +421,6 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 
 	}
-	
-	
 
 	@Override
 	public boolean isFreeThreaded() {
@@ -445,9 +442,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			kwa = null;
 			fillMaps = null;
 			fillMaps = new HashMapBusinessLogic();
-			if(udpClient != null)
+			if (udpClient != null)
 				udpClient.close();
-			if(udpClientV2 != null)
+			if (udpClientV2 != null)
 				udpClientV2.close();
 			init(interchange);
 		} catch (Exception e) {
@@ -478,11 +475,11 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					"LOG", nameInterface));
 
 //			long tStart = System.currentTimeMillis();
-			
-			//borrar****
-			String dataAux = new String (data);
-			getLogger().logLine("data impresion " + dataAux);				
-			////******
+
+			// borrar****
+			String dataAux = new String(data);
+			getLogger().logLine("data impresion " + dataAux);
+			//// ******
 			String msgType = new String(data, 0, 3);
 			Base24Ath inMsg = null;
 			if (msgType.equals("ISO")) {
@@ -498,9 +495,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				inMsg = new Base24Ath(kwa);
 				inMsg.fromMsg(data, 0, nameInterface);
 				msg = inMsg;
-				
-			} 
-			
+
+			}
+
 			getLogger().logLine("Respuesta despues del else " + dataAux);
 			getLogger().logLine("**MENSAJE**\n" + msg);
 			exceptionMessage = Transform.fromBinToHex(Transform.getString(data));
@@ -511,8 +508,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			exceptionMessage = Transform.fromBinToHex(Transform.getString(data));
 			udpClient.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "ERR",
 					nameInterface));
-			udpClientV2.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage, "ERR",
-					nameInterface));
+			udpClientV2.sendData(Client.getMsgKeyValue("N/A", "ERRISO30 Exception en Mensaje: " + exceptionMessage,
+					"ERR", nameInterface));
 
 			EventReporter.reportGeneralEvent(this.nameInterface, GenericInterface.class.getName(), e, "N/D", "newMsg",
 					this.udpClient);
@@ -680,13 +677,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 	 * @param msg
 	 * @return action a ejecutar con el comando
 	 * @throws XPostilion
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 ************************************************************************************/
 	@Override
 	public Action processTranReqFromInterchange(AInterchangeDriverEnvironment interchange, Iso8583 msg)
 			throws XPostilion, InterruptedException {
 		Action action = new Action();
-		String retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
+		String retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+				+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 
 		if (msg instanceof Iso8583Post) {
 
@@ -712,8 +710,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 			Base24Ath msgFromRemote = (Base24Ath) msg;
 			Base24Ath msgToRemote = new Base24Ath(kwa);
-			
-			//Thread.sleep(7000);
+
+			// Thread.sleep(7000);
 
 			putRecordIntoSourceToTmHashtableB24(retRefNumber, msgFromRemote);
 
@@ -739,8 +737,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					if (!msg.isFieldSet(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID)) {
 						msg.putField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID, Constants.General.DEFAULT_P41);
 					}
-					
-					
+
 					// Validacion Enrutamiento Interfaz2 o Autra
 					ValidateAutra validateAutra = new ValidateAutra();
 
@@ -748,13 +745,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 					case "Test1":
 					case "Prod1":
 
-						validateAutra = ValidateAutra.getRoutingData(msgFromRemote, udpClient, nameInterface, routingFilter, applyV2Filter);
+						validateAutra = ValidateAutra.getRoutingData(msgFromRemote, udpClient, nameInterface,
+								routingFilter, applyV2Filter);
 
 						break;
 					case "Capa":
-						
+
 						validateAutra.setRute(Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION);
-						
+
 						break;
 					case "Autra":
 
@@ -829,7 +827,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						action.putMsgToTranmgr(msgToTm);
 
 						putRecordIntoSourceToTmHashtable(retRefNumber, msgToTm);
-						putRecordIntoSourceToTmHashtableB24(retRefNumber,msgFromRemote);
+						putRecordIntoSourceToTmHashtableB24(retRefNumber, msgFromRemote);
 
 						break;
 					}
@@ -870,8 +868,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 		udpClient.sendData(Client.getMsgKeyValue(retRefNumber, Transform.fromBinToHex(Transform.getString(msg.toMsg())),
 				"ISO", nameInterface));
-		udpClientV2.sendData(Client.getMsgKeyValue(retRefNumber, Transform.fromBinToHex(Transform.getString(msg.toMsg())),
-				"ISO", nameInterface));
+		udpClientV2.sendData(Client.getMsgKeyValue(retRefNumber,
+				Transform.fromBinToHex(Transform.getString(msg.toMsg())), "ISO", nameInterface));
 
 		if (!msg.getField(Iso8583.Bit._039_RSP_CODE).equals("00"))
 			udpClient.sendData(Client.getMsgKeyValue(retRefNumber, "DECISO" + msg.getField(Iso8583.Bit._039_RSP_CODE)
@@ -884,11 +882,13 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				byte[] decodedBytes = Base64.getDecoder().decode(sdData);
 				String decodedString = new String(decodedBytes, Charset.forName("US-ASCII"));
 				Base24Ath msgDecoded = null;
-				if((msg.getStructuredData().get("PROCESS_FIELD_125") != null && msg.getStructuredData().get("PROCESS_FIELD_125").equals("TRUE"))
-						|| (msg.getStructuredData().get("PROCESS_FIELD_63") != null && msg.getStructuredData().get("PROCESS_FIELD_63").equals("TRUE")))
+				if ((msg.getStructuredData().get("PROCESS_FIELD_125") != null
+						&& msg.getStructuredData().get("PROCESS_FIELD_125").equals("TRUE"))
+						|| (msg.getStructuredData().get("PROCESS_FIELD_63") != null
+								&& msg.getStructuredData().get("PROCESS_FIELD_63").equals("TRUE")))
 					msgDecoded = new Base24Ath(this.kwa);
 				else
-					msgDecoded = new Base24Ath(null);	
+					msgDecoded = new Base24Ath(null);
 
 				msgDecoded.fromMsg(decodedString);
 
@@ -930,15 +930,15 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		putRecordIntoSourceToTmHashtable(
 				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
 				msg);
-		
-		//DELAY POR TX
+
+		// DELAY POR TX
 		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
 				&& msg.getStructuredData().get("forzar_delay") != null
 				&& msg.getStructuredData().get("forzar_delay").equals("true")) {
 			Thread.sleep(6000);
 		}
-		//DELAY GENERAL
-		//Thread.sleep(6000);
+		// DELAY GENERAL
+		// Thread.sleep(6000);
 		Action action = new Action();
 		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
 				&& msg.getStructuredData().get("B24_Message") != null) {
@@ -947,19 +947,21 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			String decodedString = new String(decodedBytes);
 			GenericInterface.getLogger().logLine("B24_Message: " + decodedString);
 			Base24Ath msgDecoded = null;
-			if((msg.getStructuredData().get("PROCCESS_FIELD_22") != null && msg.getStructuredData().get("PROCCESS_FIELD_22").equals("TRUE"))
-					|| (msg.getStructuredData().get("PASSTHROUGH") != null && msg.getStructuredData().get("PASSTHROUGH").equals("TRUE"))
-					|| (msg.getStructuredData().get("PROCCESS_FIELD_125") != null && msg.getStructuredData().get("PROCCESS_FIELD_125").equals("TRUE")))
+			if ((msg.getStructuredData().get("PROCCESS_FIELD_22") != null
+					&& msg.getStructuredData().get("PROCCESS_FIELD_22").equals("TRUE"))
+					|| (msg.getStructuredData().get("PASSTHROUGH") != null
+							&& msg.getStructuredData().get("PASSTHROUGH").equals("TRUE"))
+					|| (msg.getStructuredData().get("PROCCESS_FIELD_125") != null
+							&& msg.getStructuredData().get("PROCCESS_FIELD_125").equals("TRUE")))
 				msgDecoded = new Base24Ath(kwa);
 			else
 				msgDecoded = new Base24Ath(null);
-			
-			
+
 			msgDecoded.fromMsg(decodedString);
 			action.putMsgToRemote(msgDecoded);
 		} else {
-			
-			if(msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+
+			if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
 					&& msg.getStructuredData().get("SANITY_ERROR") != null) {
 				msg.putMsgType(Iso8583Post.MsgType._0210_TRAN_REQ_RSP);
 				StructuredData sd = msg.getStructuredData();
@@ -980,8 +982,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
 				action.putMsgToRemote(msgToRemote);
 			}
-			
-			
+
 		}
 		return action;
 	}
@@ -991,15 +992,15 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			throws Exception {
 		GenericInterface.getLogger().logLine("Entro processAcquirerRevAdvFromTranmgr");
 		GenericInterface.getLogger().logLine("Iso8583Post Rev: " + msg.toString());
-		
-		if(msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
-				&& msg.getStructuredData().get("ANULACION") != null
+
+		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA) && msg.getStructuredData().get("ANULACION") != null
 				&& msg.getStructuredData().get("ANULACION").equals("TRUE")) {
 			msg.putMsgType(Iso8583.MsgType._0430_ACQUIRER_REV_ADV_RSP);
-			msg.putField(Iso8583.Bit._039_RSP_CODE,"00");
+			msg.putField(Iso8583.Bit._039_RSP_CODE, "00");
 			return new Action(msg, null, null, null);
 		}
-		String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
+		String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+				+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 		Action action = new Action();
 		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._006_AUTH_PROFILE)) {
 			switch (msg.getPrivField(Iso8583Post.PrivBit._006_AUTH_PROFILE)) {
@@ -1042,7 +1043,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 							+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msg);
 					action.putMsgToRemote(msgToRemote);
 				}
-				
+
 				break;
 			}
 		}
@@ -1064,14 +1065,15 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		Base24Ath msg0200ToRev = new Base24Ath(kwa);
 		String retRefNumber = "N/D";
 		try {
-			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);			
+			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
-			
+
 			String sdData0200 = msg.getStructuredData().get("B24_Message");
 			byte[] decodedBytes = Base64.getDecoder().decode(sdData0200);
 			String decodedString = new String(decodedBytes);
 
-			String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
+			String keyMsg = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+					+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 			putRecordIntoSourceToTmHashtable(keyMsg, msg);
 
 			String keyMsgFromRemote210 = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
@@ -1097,11 +1099,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			if (msgIsoPost210.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
 				msg0200ToRev.putField(Iso8583.Bit._103_ACCOUNT_ID_2,
 						msgIsoPost210.getField(Iso8583.Bit._103_ACCOUNT_ID_2));
-			
-			
+
 			String pCode126 = msg0200ToRev.isFieldSet(126) ? msg0200ToRev.getField(126).substring(22, 28) : null;
 			for (int i = 3; i <= 126; i++) {
-				
+
 				String key1 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE) + "_" + pCode126;
 				String key2 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
 				String key3 = String.valueOf(i);
@@ -1133,7 +1134,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				}
 
 			}
-			
+
 			String PCode = msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
 			Set<String> set = GenericInterface.fillMaps.getDeleteFieldsRevAuto().keySet().stream()
 					.filter(s -> s.length() <= 3).collect(Collectors.toSet());
@@ -1204,23 +1205,22 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			throws Exception {
 
 		Action action = new Action();
-		
+
 		Base24Ath msg = (Base24Ath) msgFromRemote;
-		
+
 		int errMac = msg.failedMAC();
-		
+
 		Iso8583Post originalMsg = (Iso8583Post) sourceTranToTmHashtable
 				.get(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
 						+ msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
-		
+
 		GenericInterface.getLogger().logLine("originalMsg: " + originalMsg);
-		
+
 		if (errMac == Base24Ath.MACError.INVALID_MAC_ERROR)
 			return new Action(null, constructEchoMsgIndicatorFailedMAC(msg, errMac), null, null);
 
 		if (originalMsg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
 				&& originalMsg.getStructuredData().get("B24_Message") != null) {
-			
 
 			Super objectSuper = new Super(true, General.VOIDSTRING, General.VOIDSTRING, General.VOIDSTRING, null,
 					params) {
@@ -1231,40 +1231,49 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				}
 			};
 			StructuredData sd = originalMsg.getStructuredData();
-			
-			if(MsgType.isResponse(msg.getMsgType()) && msg.getProcessingCode().getTranType().equals("33") 
+
+			if (MsgType.isResponse(msg.getMsgType()) && msg.getProcessingCode().getTranType().equals("33")
 					&& msg.isFieldSet(125)) {
-				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
-							.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
-							43, ' ', true));
+				msg.putField(125,
+						Pack.resize(
+								Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+										.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
+								43, ' ', true));
 				sd.put("PROCESS_FIELD_125", "TRUE");
 				msg.clearField(128);
 			}
-			if(MsgType.isResponse(msg.getMsgType()) && msg.isFieldSet(63)) {
-				msg.putField(63, Pack.resize(Normalizer.normalize(msg.getField(63), Normalizer.Form.NFD)
-							.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
-							44, ' ', true));
+			if (MsgType.isResponse(msg.getMsgType()) && msg.isFieldSet(63)) {
+				msg.putField(63,
+						Pack.resize(
+								Normalizer.normalize(msg.getField(63), Normalizer.Form.NFD)
+										.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
+								44, ' ', true));
 				sd.put("PROCESS_FIELD_63", "TRUE");
 				msg.clearField(128);
 			}
 
-			if(originalMsg.getStructuredData().get("AMPLIA125") != null && originalMsg.getStructuredData().get("AMPLIA125").equals("TRUE")) {
-				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
-						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
-						90, ' ', true));
+			if (originalMsg.getStructuredData().get("AMPLIA125") != null
+					&& originalMsg.getStructuredData().get("AMPLIA125").equals("TRUE")) {
+				msg.putField(125,
+						Pack.resize(
+								Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+										.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
+								90, ' ', true));
 				sd.put("PROCESS_FIELD_125", "TRUE");
 				msg.clearField(128);
 			}
-			
-			if(originalMsg.getStructuredData().get("REDUCE125") != null && originalMsg.getStructuredData().get("REDUCE125").equals("TRUE")) {
-				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
-						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
-						150, ' ', true));
+
+			if (originalMsg.getStructuredData().get("REDUCE125") != null
+					&& originalMsg.getStructuredData().get("REDUCE125").equals("TRUE")) {
+				msg.putField(125,
+						Pack.resize(
+								Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+										.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
+								150, ' ', true));
 				sd.put("PROCESS_FIELD_125", "TRUE");
 				msg.clearField(128);
 			}
-			
-			
+
 			originalMsg.putStructuredData(sd);
 
 			objectSuper.constructAutraResponseMessage(msg, originalMsg);
@@ -1276,66 +1285,67 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		} else {
 
 			StructuredData sd = null;
-			
-			if(originalMsg.getStructuredData() != null) {
-				sd = originalMsg.getStructuredData();	
+
+			if (originalMsg.getStructuredData() != null) {
+				sd = originalMsg.getStructuredData();
 			} else {
 				sd = new StructuredData();
 			}
 			originalMsg.putMsgType(msgFromRemote.getMsgType());
-			//originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
-			originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP, esAlfaNumerica(msgFromRemote.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString())
-					? msgFromRemote.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString()
+			// originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP,
+			// msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
+			originalMsg.putField(Iso8583.Bit._038_AUTH_ID_RSP,
+					esAlfaNumerica(msgFromRemote.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString())
+							? msgFromRemote.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString()
 							: "000000");
 			originalMsg.putField(Iso8583.Bit._039_RSP_CODE, msgFromRemote.getField((Iso8583.Bit._039_RSP_CODE)));
-			
-			if(msgFromRemote.isFieldSet(Iso8583.Bit._004_AMOUNT_TRANSACTION))
+
+			if (msgFromRemote.isFieldSet(Iso8583.Bit._004_AMOUNT_TRANSACTION))
 				sd.put("B24_Field_4", msgFromRemote.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION));
-			
-			if(msgFromRemote.isFieldSet(Base24Ath.Bit.ENTITY_ERROR))
+
+			if (msgFromRemote.isFieldSet(Base24Ath.Bit.ENTITY_ERROR))
 				sd.put("B24_Field_63", msgFromRemote.getField(Base24Ath.Bit.ENTITY_ERROR));
-			
-			if(msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)) {
+
+			if (msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)) {
 				sd.put("B24_Field_102", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
 				sd.put("CLIENT_ACCOUNT_NR", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
 			}
-				
-			
-			if(msgFromRemote.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
+
+			if (msgFromRemote.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2))
 				sd.put("B24_Field_103", msgFromRemote.getField(Iso8583.Bit._103_ACCOUNT_ID_2));
-			
-			if(msgFromRemote.isFieldSet(Iso8583.Bit._054_ADDITIONAL_AMOUNTS))
+
+			if (msgFromRemote.isFieldSet(Iso8583.Bit._054_ADDITIONAL_AMOUNTS))
 				sd.put("B24_Field_54", msgFromRemote.getField(Iso8583.Bit._054_ADDITIONAL_AMOUNTS));
-			
-			if(msgFromRemote.isFieldSet(125))
+
+			if (msgFromRemote.isFieldSet(125))
 				sd.put("B24_Field_125", msgFromRemote.getField(125));
-			
-			if(msgFromRemote.isFieldSet(Base24Ath.Bit._126_ATH_ADDITIONAL_DATA))
+
+			if (msgFromRemote.isFieldSet(Base24Ath.Bit._126_ATH_ADDITIONAL_DATA))
 				sd.put("B24_Field_126", msgFromRemote.getField(Base24Ath.Bit._126_ATH_ADDITIONAL_DATA));
-			
-			if(msgFromRemote.isFieldSet(Iso8583.Bit._038_AUTH_ID_RSP)) {
-				originalMsg.putField(Iso8583Post.Bit._059_ECHO_DATA, msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
+
+			if (msgFromRemote.isFieldSet(Iso8583.Bit._038_AUTH_ID_RSP)) {
+				originalMsg.putField(Iso8583Post.Bit._059_ECHO_DATA,
+						msgFromRemote.getField((Iso8583.Bit._038_AUTH_ID_RSP)));
 				sd.put("Autorizacion_Original", msgFromRemote.getField(Iso8583.Bit._038_AUTH_ID_RSP));
-				
-				if(msgFromRemote.isFieldSet(Iso8583.Bit._004_AMOUNT_TRANSACTION))
-					originalMsg.putField(Iso8583Post.Bit._059_ECHO_DATA, originalMsg.getField(Iso8583Post.Bit._059_ECHO_DATA)
-							.concat("|")
-							.concat(msgFromRemote.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION)));
+
+				if (msgFromRemote.isFieldSet(Iso8583.Bit._004_AMOUNT_TRANSACTION))
+					originalMsg.putField(Iso8583Post.Bit._059_ECHO_DATA,
+							originalMsg.getField(Iso8583Post.Bit._059_ECHO_DATA).concat("|")
+									.concat(msgFromRemote.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION)));
 				sd.put("Monto_Original", msgFromRemote.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION));
 			}
-			if(sd.get("TRANSACTION_INPUT") != null
-					&& sd.get("TRANSACTION_INPUT").equals("VALIDACIONPIN_OFC_BOG")) {
+			if (sd.get("TRANSACTION_INPUT") != null && sd.get("TRANSACTION_INPUT").equals("VALIDACIONPIN_OFC_BOG")) {
 				sd.put("CLIENT_ACCOUNT_NR", msgFromRemote.getTrack2Data().getPan().substring(6));
 				sd.put("Tipo_de_Cuenta_Debitada", "OTR");
-				if(msgFromRemote.getField(Iso8583.Bit._039_RSP_CODE).equals("55")) {
+				if (msgFromRemote.getField(Iso8583.Bit._039_RSP_CODE).equals("55")) {
 					sd.put("CLIENT_ACCOUNT_NR", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
 					sd.put("ERROR", "8055"); // Numero de isc para que baje en extract 2062 en batch
-					sd.put("Tipo_de_Cuenta_Debitada", (msgFromRemote.getProcessingCode().getFromAccount().equals("10")) ? "AHO" : "CTE");	
+					sd.put("Tipo_de_Cuenta_Debitada",
+							(msgFromRemote.getProcessingCode().getFromAccount().equals("10")) ? "AHO" : "CTE");
 				}
-					
+
 			}
-			
-			
+
 			originalMsg.putStructuredData(sd);
 			action.putMsgToTranmgr(originalMsg);
 
@@ -1344,9 +1354,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				+ msgFromRemote.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 		return action;
 	}
-	
+
 	public boolean esAlfaNumerica(String cadena) {
-		  return cadena.matches("[a-zA-Z0-9]+");
+		return cadena.matches("[a-zA-Z0-9]+");
 	}
 
 	/**************************************************************************************
@@ -1361,7 +1371,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		try {
 			MessageTranslator translator = new MessageTranslator(params);
 			Base24Ath originalMsg = (Base24Ath) sourceTranToTmHashtableB24
-					.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+					.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+							+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 
 			getLogger().logLine("processTranAdvRspFromTranmgr : 0");
 			if (originalMsg != null) {
@@ -1420,7 +1431,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		udpClientV2.sendData(Client.getMsgKeyValue(msgFromRemote.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				Transform.fromBinToHex(Transform.getString(msgFromRemote.getBinaryData())), "B24", nameInterface));
 		Iso8583Post msgToTm = new Iso8583Post();
-		putRecordIntoSourceToTmHashtableB24(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgFromRemote);
+		putRecordIntoSourceToTmHashtableB24(
+				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
+				msgFromRemote);
 //		Base24Ath msgToRemote = new Base24Ath(kwa);
 		MessageTranslator translator = new MessageTranslator(params);
 		try {
@@ -1438,13 +1451,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				case "Test1":
 				case "Prod1":
 
-					validateAutra = ValidateAutra.getRoutingData(msgFromRemote, udpClient, nameInterface, routingFilter, applyV2Filter);
+					validateAutra = ValidateAutra.getRoutingData(msgFromRemote, udpClient, nameInterface, routingFilter,
+							applyV2Filter);
 
 					break;
 				case "Capa":
-					
+
 					validateAutra.setRute(Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION);
-					
+
 					break;
 				case "Autra":
 
@@ -1495,7 +1509,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 						GenericInterface.getLogger().logLine("MENSAJEIso8583Post:" + Isomsg.toString());
 						action.putMsgToTranmgr(Isomsg);
 						putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
-								+Isomsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), Isomsg);
+								+ Isomsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), Isomsg);
 					}
 
 					break;
@@ -1517,10 +1531,9 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 					action.putMsgToTranmgr(msgToTm);
 					putRecordIntoSourceToTmHashtable(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
-							+msgToTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgToTm);
+							+ msgToTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgToTm);
 					putRecordIntoSourceToTmHashtableB24(msgToTm.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
-							+msgToTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
-							msgFromRemote);
+							+ msgToTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgFromRemote);
 					break;
 
 				}
@@ -1595,7 +1608,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		GenericInterface.getLogger().logLine("Entro processAcquirerRevAdvRspFromInterchange");
 		Base24Ath msg = (Base24Ath) msgFromRemote;
 		Action action = new Action();
-		String keyMsgFromRemote = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
+		String keyMsgFromRemote = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+				+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR);
 		Iso8583Post msgToTM = new Iso8583Post();
 		msgToTM = (Iso8583Post) sourceTranToTmHashtable.get(keyMsgFromRemote);
 
@@ -1611,25 +1625,31 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 				}
 			};
-			
+
 			StructuredData sd = msgToTM.getStructuredData();
-			
-			if(msgToTM.getStructuredData().get("AMPLIA125") != null && msgToTM.getStructuredData().get("AMPLIA125").equals("TRUE")) {
-				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
-						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
-						90, ' ', true));
+
+			if (msgToTM.getStructuredData().get("AMPLIA125") != null
+					&& msgToTM.getStructuredData().get("AMPLIA125").equals("TRUE")) {
+				msg.putField(125,
+						Pack.resize(
+								Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+										.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
+								90, ' ', true));
 				sd.put("PROCESS_FIELD_125", "TRUE");
 				msg.clearField(128);
 			}
-			
-			if(msgToTM.getStructuredData().get("REDUCE125") != null && msgToTM.getStructuredData().get("REDUCE125").equals("TRUE")) {
-				msg.putField(125, Pack.resize(Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
-						.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
-						150, ' ', true));
+
+			if (msgToTM.getStructuredData().get("REDUCE125") != null
+					&& msgToTM.getStructuredData().get("REDUCE125").equals("TRUE")) {
+				msg.putField(125,
+						Pack.resize(
+								Normalizer.normalize(msg.getField(125), Normalizer.Form.NFD)
+										.replaceAll("[^(\\p{L}\\p{Nd}|\\-p{\\s}]+", " ").replaceAll("[()_|]", ""),
+								150, ' ', true));
 				sd.put("PROCESS_FIELD_125", "TRUE");
 				msg.clearField(128);
 			}
-			
+
 			objectSuper.constructAutraRevResponseMessage(msg, msgToTM);
 			action.putMsgToTranmgr(msgToTM);
 		} else {
@@ -1684,8 +1704,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 				action.putMsgToTranmgr(Isomsg);
 
-				putRecordIntoSourceToTmHashtableB24(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + Isomsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgFromRemote);
-				putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + Isomsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), Isomsg);
+				putRecordIntoSourceToTmHashtableB24(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+						+ Isomsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), msgFromRemote);
+				putRecordIntoSourceToTmHashtable(Isomsg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+						+ Isomsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR), Isomsg);
 
 			}
 
@@ -1851,8 +1873,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 	/**
 	 * Hace un echo message del mensaje recibido de ATH. En el header se devuelve el
-	 * tipo de la transacciÃ³n anteponiendole un '9' y el STATUS con el cÃ³digo
-	 * de error correspondiente a la MAC.
+	 * tipo de la transacciÃ³n anteponiendole un '9' y el STATUS con el cÃ³digo de
+	 * error correspondiente a la MAC.
 	 * 
 	 * @param rsp       Mensaje desde ATH.
 	 * @param codeError CÃ³digo de error.
@@ -2077,8 +2099,8 @@ public class GenericInterface extends AInterchangeDriver8583 {
 
 	/**
 	 * Construye un mensaje de respuesta hacia Ath cuando se recibe una solicitud de
-	 * intercambio de llaves. Este método es llamado por POSTILION sólo si se
-	 * define como MAESTRO.
+	 * intercambio de llaves. Este método es llamado por POSTILION sólo si se define
+	 * como MAESTRO.
 	 *
 	 * @param interchange Información de la interchange en Postilion.
 	 * @param msg         Mensaje desde ATH.
@@ -2560,8 +2582,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		action.putMsgToRemote((Iso8583Post) response[1]);
 		return action;
 	}
-	
-	
+
 	/**
 	 * Processes a SET command received on the command port. The SET command sets
 	 * the value of an IInterchangeDriver specific parameter.
@@ -2599,7 +2620,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		action.putMsgToRemote(msg);
 		return action;
 	}
-	
+
 	/**
 	 * 
 	 * Validate parameter for connection to udp server
@@ -2624,7 +2645,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		}
 		return ip;
 	}
-	
+
 	/**
 	 * 
 	 * Validate parameter for connection to udp server

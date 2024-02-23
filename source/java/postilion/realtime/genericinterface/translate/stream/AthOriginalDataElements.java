@@ -28,23 +28,22 @@ public class AthOriginalDataElements extends StreamMessage {
 		public static final String FILLER = "Filler";
 	}
 
-	/** Longitud máxima. */
+	/** Longitud mï¿½xima. */
 	private static final int MAX_SIZE = 42;
 
 	static {
 		// StreamFormatterFields for the fields in Original Data Elements
-		StreamFormatterFieldFixed origTranType = new StreamFormatterFieldFixed(
-				Field.ORIG_TRAN_TYPE, Validator.getN(), 4, ' ', false, true);
-		StreamFormatterFieldFixed origSeqNr = new StreamFormatterFieldFixed(
-				Field.ORIG_SEQ_NR, Validator.getN(), 12, ' ', false, true);
-		StreamFormatterFieldFixed tranDate = new StreamFormatterFieldFixed(
-				Field.TRAN_DATE, Validator.getN(), 4, ' ', false, true);
-		StreamFormatterFieldFixed tranTime = new StreamFormatterFieldFixed(
-				Field.TRAN_TIME, Validator.getN(), 8, ' ', false, true);
-		StreamFormatterFieldFixed dateCapture = new StreamFormatterFieldFixed(
-				Field.ORIG_DATE_CAPTURE, Validator.getN(), 4, ' ', false, true);
-		StreamFormatterFieldFixed filler = new StreamFormatterFieldFixed(
-				Field.FILLER, Validator.getN(), 10);
+		StreamFormatterFieldFixed origTranType = new StreamFormatterFieldFixed(Field.ORIG_TRAN_TYPE, Validator.getN(),
+				4, ' ', false, true);
+		StreamFormatterFieldFixed origSeqNr = new StreamFormatterFieldFixed(Field.ORIG_SEQ_NR, Validator.getN(), 12,
+				' ', false, true);
+		StreamFormatterFieldFixed tranDate = new StreamFormatterFieldFixed(Field.TRAN_DATE, Validator.getN(), 4, ' ',
+				false, true);
+		StreamFormatterFieldFixed tranTime = new StreamFormatterFieldFixed(Field.TRAN_TIME, Validator.getN(), 8, ' ',
+				false, true);
+		StreamFormatterFieldFixed dateCapture = new StreamFormatterFieldFixed(Field.ORIG_DATE_CAPTURE, Validator.getN(),
+				4, ' ', false, true);
+		StreamFormatterFieldFixed filler = new StreamFormatterFieldFixed(Field.FILLER, Validator.getN(), 10);
 		stream.add(origTranType);
 		stream.add(origSeqNr);
 		stream.add(tranDate);

@@ -46,7 +46,7 @@ public class StringModifier {
 			i = getCodePointToReplace(i - 32) + 32;
 		else
 			i = getCodePointToReplace(i);
-		GenericInterface.getLogger().logLine(i+"");
+		GenericInterface.getLogger().logLine(i + "");
 		return Character.toString(Character.toChars(i)[0]);
 	}
 

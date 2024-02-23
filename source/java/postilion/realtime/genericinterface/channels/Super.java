@@ -275,7 +275,8 @@ public abstract class Super {
 		}
 	}
 
-	public void constructAutraMessage(Base24Ath msg, Iso8583Post msgToTM, ValidateAutra validateAutra) throws XPostilion {
+	public void constructAutraMessage(Base24Ath msg, Iso8583Post msgToTM, ValidateAutra validateAutra)
+			throws XPostilion {
 		String procCode = msg.getProcessingCode().toString();
 		if (procCode.equals("890000")) {
 			procCode = msg.getField(126).substring(22, 28);
@@ -318,11 +319,10 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE,
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
-
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
-			
+
 			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-			
+
 //			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
 //			case "008823":
 //			case "008801":
@@ -371,14 +371,15 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._049_CURRENCY_CODE_TRAN, Constants.General.DEFAULT_ERROR_049);
 
 		if (msg.isFieldSet(Iso8583.Bit._052_PIN_DATA))
-			msgToTM.putField(Iso8583.Bit._052_PIN_DATA,	Transform.fromHexToBin(msg.getField(Iso8583.Bit._052_PIN_DATA)));
+			msgToTM.putField(Iso8583.Bit._052_PIN_DATA,
+					Transform.fromHexToBin(msg.getField(Iso8583.Bit._052_PIN_DATA)));
 		else
-			msgToTM.putField(Iso8583.Bit._052_PIN_DATA,	Transform.fromHexToBin(Constants.General.PIN_DATA_VALIDATION));
-		
-		GenericInterface.getLogger().logLine("validateAutra"+validateAutra);
-		GenericInterface.getLogger().logLine("validateAutra.getP100Valor()"+validateAutra.getP100Valor());
+			msgToTM.putField(Iso8583.Bit._052_PIN_DATA, Transform.fromHexToBin(Constants.General.PIN_DATA_VALIDATION));
 
-		if(validateAutra != null && validateAutra.getP100Valor() != null) {
+		GenericInterface.getLogger().logLine("validateAutra" + validateAutra);
+		GenericInterface.getLogger().logLine("validateAutra.getP100Valor()" + validateAutra.getP100Valor());
+
+		if (validateAutra != null && validateAutra.getP100Valor() != null) {
 			GenericInterface.getLogger().logLine("Entra if 100");
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, validateAutra.getP100Valor());
 		} else {
@@ -389,9 +390,8 @@ public abstract class Super {
 				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
 			else
 				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
-			
+
 		}
-		
 
 		if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
 			msgToTM.putField(Iso8583.Bit._102_ACCOUNT_ID_1, msg.getField(Iso8583.Bit._102_ACCOUNT_ID_1).toString());
@@ -405,19 +405,20 @@ public abstract class Super {
 		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
 
 		StructuredData sd = new StructuredData();
-		if(this.nameInterface.toLowerCase().startsWith("generictest") && (procCode.equals("330000") || procCode.equals("334000")
-				|| procCode.equals("333000") || procCode.equals("334100")
-				|| procCode.equals("334200"))){
+		if (this.nameInterface.toLowerCase().startsWith("generictest")
+				&& (procCode.equals("330000") || procCode.equals("334000") || procCode.equals("333000")
+						|| procCode.equals("334100") || procCode.equals("334200"))) {
 			sd.put("CONSUL_TITUL", "TRUE");
-				if(!msg.isFieldSet(Iso8583.Bit._022_POS_ENTRY_MODE)) {
-					sd.put("PROCCESS_FIELD_22", "TRUE");
-					msg.putField(Iso8583.Bit._022_POS_ENTRY_MODE, "021");
-					msg.clearField(64);
-				}				
+			if (!msg.isFieldSet(Iso8583.Bit._022_POS_ENTRY_MODE)) {
+				sd.put("PROCCESS_FIELD_22", "TRUE");
+				msg.putField(Iso8583.Bit._022_POS_ENTRY_MODE, "021");
+				msg.clearField(64);
+			}
 		}
-		
-		if(validateAutra != null && validateAutra.getP125Accion() != null && !validateAutra.getP125Accion().equals("FALSE")) {
-			if(validateAutra.getP125Accion().equals("AGREGAR")) {
+
+		if (validateAutra != null && validateAutra.getP125Accion() != null
+				&& !validateAutra.getP125Accion().equals("FALSE")) {
+			if (validateAutra.getP125Accion().equals("AGREGAR")) {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
 				msg.putField(125, validateAutra.getP125Valor());
 				msg.clearField(128);
@@ -425,29 +426,30 @@ public abstract class Super {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
 				msg.clearField(125);
 				msg.clearField(128);
-				
+
 			} else if (validateAutra.getP125Accion().equals("AMPLIAR")) {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
 				sd.put("AMPLIA125", "TRUE");
-				msg.putField(125, Pack.resize(msg.getField(125) != null ? msg.getField(125) : " "+validateAutra.getP125Valor(), 150, ' ', true));
+				msg.putField(125,
+						Pack.resize(msg.getField(125) != null ? msg.getField(125) : " " + validateAutra.getP125Valor(),
+								150, ' ', true));
 				msg.clearField(128);
 			} else if (validateAutra.getP125Accion().equals("REDUCIR")) {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
 				sd.put("REDUCE125", "TRUE");
-				msg.putField(125, Pack.resize(msg.getField(125) != null ? msg.getField(125) : " "+validateAutra.getP125Valor(), 90, ' ', true));
+				msg.putField(125,
+						Pack.resize(msg.getField(125) != null ? msg.getField(125) : " " + validateAutra.getP125Valor(),
+								90, ' ', true));
 				msg.clearField(128);
 			}
 		}
-			
-			
-		
+
 		if (this.nameInterface.toLowerCase().startsWith("generictestdes2")) {
 			sd.put("PASSTHROUGH", "TRUE");
-			if(msg.isFieldSet(128))
+			if (msg.isFieldSet(128))
 				msg.clearField(128);
 		}
-		sd.put("FIELD_35",  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
-		
+		sd.put("FIELD_35", msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
 
 		String OriginalInput = new String(msg.toMsg(false));
 		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
@@ -455,21 +457,19 @@ public abstract class Super {
 		GenericInterface.getLogger().logLine("Original Input B24 : " + OriginalInput);
 		GenericInterface.getLogger().logLine("Encoded Input B24 : " + encodedString);
 
-		
-		
 		sd.put("B24_Message", encodedString);
 		msgToTM.putStructuredData(sd);
-		if(this.params.isAlternativeKeyTM())
+		if (this.params.isAlternativeKeyTM())
 			msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
 					new ConstructFieldMessage(this.params).constructSwitchKeyAutra(msg));
 		else
 			msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
 					new ConstructFieldMessage(this.params).constructSwitchKey(msg, "ATM"));
-		
 
 	}
 
-	public void constructAutraRevMessage(Base24Ath msg, Iso8583Post msgToTM, ValidateAutra validateAutra) throws XPostilion {
+	public void constructAutraRevMessage(Base24Ath msg, Iso8583Post msgToTM, ValidateAutra validateAutra)
+			throws XPostilion {
 		msgToTM.putMsgType(Iso8583.MsgType._0420_ACQUIRER_REV_ADV);
 		msgToTM.putField(Iso8583.Bit._003_PROCESSING_CODE, this.transformProcessingCodeForAutra(msg));
 
@@ -507,9 +507,9 @@ public abstract class Super {
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
-			
+
 			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-			
+
 //			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
 //			case "008823":
 //			case "008801":
@@ -565,7 +565,7 @@ public abstract class Super {
 			msgToTM.putField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS,
 					msg.getField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS).toString());
 
-		if(validateAutra != null && validateAutra.getP100Valor() != null) {
+		if (validateAutra != null && validateAutra.getP100Valor() != null) {
 			GenericInterface.getLogger().logLine("Entra if 100");
 			msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, validateAutra.getP100Valor());
 		} else {
@@ -576,7 +576,7 @@ public abstract class Super {
 				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "70");
 			else
 				msgToTM.putField(Iso8583.Bit._100_RECEIVING_INST_ID_CODE, "40");
-			
+
 		}
 
 		if (msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1))
@@ -589,11 +589,12 @@ public abstract class Super {
 		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
 		msgToTM.putField(Iso8583Post.Bit._123_POS_DATA_CODE, General.POSDATACODE);
 		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
-		
+
 		StructuredData sd = new StructuredData();
-		
-		if(validateAutra != null && validateAutra.getP125Accion() != null && !validateAutra.getP125Accion().equals("FALSE")) {
-			if(validateAutra.getP125Accion().equals("AGREGAR")) {
+
+		if (validateAutra != null && validateAutra.getP125Accion() != null
+				&& !validateAutra.getP125Accion().equals("FALSE")) {
+			if (validateAutra.getP125Accion().equals("AGREGAR")) {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
 				msg.putField(125, validateAutra.getP125Valor());
 				msg.clearField(128);
@@ -601,23 +602,25 @@ public abstract class Super {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
 				msg.clearField(125);
 				msg.clearField(128);
-				
+
 			} else if (validateAutra.getP125Accion().equals("AMPLIAR")) {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
 				sd.put("AMPLIA125", "TRUE");
-				msg.putField(125, Pack.resize(msg.getField(125) != null ? msg.getField(125) : " "+validateAutra.getP125Valor(), 150, ' ', true));
+				msg.putField(125,
+						Pack.resize(msg.getField(125) != null ? msg.getField(125) : " " + validateAutra.getP125Valor(),
+								150, ' ', true));
 				msg.clearField(128);
 			} else if (validateAutra.getP125Accion().equals("REDUCIR")) {
 				sd.put("PROCCESS_FIELD_125", "TRUE");
 				sd.put("REDUCE125", "TRUE");
-				msg.putField(125, Pack.resize(msg.getField(125) != null ? msg.getField(125) : " "+validateAutra.getP125Valor(), 90, ' ', true));
+				msg.putField(125,
+						Pack.resize(msg.getField(125) != null ? msg.getField(125) : " " + validateAutra.getP125Valor(),
+								90, ' ', true));
 				msg.clearField(128);
 			}
 		}
-		
-		
-		
-		sd.put("FIELD_35",  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+
+		sd.put("FIELD_35", msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
 
 		String OriginalInput = new String(msg.toMsg(false));
 		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
@@ -625,8 +628,6 @@ public abstract class Super {
 		GenericInterface.getLogger().logLine("Original Input B24 : " + OriginalInput);
 		GenericInterface.getLogger().logLine("Encoded Input B24 : " + encodedString);
 
-		
-		
 		sd.put("B24_Message", encodedString);
 		msgToTM.putStructuredData(sd);
 		msgToTM.putPrivField(Iso8583Post.PrivBit._002_SWITCH_KEY,
@@ -728,9 +729,9 @@ public abstract class Super {
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
-			
+
 			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-			
+
 //			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
 //			case "008823":
 //			case "008801":
@@ -754,8 +755,9 @@ public abstract class Super {
 					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._038_AUTH_ID_RSP))
-			msgToTM.putField(Iso8583.Bit._038_AUTH_ID_RSP, esAlfaNumerica(msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString())
-					? msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString()
+			msgToTM.putField(Iso8583.Bit._038_AUTH_ID_RSP,
+					esAlfaNumerica(msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString())
+							? msg.getField(Iso8583.Bit._038_AUTH_ID_RSP).toString()
 							: "000000");
 
 		if (msg.isFieldSet(Iso8583.Bit._039_RSP_CODE))
@@ -811,10 +813,10 @@ public abstract class Super {
 //		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
 //		msgToTM.putField(Iso8583Post.Bit._123_POS_DATA_CODE, General.POSDATACODE);
 //		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
-		
+
 		StructuredData sd = msgToTM.getStructuredData();
-		
-		sd.put("FIELD_35",  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+
+		sd.put("FIELD_35", msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
 		String OriginalInput;
 		try {
 			OriginalInput = new String(msg.toMsg(false), "US-ASCII");
@@ -837,7 +839,6 @@ public abstract class Super {
 		GenericInterface.getLogger().logLine("Original Response B24 : " + OriginalInput);
 		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
 
-		
 		sd.put("B24_MessageRsp", encodedString);
 		msgToTM.putStructuredData(sd);
 
@@ -881,9 +882,9 @@ public abstract class Super {
 					msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE).toString());
 
 		if (msg.isFieldSet(Iso8583.Bit._035_TRACK_2_DATA)) {
-			
+
 			msgToTM.putField(Iso8583.Bit._035_TRACK_2_DATA, Constants.General.DEFAULT_TRACK2_MASIVA);
-			
+
 //			switch (msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 6)) {
 //			case "008823":
 //			case "008801":
@@ -956,14 +957,13 @@ public abstract class Super {
 //		msgToTM.putField(Iso8583.Bit._026_POS_PIN_CAPTURE_CODE, PosPinCaptureCode.FOUR);
 //		msgToTM.putField(Iso8583Post.Bit._123_POS_DATA_CODE, General.POSDATACODE);
 //		msgToTM.putField(Iso8583.Bit._098_PAYEE, "0054150070650000000000000");
-		
+
 		StructuredData sd = msgToTM.getStructuredData();
-		sd.put("FIELD_35",  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
+		sd.put("FIELD_35", msg.getField(Iso8583.Bit._035_TRACK_2_DATA).toString());
 
 		String OriginalInput = new String(msg.toMsg(false));
 		String encodedString = Base64.getEncoder().encodeToString(OriginalInput.getBytes());
 
-		
 		sd.put("B24_MessageRsp", encodedString);
 		msgToTM.putStructuredData(sd);
 
@@ -1133,7 +1133,7 @@ public abstract class Super {
 				"LOG", this.nameInterface));
 		this.udpClientV2.sendData(Client.getMsgKeyValue(
 				p37, "accountNumber:" + accountNumber + " typeAccountInput:" + typeAccountInput
-				+ " encriptedaccountNumber:" + securityManager.encrypt(accountNumber),
+						+ " encriptedaccountNumber:" + securityManager.encrypt(accountNumber),
 				"LOG", this.nameInterface));
 
 		CallableStatement stmt = null;
@@ -1164,7 +1164,8 @@ public abstract class Super {
 
 			if (rs.getString(1) != null) {
 				this.udpClient.sendData(Client.getMsgKeyValue(p37, "Encontro datos cuenta", "LOG", this.nameInterface));
-				this.udpClientV2.sendData(Client.getMsgKeyValue(p37, "Encontro datos cuenta", "LOG", this.nameInterface));
+				this.udpClientV2
+						.sendData(Client.getMsgKeyValue(p37, "Encontro datos cuenta", "LOG", this.nameInterface));
 				String customer_id = rs.getString(1);// customer_id
 				String extended_fields = rs.getString(2) == null ? "" : rs.getString(2);// extended_fields
 				String pan_encrypted = rs.getString(3) == null ? "" : rs.getString(3);// pan_encrypted
@@ -1181,7 +1182,7 @@ public abstract class Super {
 				this.udpClient.sendData(Client.getMsgKeyValue(p37,
 						"pan:" + securityManager.decryptToString(pan_encrypted), "LOG", this.nameInterface));
 				this.udpClientV2
-				.sendData(Client.getMsgKeyValue(p37, "customer_id:" + customer_id, "LOG", this.nameInterface));
+						.sendData(Client.getMsgKeyValue(p37, "customer_id:" + customer_id, "LOG", this.nameInterface));
 				this.udpClientV2.sendData(
 						Client.getMsgKeyValue(p37, "extended_fields:" + extended_fields, "LOG", this.nameInterface));
 				this.udpClientV2.sendData(
@@ -1202,7 +1203,7 @@ public abstract class Super {
 				this.udpClient
 						.sendData(Client.getMsgKeyValue(p37, "Puso datos en structure", "LOG", this.nameInterface));
 				this.udpClientV2
-				.sendData(Client.getMsgKeyValue(p37, "Puso datos en structure", "LOG", this.nameInterface));
+						.sendData(Client.getMsgKeyValue(p37, "Puso datos en structure", "LOG", this.nameInterface));
 
 				JdbcManager.commit(con, stmt, rs);
 			} else {
@@ -1307,7 +1308,7 @@ public abstract class Super {
 						"validacion CNBCliente. primer SP customerID " + customerId + " ceuntaDefecto: "
 								+ defaultAccountType + " name: " + customerName + " issure: " + issuerNr
 								+ " extendedfield: " + extendedField + " seq_nr: " + sequenceNr,
-								"LOG", this.nameInterface));
+						"LOG", this.nameInterface));
 				GenericInterface.getLogger()
 						.logLine("validacion CNBCliente. primer SP customerID " + customerId + " ceuntaDefecto: "
 								+ defaultAccountType + " name: " + customerName + " issure: " + issuerNr
@@ -1317,8 +1318,9 @@ public abstract class Super {
 
 					this.udpClient.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
 							+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
-					this.udpClientV2.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
-							+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
+					this.udpClientV2
+							.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
+									+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
 
 					GenericInterface.getLogger().logLine("Esto entra al segundo sp: issuerNr:" + issuerNr
 							+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr);
@@ -1349,7 +1351,7 @@ public abstract class Super {
 						this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
 								"cuenta que viene 102: con subString : " + accountInput + " cuentas que tra el sp2: "
 										+ Utils.getClearAccount(accountId) + " tipo de cuenta sp " + accountType,
-										"LOG", this.nameInterface));
+								"LOG", this.nameInterface));
 
 						GenericInterface.getLogger()
 								.logLine("cuenta que viene 102: con subString : " + accountInput
@@ -1420,10 +1422,10 @@ public abstract class Super {
 									"LOG", this.nameInterface));
 							this.udpClientV2.sendData(Client.getMsgKeyValue(p37,
 									"final del metodo accountsClienteCBN: cuando mira p35 " + customerId
-									+ " ceuntaDefecto: " + defaultAccountType + " name: " + customerName
-									+ " issure: " + issuerNr + " extendedfield: " + extendedField + " seq_nr: "
-									+ sequenceNr + " accountTypeClient: " + accountTypeClient
-									+ " accountNumber: " + accountNumber + " processingCode :" + processingCode,
+											+ " ceuntaDefecto: " + defaultAccountType + " name: " + customerName
+											+ " issure: " + issuerNr + " extendedfield: " + extendedField + " seq_nr: "
+											+ sequenceNr + " accountTypeClient: " + accountTypeClient
+											+ " accountNumber: " + accountNumber + " processingCode :" + processingCode,
 									"LOG", this.nameInterface));
 
 						} else {
@@ -1507,14 +1509,15 @@ public abstract class Super {
 						"validacion CNBCliente. primer SP customerID " + customerId + " ceuntaDefecto: "
 								+ defaultAccountType + " name: " + customerName + " issure: " + issuerNr
 								+ " extendedfield: " + extendedField + " seq_nr: " + sequenceNr,
-								"LOG", this.nameInterface));
+						"LOG", this.nameInterface));
 
 				if (!(issuerNr == 0)) {
 
 					this.udpClient.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
 							+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
-					this.udpClientV2.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
-							+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
+					this.udpClientV2
+							.sendData(Client.getMsgKeyValue(p37, "Esto entra al segundo sp: issuerNr:" + issuerNr
+									+ " hashPanCNB: " + panHash + " seqNr: " + sequenceNr, "LOG", this.nameInterface));
 					cst = con.prepareCall(StoreProcedures.CM_LOAD_CARD_ACCOUNTS);
 					cst.setInt(1, issuerNr);
 					cst.setString(2, panHash);
@@ -1541,7 +1544,7 @@ public abstract class Super {
 								"LOG", this.nameInterface));
 						this.udpClientV2.sendData(Client.getMsgKeyValue(
 								p37, "cuenta que viene 102: con subString : " + accountInput
-								+ " cuentas que tra el sp2: " + Utils.getClearAccount(accountId),
+										+ " cuentas que tra el sp2: " + Utils.getClearAccount(accountId),
 								"LOG", this.nameInterface));
 
 						if (accountType.equals(typeAccountInput)) {
@@ -1605,7 +1608,7 @@ public abstract class Super {
 									+ " extendedfield: " + extendedField + " seq_nr: " + sequenceNr
 									+ " accountTypeClient: " + accountTypeClient + " accountNumber: " + accountNumber
 									+ " processingCode :" + processingCode,
-									"LOG", this.nameInterface));
+							"LOG", this.nameInterface));
 
 				} else {
 					objectValidations.modifyAttributes(false, " NO EXITE TARJETA CLIENTE", "8014",
@@ -1724,9 +1727,9 @@ public abstract class Super {
 			break;
 		}
 	}
-	
+
 	public boolean esAlfaNumerica(String cadena) {
-		  return cadena.matches("[a-zA-Z0-9]+");
+		return cadena.matches("[a-zA-Z0-9]+");
 	}
 
 	public abstract void validations(Base24Ath msg, Super objectValidations);

@@ -9,7 +9,7 @@ import java.util.Date;
 
 /**
  * Esta clase permite hacer registro de mensajes en un archivo de texto, para
- * hacer trazabilidad dentro del código
+ * hacer trazabilidad dentro del cï¿½digo
  * 
  * @author Javier Flores
  *
@@ -34,15 +34,14 @@ public class Logger {
 			bf = new BufferedWriter(new FileWriter(filePath, true));
 			bf.append(sb.toString());
 		} catch (IOException e) {
-			EventReporter.reportGeneralEvent(nameInterface, Logger.class.getName(), e, "N/D",
-					"logLine", udpClient);
+			EventReporter.reportGeneralEvent(nameInterface, Logger.class.getName(), e, "N/D", "logLine", udpClient);
 		} finally {
 			if (bf != null)
 				try {
 					bf.close();
 				} catch (IOException e) {
-					EventReporter.reportGeneralEvent(nameInterface, Logger.class.getName(), e, "N/D",
-							"logLine", udpClient);					
+					EventReporter.reportGeneralEvent(nameInterface, Logger.class.getName(), e, "N/D", "logLine",
+							udpClient);
 				}
 		}
 

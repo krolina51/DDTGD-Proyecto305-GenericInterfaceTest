@@ -235,8 +235,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 		this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
 				"getToAccount " + msg.getProcessingCode().getToAccount(), "LOG", this.nameInterface));
 
-		sbField.append(Constants.General.NETWORKID_ATH).append(Constants.General.NETWORKNAME_ATH)
-				.append("0000")
+		sbField.append(Constants.General.NETWORKID_ATH).append(Constants.General.NETWORKNAME_ATH).append("0000")
 				.append(Constants.General.CARD_ISSUER_AUTH);
 
 		this.udpClient.sendData(Client.getMsgKeyValue(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR),
@@ -692,7 +691,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return switchKey.toString();
 	}
-	
+
 	/**************************************************************************************
 	 * Contruye el campo privado SwitchKey (Bit 2) hacia el TM.
 	 * 
@@ -708,9 +707,10 @@ public class ConstructFieldMessage extends MessageTranslator {
 					.append(msg.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR))
 					.append(msg.getField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME))
 					.append(msg.isFieldSet(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE)
-							? msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE) : "10000000001")
+							? msg.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE)
+							: "10000000001")
 					.append("0");
-					
+
 		} catch (Exception e) {
 			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
 					msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "constructSwitchKey", this.udpClient);
@@ -842,7 +842,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return null;
 	}
-	
+
 	/**************************************************************************************
 	 * Build and return field 22 Default.
 	 * 
@@ -858,7 +858,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return null;
 	}
-	
+
 	/**************************************************************************************
 	 * Build and return field 22 Default.
 	 * 
@@ -874,7 +874,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return null;
 	}
-	
+
 	/**************************************************************************************
 	 * Build and return field 22 Default.
 	 * 
@@ -890,7 +890,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return null;
 	}
-	
+
 	/**************************************************************************************
 	 * Build and return field 22 Default.
 	 * 
@@ -906,7 +906,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return null;
 	}
-	
+
 	/**************************************************************************************
 	 * Build and return field 22 Default.
 	 * 
@@ -917,15 +917,15 @@ public class ConstructFieldMessage extends MessageTranslator {
 		Iso8583Post msgFromTm = (Iso8583Post) object;
 		String field54 = "000000001000000000000000000000000000001000000";
 		try {
-			if(msgFromTm.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+			if (msgFromTm.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
 					&& msgFromTm.getStructuredData().get("ANULACION") != null
 					&& msgFromTm.getStructuredData().get("ANULACION").equals("TRUE")
 					&& msgFromTm.isFieldSet(Iso8583Post.Bit._059_ECHO_DATA)) {
 				String[] dataP59 = msgFromTm.getField(Iso8583Post.Bit._059_ECHO_DATA).split("\\|");
-				if(dataP59.length>=2)
-					field54 = "000".concat(dataP59[1]).concat("000000000000000000").concat(dataP59[1]) ;
+				if (dataP59.length >= 2)
+					field54 = "000".concat(dataP59[1]).concat("000000000000000000").concat(dataP59[1]);
 			}
-			
+
 			return field54;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1415,7 +1415,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 			} else {
 
 				Base24Ath msgOriginalB24 = (Base24Ath) this.sourceTranToTmHashtableB24
-						.get(msgFromTm.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR) + msgFromTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+						.get(msgFromTm.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR)
+								+ msgFromTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 				sbFields.append(msgOriginalB24.getField(Iso8583.Bit._048_ADDITIONAL_DATA));
 				// sbFields.append(construct0210ErrorFields(object, num));
 			}
@@ -2266,7 +2267,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 				Iso8583Post msg = (Iso8583Post) object;
 
 				Base24Ath msgOriginal = (Base24Ath) this.sourceTranToTmHashtableB24
-						.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+						.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+								+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 				processingCode = new ProcessingCode("89".concat(msgOriginal.getProcessingCode().getFromAccount())
 						.concat(msg.getProcessingCode().getToAccount())).toString();
 			}
@@ -2277,7 +2279,7 @@ public class ConstructFieldMessage extends MessageTranslator {
 		}
 		return processingCode;
 	}
-	
+
 	public String constructField3QueryOwnerShip(Object object, Integer num) throws XPostilion {
 		String processingCode = null;
 		try {
@@ -2298,16 +2300,18 @@ public class ConstructFieldMessage extends MessageTranslator {
 			} else if (object instanceof Iso8583Post) {
 				Iso8583Post msg = (Iso8583Post) object;
 
-				if(msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA) && msg.getStructuredData().get("B24_Field_3") != null) {
+				if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+						&& msg.getStructuredData().get("B24_Field_3") != null) {
 					processingCode = msg.getStructuredData().get("B24_Field_3");
-				}else {
+				} else {
 					Base24Ath msgOriginal = (Base24Ath) this.sourceTranToTmHashtableB24
-							.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+							.get(msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)
+									+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 					processingCode = msgOriginal.getProcessingCode().toString();
 //					processingCode = new ProcessingCode("89".concat(msgOriginal.getProcessingCode().getFromAccount())
 //							.concat(msg.getProcessingCode().getToAccount())).toString();
 				}
-				
+
 			}
 		} catch (XPostilion e) {
 			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
@@ -2885,7 +2889,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 		String valueField = null;
 		Iso8583Post msg = (Iso8583Post) obj;
 		Base24Ath msgOriginalB24 = (Base24Ath) this.sourceTranToTmHashtableB24
-				.get(msg.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+				.get(msg.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR)
+						+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 		try {
 			if (num == Iso8583Post.Bit._017_DATE_CAPTURE) {
 				valueField = msgOriginalB24.getField(Iso8583Post.Bit._017_DATE_CAPTURE);
@@ -3007,7 +3012,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 				newField48.setCharAt(newField48.length() - 2, '0');
 			} else {
 				Base24Ath msgOriginalB24 = (Base24Ath) this.sourceTranToTmHashtableB24
-						.get(msg.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+						.get(msg.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR)
+								+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 				newField48.append(msgOriginalB24.getField(Iso8583.Bit._048_ADDITIONAL_DATA));
 			}
 			newField48.setCharAt(newField48.length() - 2, '0');
@@ -3017,7 +3023,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 					this.udpClient);
 			try {
 				Base24Ath msgOriginalB24 = (Base24Ath) this.sourceTranToTmHashtable
-						.get(msg.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR)+msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+						.get(msg.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR)
+								+ msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 				newField48.append(msgOriginalB24.getField(Iso8583.Bit._048_ADDITIONAL_DATA));
 				newField48.setCharAt(newField48.length() - 2, '0');
 			} catch (XPostilion e1) {
@@ -3182,7 +3189,6 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 		BusinessCalendar objectBusinessCalendar = null;
 		String p37 = null;
-		
 
 		try {
 
@@ -3193,17 +3199,19 @@ public class ConstructFieldMessage extends MessageTranslator {
 			String dateCapture = null;
 			if (object instanceof Base24Ath) {
 				Base24Ath msg = (Base24Ath) object;
-				dateCapture = msg.isFieldSet(Iso8583.Bit._017_DATE_CAPTURE) ? msg.getField(Iso8583.Bit._017_DATE_CAPTURE) 
-						: msg.isFieldSet(Iso8583.Bit._015_DATE_SETTLE) ? msg.getField(Iso8583.Bit._015_DATE_SETTLE) : new DateTime().get(FormatDate.MMDD);
+				dateCapture = msg.isFieldSet(Iso8583.Bit._017_DATE_CAPTURE)
+						? msg.getField(Iso8583.Bit._017_DATE_CAPTURE)
+						: msg.isFieldSet(Iso8583.Bit._015_DATE_SETTLE) ? msg.getField(Iso8583.Bit._015_DATE_SETTLE)
+								: new DateTime().get(FormatDate.MMDD);
 				p37 = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			} else if (object instanceof Iso8583Post) {
 				Iso8583Post msg = (Iso8583Post) object;
-				dateCapture = msg.getStructuredData().get("B24_Field_17") != null ? msg.getStructuredData().get("B24_Field_17")
-						: msg.isFieldSet(Iso8583.Bit._015_DATE_SETTLE) ? msg.getField(Iso8583.Bit._015_DATE_SETTLE) : new DateTime().get(FormatDate.MMDD);
+				dateCapture = msg.getStructuredData().get("B24_Field_17") != null
+						? msg.getStructuredData().get("B24_Field_17")
+						: msg.isFieldSet(Iso8583.Bit._015_DATE_SETTLE) ? msg.getField(Iso8583.Bit._015_DATE_SETTLE)
+								: new DateTime().get(FormatDate.MMDD);
 				p37 = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			}
-
-			
 
 			GenericInterface.getLogger().logLine(dateCapture + " num campo " + num);
 
@@ -3225,9 +3233,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 					: new SimpleDateFormat("MMdd").format(objectBusinessCalendar.getNextBusinessDate());
 
 		} catch (Exception e) {
-			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e,
-					p37, "compensationDateValidationP17ToP15",
-					this.udpClient);
+			EventReporter.reportGeneralEvent(this.nameInterface, ConstructFieldMessage.class.getName(), e, p37,
+					"compensationDateValidationP17ToP15", this.udpClient);
 		}
 
 		return new SimpleDateFormat("MMdd").format(objectBusinessCalendar.getCurrentBusinessDate());
@@ -3547,14 +3554,15 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 	public String constructField90AutraRevResponse(Iso8583Post msg210fromTM, Iso8583Post msg) throws XPostilion {
 		StringBuilder sb = new StringBuilder();
-		if(this.params.isAlternativeKeyTM()) {
+		if (this.params.isAlternativeKeyTM()) {
 			sb.append(MsgType.toString(msg.getMsgType()))
-			.append(msg210fromTM.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR))
-			.append(msg210fromTM.getField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME))
-			.append(msg210fromTM.isFieldSet(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE)
-					? msg210fromTM.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE) : "10000000001")
-			.append("00000000000");
-		}else {
+					.append(msg210fromTM.getField(Iso8583Post.Bit._011_SYSTEMS_TRACE_AUDIT_NR))
+					.append(msg210fromTM.getField(Iso8583.Bit._007_TRANSMISSION_DATE_TIME))
+					.append(msg210fromTM.isFieldSet(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE)
+							? msg210fromTM.getField(Iso8583.Bit._032_ACQUIRING_INST_ID_CODE)
+							: "10000000001")
+					.append("00000000000");
+		} else {
 			sb.append(msg.getField(Iso8583.Bit._090_ORIGINAL_DATA_ELEMENTS).substring(0, 4));
 			sb.append((msg210fromTM.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR)));
 			sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
@@ -3562,8 +3570,6 @@ public class ConstructFieldMessage extends MessageTranslator {
 			sb.append((msg210fromTM.getField(Iso8583.Bit._013_DATE_LOCAL)));
 			sb.append("0000000000");
 		}
-		
-		
 
 		return sb.toString();
 	}
@@ -3608,7 +3614,8 @@ public class ConstructFieldMessage extends MessageTranslator {
 			typIdeAccountHolder = msg.getStructuredData().get("TIT_TYPE");
 		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA) && msg.getStructuredData().get("TIT_IDEN") != null)
 			idAccountHolder = msg.getStructuredData().get("TIT_IDEN");
-		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA) && msg.getStructuredData().get("TIT_NOMBRE") != null)
+		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+				&& msg.getStructuredData().get("TIT_NOMBRE") != null)
 			nameAccountHolder = msg.getStructuredData().get("TIT_NOMBRE");
 
 		StringBuilder command = new StringBuilder(Pack.resize(typIdeAccountHolder, 1, General.SPACE, false))
@@ -3617,9 +3624,9 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 		return command.toString();
 	}
-	
+
 	/**************************************************************************************
-	 *Construye campos de respuesta desde el structured data o mensaje original
+	 * Construye campos de respuesta desde el structured data o mensaje original
 	 * 
 	 * @param object mensaje que va hacia la interchange.
 	 * @return String con el campo 48 obtenido del 0210
@@ -3635,12 +3642,14 @@ public class ConstructFieldMessage extends MessageTranslator {
 
 		} else if (object instanceof Iso8583Post) {
 			Iso8583Post msgFromTm = (Iso8583Post) object;
-			if (msgFromTm.isPrivFieldSet(22) && msgFromTm.getStructuredData().get("B24_Field_" + num.toString()) != null) {
+			if (msgFromTm.isPrivFieldSet(22)
+					&& msgFromTm.getStructuredData().get("B24_Field_" + num.toString()) != null) {
 				field = msgFromTm.getStructuredData().get("B24_Field_" + num.toString());
 			} else {
 
 				Base24Ath msgOriginalB24 = (Base24Ath) this.sourceTranToTmHashtableB24
-						.get(msgFromTm.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR) + msgFromTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
+						.get(msgFromTm.getField(Iso8583Post.Bit._037_RETRIEVAL_REF_NR)
+								+ msgFromTm.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR));
 				if (msgOriginalB24.isFieldSet(num))
 					field = msgOriginalB24.getField(num);
 			}

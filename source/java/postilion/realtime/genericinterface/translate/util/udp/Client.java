@@ -63,7 +63,7 @@ public class Client {
 			}
 		}
 	}
-	
+
 	public Client(String ipAddress, String port) {
 
 		if (!ipAddress.equals("0") && !port.equals("0")) {
@@ -78,10 +78,9 @@ public class Client {
 					this.port = Integer.valueOf(port);
 				else
 					throw new Exception("Port parameter for server UDP, is not a Port valid");
-				
+
 			} catch (Exception e) {
-				EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
-						"Unknown", "Client", null);
+				EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e, "Unknown", "Client", null);
 			}
 		}
 	}
@@ -114,9 +113,9 @@ public class Client {
 			}
 		}
 	}
-	
-	public void close(){
-		if(this.socket != null)
+
+	public void close() {
+		if (this.socket != null)
 			this.socket.close();
 		this.socket = null;
 	}
@@ -190,7 +189,7 @@ public class Client {
 		} catch (IOException e) {
 			GenericInterface.getLogger()
 					.logLine("Exception in Method:  sendData: " + Utils.getStringMessageException(e));
-		} 
+		}
 	}
 
 	/**
@@ -247,8 +246,7 @@ public class Client {
 				GenericInterface.getLogger().logLine("Msg response: " + msgResponse);
 			}
 		} catch (XPostilion e) {
-			EventReporter.reportGeneralEvent(interchangeName, Client.class.getName(), e,
-					"N/D", "sendMsg", null);
+			EventReporter.reportGeneralEvent(interchangeName, Client.class.getName(), e, "N/D", "sendMsg", null);
 			GenericInterface.getLogger()
 					.logLine("Exception in Method:  sendMsg: " + Utils.getStringMessageException(e));
 		} catch (IllegalArgumentException e) {
@@ -265,7 +263,6 @@ public class Client {
 		return msgResponse;
 	}
 
-	
 	static final String IP_REGEX = "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
 
 	public static byte[] getMsgKeyValue(String p37, String value, String type, String nameInterface) {
@@ -320,7 +317,7 @@ public class Client {
 		String msg = llKey + lKey + key + llValue + lValue + value;
 		return (Base64.getEncoder().encodeToString(msg.getBytes())).getBytes();
 	}
-	
+
 	/**
 	 * Open a socket to send data over UDP protocol
 	 * 
@@ -332,10 +329,10 @@ public class Client {
 		String dataResponse = "";
 
 		try {
-			
-			GenericInterface.getLogger().logLine("tc: " + msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(8,24));
-			String tc =  msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(8,24);
-			byte[] data = ("TX_TITULARIDAD_"+tc).getBytes();
+
+			GenericInterface.getLogger().logLine("tc: " + msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(8, 24));
+			String tc = msg.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(8, 24);
+			byte[] data = ("TX_TITULARIDAD_" + tc).getBytes();
 
 			try {
 				DatagramSocket socket = new DatagramSocket();
@@ -347,8 +344,7 @@ public class Client {
 				GenericInterface.getLogger().logLine("port: " + port);
 //				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
 //						50000 + Integer.parseInt(p11.substring(p11.length() - 1)));
-				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
-						port);
+				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress, port);
 				GenericInterface.getLogger().logLine("request getSocketAddress: " + request.getSocketAddress());
 				GenericInterface.getLogger().logLine("request getAddress: " + request.getAddress());
 				GenericInterface.getLogger().logLine("Send request: " + request.getData());
@@ -365,21 +361,19 @@ public class Client {
 			} catch (IOException e) {
 				EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
 						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "sendMsg", null);
-			} 
-			
+			}
+
 		} catch (XPostilion e) {
-			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
-					"N/A", "sendMsg", null);
+			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e, "N/A", "sendMsg", null);
 			dataResponse = "ERROR";
 		} catch (IllegalArgumentException e) {
 
-			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
-					"N/A", "sendMsg", null);
+			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e, "N/A", "sendMsg", null);
 			dataResponse = "ERROR";
 		}
 		return dataResponse;
 	}
-	
+
 	/**
 	 * Open a socket to send data over UDP protocol
 	 * 
@@ -391,9 +385,11 @@ public class Client {
 		String dataResponse = "";
 
 		try {
-			
-			GenericInterface.getLogger().logLine("103: " + msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length()-16));
-			byte[] data = msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length()-16).getBytes();
+
+			GenericInterface.getLogger().logLine("103: " + msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2)
+					.substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length() - 16));
+			byte[] data = msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2)
+					.substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length() - 16).getBytes();
 
 			try {
 				DatagramSocket socket = new DatagramSocket();
@@ -405,8 +401,7 @@ public class Client {
 				GenericInterface.getLogger().logLine("port: " + port);
 //				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
 //						50000 + Integer.parseInt(p11.substring(p11.length() - 1)));
-				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress,
-						port);
+				DatagramPacket request = new DatagramPacket(data, data.length, ipAddress, port);
 				GenericInterface.getLogger().logLine("request getSocketAddress: " + request.getSocketAddress());
 				GenericInterface.getLogger().logLine("request getAddress: " + request.getAddress());
 				GenericInterface.getLogger().logLine("Send request: " + request.getData());
@@ -423,16 +418,14 @@ public class Client {
 			} catch (IOException e) {
 				EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
 						msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR), "sendMsg", null);
-			} 
-			
+			}
+
 		} catch (XPostilion e) {
-			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
-					"N/A", "sendMsg", null);
+			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e, "N/A", "sendMsg", null);
 			dataResponse = "ERROR";
 		} catch (IllegalArgumentException e) {
 
-			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e,
-					"N/A", "sendMsg", null);
+			EventReporter.reportGeneralEvent("Unknown", Client.class.getName(), e, "N/A", "sendMsg", null);
 			dataResponse = "ERROR";
 		}
 		return dataResponse;
