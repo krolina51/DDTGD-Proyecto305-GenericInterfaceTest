@@ -930,6 +930,14 @@ public class GenericInterface extends AInterchangeDriver8583 {
 		putRecordIntoSourceToTmHashtable(
 				msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR) + msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR),
 				msg);
+		
+		//DELAY POR TX
+		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+				&& msg.getStructuredData().get("forzar_delay") != null
+				&& msg.getStructuredData().get("forzar_delay").equals("true")) {
+			Thread.sleep(6000);
+		}
+		//DELAY GENERAL
 		//Thread.sleep(6000);
 		Action action = new Action();
 		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
@@ -950,11 +958,30 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			msgDecoded.fromMsg(decodedString);
 			action.putMsgToRemote(msgDecoded);
 		} else {
-			msg.clearField(28);
-			msg.clearField(30);
-			MessageTranslator translator = new MessageTranslator(params);
-			Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
-			action.putMsgToRemote(msgToRemote);
+			
+			if(msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
+					&& msg.getStructuredData().get("SANITY_ERROR") != null) {
+				msg.putMsgType(Iso8583Post.MsgType._0210_TRAN_REQ_RSP);
+				StructuredData sd = msg.getStructuredData();
+				switch (msg.getStructuredData().get("SANITY_ERROR")) {
+				case "ERROR TRANSLATE PIN":
+					sd.put("B24_Field_63", "2064LLAVES DESINCRONIZADAS");
+					msg.putField(Iso8583.Bit._039_RSP_CODE, "66");
+					break;
+
+				default:
+					break;
+				}
+				action.putMsgToTranmgr(msg);
+			} else {
+				msg.clearField(28);
+				msg.clearField(30);
+				MessageTranslator translator = new MessageTranslator(params);
+				Base24Ath msgToRemote = translator.constructBase24Request((Iso8583Post) msg);
+				action.putMsgToRemote(msgToRemote);
+			}
+			
+			
 		}
 		return action;
 	}
