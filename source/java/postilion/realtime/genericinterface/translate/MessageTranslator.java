@@ -1142,16 +1142,13 @@ public class MessageTranslator {
 									.substring(msgFromRemote.getField(Base24Ath.Bit.DATA_ADDTIONAL).length() - 19));
 					objectValidations.putInforCollectedForStructData("Tarjeta_Amparada",
 							msgFromRemote.getTrack2Data().getPan());
-					sd.put("Codigo_Transaccion_Producto",
-							objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE").equals("10")
+					sd.put("Codigo_Transaccion_Producto","P_CODE".subSequence(2, 4).equals("10")
 									? "05"
 									: "04");
-					sd.put("Tipo_de_Cuenta_Debitada",
-							objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE").equals("10")
+					sd.put("Tipo_de_Cuenta_Debitada","P_CODE".subSequence(2, 4).equals("10")
 									? "AHO"
 									: "CTE");
-					sd.put("Identificacion_Canal",
-							objectValidations.getInforCollectedForStructData().get("CLIENT_ACCOUNT_TYPE").equals("10")
+					sd.put("Identificacion_Canal","P_CODE".subSequence(2, 4).equals("10")
 									? "C3"
 									: "C2");
 
