@@ -1128,7 +1128,8 @@ public class MessageTranslator {
 									+ "_CREDITO");
 					objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_CBN_PSP_S", "CREDITO");
 					objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "05");
-					objectValidations.putInforCollectedForStructData("DEBIT_CARD_CLASS", "15CLASE12NB1");
+					objectValidations.putInforCollectedForStructData("DEBIT_CARD_CLASS", "15CLASE12001");
+					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
 					objectValidations.putInforCollectedForStructData("DEBIT_CARD_NR_PSP", "0066010000000000");
 					objectValidations.putInforCollectedForStructData("Vencimiento", "0000");
 					objectValidations.putInforCollectedForStructData("Ind_4xmil", "0");
@@ -1137,21 +1138,12 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("Indicador_Tipo_Servicio_REV", "0");
 					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
 							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
-					objectValidations.putInforCollectedForStructData("Numero_Factura",
-							msgFromRemote.getField(Base24Ath.Bit.DATA_ADDTIONAL)
-									.substring(msgFromRemote.getField(Base24Ath.Bit.DATA_ADDTIONAL).length() - 19));
 					objectValidations.putInforCollectedForStructData("Tarjeta_Amparada",
 							msgFromRemote.getTrack2Data().getPan());
-					sd.put("Codigo_Transaccion_Producto","P_CODE".subSequence(2, 4).equals("10")
-									? "05"
-									: "04");
-					sd.put("Tipo_de_Cuenta_Debitada","P_CODE".subSequence(2, 4).equals("10")
-									? "AHO"
-									: "CTE");
-					sd.put("Identificacion_Canal","P_CODE".subSequence(2, 4).equals("10")
-									? "C3"
-									: "C2");
+					sd.put("Codigo_Transaccion_Producto", "P_CODE".substring(2, 4).equals("10") ? "05" : "04");
+					sd.put("Tipo_de_Cuenta_Debitada", "P_CODE".substring(2, 4).equals("10") ? "AHO" : "CTE");
 
+					objectValidations.putInforCollectedForStructData("Codigo_Establecimiento", "0000      ");
 					objectValidations.putInforCollectedForStructData("Identificacion_Canal_REV", "AT");
 					objectValidations.putInforCollectedForStructData("PRIM_COV_NR_REV", "0000"); // CODIGO SERVICIO
 					objectValidations.putInforCollectedForStructData("FI__Debito", "0001");
@@ -1160,6 +1152,11 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("service_restriction_code", "000");
 					objectValidations.putInforCollectedForStructData("Canal", "01");
 					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
+					objectValidations.putInforCollectedForStructData("Codigo_FI_Origen", "1005");
+					objectValidations.putInforCollectedForStructData("Numero_de_Terminal", "0000");
+					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", "0000000000000");
+					objectValidations.putInforCollectedForStructData("PAN_TARJETA", "0088020000000000001");
+					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
 					objectValidations.putInforCollectedForStructData("Ent_Adq",
 							msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0, 4));
 
@@ -1256,13 +1253,15 @@ public class MessageTranslator {
 						objectValidations.putInforCollectedForStructData("TAG_D139", "T");
 						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IT");
 					}
-					Extract.tagTTypePOblig(msgFromRemote, objectValidations);
+					Extract.tagTTypePObligInternet(msgFromRemote, objectValidations);
 					objectValidations.putInforCollectedForStructData("Identificacion_Canal_REV", "AT");
 					objectValidations.putInforCollectedForStructData("FI_CREDITO_REV", "0000");
 					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_NR_REV", "000000000000000000");
 					objectValidations.putInforCollectedForStructData("FI_DEBITO_REV", "0000");
 					objectValidations.putInforCollectedForStructData("SEC_ACCOUNT_TYPE_REV", "   ");
 					objectValidations.putInforCollectedForStructData("PAN_Tarjeta_REV", "0099010000000000   ");
+
+					objectValidations.putInforCollectedForStructData("Codigo_Establecimiento", "0000      ");
 
 					break;
 
