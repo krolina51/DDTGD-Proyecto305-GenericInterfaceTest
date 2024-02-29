@@ -921,6 +921,15 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("Codigo_Establecimiento", "          ");
 					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque", "1");
 					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque_REV", "0");
+					if (channel.equals(Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_CHEQUE)) {
+						objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque", "2");
+						objectValidations.putInforCollectedForStructData("Mod_Credito", "8");
+					} else if (channel.equals(Constants.Channels.PCODE_PAGO_OBLIGACIONES_OTROS_CHEQUE)) {
+						objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque", "2");
+						objectValidations.putInforCollectedForStructData("Mod_Credito", "9");
+					}
+
+					objectValidations.putInforCollectedForStructData("Numero_Cheques", "01");
 
 					break;
 
