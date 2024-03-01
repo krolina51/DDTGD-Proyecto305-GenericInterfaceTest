@@ -921,6 +921,8 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("Codigo_Establecimiento", "          ");
 					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque", "1");
 					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque_REV", "0");
+					objectValidations.putInforCollectedForStructData("TIPO_TX", "EFECTIVO");
+					objectValidations.putInforCollectedForStructData("TAG_924A", msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0,4));
 					if (channel.equals(Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_CHEQUE)) {
 						objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque", "2");
 						objectValidations.putInforCollectedForStructData("Mod_Credito", "8");
