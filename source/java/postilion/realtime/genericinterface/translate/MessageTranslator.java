@@ -163,8 +163,18 @@ public class MessageTranslator {
 				break;
 			case "0420":
 			case "0421":
-				deleteFieldsRequest = GenericInterface.fillMaps.getDeleteFieldsRevRequest();
-				createFieldsRequest = GenericInterface.fillMaps.getCreateFieldsRevRequest();
+				
+				switch (msg.getPrivField(Iso8583Post.PrivBit._006_AUTH_PROFILE)) {
+				case "30":
+					deleteFieldsRequest = GenericInterface.fillMaps.getDeleteFieldsRevAuto();
+					createFieldsRequest = GenericInterface.fillMaps.getCreateFieldsRevAuto();
+					break;
+				default:
+					deleteFieldsRequest = GenericInterface.fillMaps.getDeleteFieldsRevRequest();
+					createFieldsRequest = GenericInterface.fillMaps.getCreateFieldsRevRequest();
+					break;
+				}
+				
 				break;
 
 			default:
@@ -174,6 +184,11 @@ public class MessageTranslator {
 			for (int i = 3; i <= 126; i++) {
 				if (sd != null && sd.get("B24_Field_" + String.valueOf(i)) != null)
 					msgToRmto.putField(i, sd.get("B24_Field_" + String.valueOf(i)));
+				else if (msg.isFieldSet(i))
+					msgToRmto.putField(i, msg.getField(i));
+				
+				if (sd != null && sd.get("B24_Field_REV_" + String.valueOf(i)) != null)
+					msgToRmto.putField(i, sd.get("B24_Field_REV_" + String.valueOf(i)));
 				else if (msg.isFieldSet(i))
 					msgToRmto.putField(i, msg.getField(i));
 
