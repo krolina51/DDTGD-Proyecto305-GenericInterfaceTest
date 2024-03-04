@@ -46,7 +46,7 @@ public class Constants {
 //		public static final int PORT_UDP_SERVER_TOKEN_ACTIVATION=15;
 	}
 
-	/** Parametros de ejecución de la interfaz. */
+	/** Parametros de ejecuciï¿½n de la interfaz. */
 	public static final class RuntimeParm {
 		public static final int NR_OF_PARAMETERS_EXPECTED = 1;
 		public static final String RETENTION_PERIOD = "Retention Period";
@@ -200,6 +200,7 @@ public class Constants {
 		public static final String EIGHT_ZEROS = "00000000";
 		public static final String TWENTYONE_ZEROS = "000000000000000000000";
 		public static final String TWENTYFOUR_ZEROS = "000000000000000000000000";
+		public static final String FOURTY_ZEROS = "0000000000000000000000000000000000000000";
 		public static final String P = "P";
 		public static final String AVAL = "Red Aval";
 		public static final String TM = "Transaction Manager";
