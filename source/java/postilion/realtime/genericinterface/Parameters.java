@@ -39,7 +39,7 @@ public class Parameters {
 	private String portUdpServer = "0";
 
 	private Client udpClient = null;
-	
+
 	private String ipUdpServerV2 = "0";
 	private String portUdpServerV2 = "0";
 
@@ -266,7 +266,7 @@ public class Parameters {
 
 	public void setCalendarInfo(CalendarDTO calendarInfo) {
 		this.calendarInfo = calendarInfo;
-	}	
+	}
 
 	public String getTermConsecutiveSection() {
 		return termConsecutiveSection;
@@ -275,7 +275,6 @@ public class Parameters {
 	public void setTermConsecutiveSection(String termConsecutiveSection) {
 		this.termConsecutiveSection = termConsecutiveSection;
 	}
-	
 
 	public String getResponseCodesVersion() {
 		return responseCodesVersion;
@@ -284,7 +283,6 @@ public class Parameters {
 	public void setResponseCodesVersion(String responseCodesVersion) {
 		this.responseCodesVersion = responseCodesVersion;
 	}
-	
 
 	public String getIpUdpServerValidation() {
 		return ipUdpServerValidation;
@@ -301,8 +299,6 @@ public class Parameters {
 	public void setPortUdpServerValidation(String portUdpServerValidation) {
 		this.portUdpServerValidation = portUdpServerValidation;
 	}
-	
-	
 
 	public boolean isAlternativeKeyTM() {
 		return alternativeKeyTM;
@@ -311,8 +307,6 @@ public class Parameters {
 	public void setAlternativeKeyTM(boolean alternativeKeyTM) {
 		this.alternativeKeyTM = alternativeKeyTM;
 	}
-	
-	
 
 	public String getIpUdpServerV2() {
 		return ipUdpServerV2;
@@ -343,8 +337,8 @@ public class Parameters {
 			int portCryptoValidation, HashMap<String, DesKwa> keys, String routingField100,
 			Map<String, ResponseCode> allCodesIsoToB24, Map<String, ResponseCode> allCodesIscToIso,
 			Map<String, ResponseCode> allCodesIsoToB24TM, Map<String, ResponseCode> allCodesB24ToIso,
-			CalendarDTO calendarInfo, String termConsecutiveSection, String responseCodesVersion, String ipServerValidation, String portServerValidation,
-			boolean alternativeKeyTM, Client udpClientV2) {
+			CalendarDTO calendarInfo, String termConsecutiveSection, String responseCodesVersion,
+			String ipServerValidation, String portServerValidation, boolean alternativeKeyTM, Client udpClientV2) {
 		this.kwa = kwa;
 		this.sourceTranToTmHashtable = sourceTranToTmHashtable;
 		this.sourceTranToTmHashtableB24 = sourceTranToTmHashtableB24;

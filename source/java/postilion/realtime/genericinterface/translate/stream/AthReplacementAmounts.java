@@ -24,14 +24,13 @@ public final class AthReplacementAmounts extends StreamMessage {
 		public static final String FILLER = "filler";
 	}
 
-	/** Longitud máxima. */
+	/** Longitud mï¿½xima. */
 	private static final int MAX_SIZE = 42;
 
 	static {
-		StreamFormatterFieldFixed actualTranAmount = new StreamFormatterFieldFixed(
-				Field.ACTUAL_TRAN_AMOUNT, Validator.getN(), 12, ' ', true, true);
-		StreamFormatterFieldFixed filler = new StreamFormatterFieldFixed(
-				Field.FILLER, Validator.getAn(), 30);
+		StreamFormatterFieldFixed actualTranAmount = new StreamFormatterFieldFixed(Field.ACTUAL_TRAN_AMOUNT,
+				Validator.getN(), 12, ' ', true, true);
+		StreamFormatterFieldFixed filler = new StreamFormatterFieldFixed(Field.FILLER, Validator.getAn(), 30);
 		stream.add(actualTranAmount);
 		stream.add(filler);
 	}

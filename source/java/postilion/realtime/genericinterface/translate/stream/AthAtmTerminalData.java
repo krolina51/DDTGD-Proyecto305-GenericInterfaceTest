@@ -23,16 +23,16 @@ public class AthAtmTerminalData extends StreamMessage {
 		public static final String TERM_TIME_OFFSET = "ATM Time Offset";
 	}
 
-	/** Longitud máxima. */
+	/** Longitud mï¿½xima. */
 	private static final int MAX_SIZE = 12;
 
 	static {
-		StreamFormatterFieldFixed termOwnerFiid = new StreamFormatterFieldFixed(
-				Field.TERM_OWNER_FIID, Validator.getAns(), 4, ' ', true, true);
-		StreamFormatterFieldFixed termLogicalNwk = new StreamFormatterFieldFixed(
-				Field.TERM_LOGICAL_NWK, Validator.getAns(), 4, ' ', true, true);
-		StreamFormatterFieldFixed termTimeOffset = new StreamFormatterFieldFixed(
-				Field.TERM_TIME_OFFSET, Validator.getAns(), 4, ' ', true, true);
+		StreamFormatterFieldFixed termOwnerFiid = new StreamFormatterFieldFixed(Field.TERM_OWNER_FIID,
+				Validator.getAns(), 4, ' ', true, true);
+		StreamFormatterFieldFixed termLogicalNwk = new StreamFormatterFieldFixed(Field.TERM_LOGICAL_NWK,
+				Validator.getAns(), 4, ' ', true, true);
+		StreamFormatterFieldFixed termTimeOffset = new StreamFormatterFieldFixed(Field.TERM_TIME_OFFSET,
+				Validator.getAns(), 4, ' ', true, true);
 		stream.add(termOwnerFiid);
 		stream.add(termLogicalNwk);
 		stream.add(termTimeOffset);

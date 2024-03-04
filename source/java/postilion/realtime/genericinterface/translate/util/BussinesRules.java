@@ -45,7 +45,7 @@ public class BussinesRules {
 			} else if (nameInterface.toLowerCase().startsWith("credibanco")) {
 				return Constants.Channels.CBCO;
 			} else if (nameInterface.toLowerCase().contains("internet")) {
-				return Constants.Channels.INTERNET;	
+				return Constants.Channels.INTERNET;
 			} else if (p41.substring(12, 13).equals("3") || p41.substring(12, 13).equals(" ")) {
 				return Constants.Channels.OFC;
 			} else if (p41.substring(12, 13).equals(Constants.General.SEVEN))
@@ -142,7 +142,7 @@ public class BussinesRules {
 
 		return consecutive;
 	}
-	
+
 	/**
 	 * 
 	 * Validate parameter for connection to udp server

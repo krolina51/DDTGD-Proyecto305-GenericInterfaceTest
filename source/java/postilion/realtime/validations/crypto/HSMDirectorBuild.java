@@ -50,9 +50,9 @@ public class HSMDirectorBuild {
 				System.out.println("Reconexion socket <<<" + ip + ":" + puerto + ">>>");
 			}
 		} catch (SocketException e) {
-			GenericInterface.getLogger().logLine("Exception "+Utils.getStringMessageException(e));
+			GenericInterface.getLogger().logLine("Exception " + Utils.getStringMessageException(e));
 		} catch (IOException e) {
-			GenericInterface.getLogger().logLine("Exception "+Utils.getStringMessageException(e));
+			GenericInterface.getLogger().logLine("Exception " + Utils.getStringMessageException(e));
 		}
 
 		return data;
@@ -61,7 +61,7 @@ public class HSMDirectorBuild {
 	public String processMessage(String msgIn) {
 		GenericInterface.getLogger().logLine("processMessage");
 		try {
-			GenericInterface.getLogger().logLine("socket "+socket);
+			GenericInterface.getLogger().logLine("socket " + socket);
 			if (socket != null) {
 				in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 				out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
@@ -78,18 +78,18 @@ public class HSMDirectorBuild {
 					in.read(fr);
 					response = new String(fr);
 					GenericInterface.getLogger().logLine("salida hsm " + response);
-					
+
 				} catch (SocketException e) {
 					GenericInterface.getLogger().logLine("Error en la conexion con el socket");
 				} catch (Exception e) {
-					GenericInterface.getLogger().logLine("Exception "+Utils.getStringMessageException(e));
+					GenericInterface.getLogger().logLine("Exception " + Utils.getStringMessageException(e));
 					e.printStackTrace();
 				}
-				GenericInterface.getLogger().logLine("response "+response);
+				GenericInterface.getLogger().logLine("response " + response);
 				return response;
 			}
 		} catch (Exception e) {
-			GenericInterface.getLogger().logLine("Exception "+Utils.getStringMessageException(e));
+			GenericInterface.getLogger().logLine("Exception " + Utils.getStringMessageException(e));
 		}
 		return errorHsm; // No hay Conexion con la HSM
 	}

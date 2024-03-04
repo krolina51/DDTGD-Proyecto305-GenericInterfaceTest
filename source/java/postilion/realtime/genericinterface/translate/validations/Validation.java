@@ -43,13 +43,11 @@ public class Validation {
 	SimpleDateFormat dateFormat = new SimpleDateFormat(FormatDate.MMDDhhmmss);
 
 	/**
-	 * Valida los valores suministrados contra un expresión regular.
+	 * Valida los valores suministrados contra un expresiï¿½n regular.
 	 * 
-	 * @param regex
-	 *            expresión regular
-	 * @param fieldText
-	 *            valor a comparar.
-	 * @return true si el valor cumple la expresión regular.
+	 * @param regex     expresiï¿½n regular
+	 * @param fieldText valor a comparar.
+	 * @return true si el valor cumple la expresiï¿½n regular.
 	 */
 	public boolean validateByRegex(String regex, String fieldText) {
 		Pattern pattern = Pattern.compile(regex);
@@ -60,11 +58,9 @@ public class Validation {
 	/**
 	 * Contruye el campo privado SwitchKey (Bit 2) hacia el TM.
 	 * 
-	 * @param msg
-	 *            Mensaje.
+	 * @param msg Mensaje.
 	 * @return Retorna un objeto String data con el campo construido.
-	 * @throws Exception
-	 *             En caso de error.
+	 * @throws Exception En caso de error.
 	 */
 	public String constructSwitchKey(Iso8583Post msg) throws XPostilion {
 		return new StringBuilder().append(MsgType.toString(msg.getMsgType()))
@@ -129,7 +125,7 @@ public class Validation {
 //	}
 
 	/**
-	 * Define los tipos de validación de la clase.
+	 * Define los tipos de validaciï¿½n de la clase.
 	 * 
 	 * @author Cristian Cardozo
 	 *
@@ -141,8 +137,7 @@ public class Validation {
 	}
 
 	/**
-	 * Define los tipos de formato de fecha que pueden tener los campos de
-	 * fecha.
+	 * Define los tipos de formato de fecha que pueden tener los campos de fecha.
 	 * 
 	 * @author Cristian Cardozo
 	 *
@@ -167,10 +162,6 @@ public class Validation {
 		public static final int IVR = 5;
 		public static final int CNB = 7;
 	}
-
-
-
-
 
 	/**
 	 * Define los mensaje de error, para la validaciones

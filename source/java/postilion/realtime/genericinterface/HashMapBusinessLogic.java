@@ -976,9 +976,8 @@ public class HashMapBusinessLogic {
 		 * deleteFieldsResponse.put("402000", "15-40-44");
 		 * deleteFieldsResponse.put("321000", "44-54-62-100-104-105");
 		 * deleteFieldsResponse.put("322000", "44-54-62-100-104-105");
-		 * deleteFieldsResponse.put("501041", "15");
-		 * deleteFieldsResponse.put("401010", * * "15-22-52"); 
-		 * deleteFieldsResponse.put("501030", "15-22-44-52-105");
+		 * deleteFieldsResponse.put("501041", "15"); deleteFieldsResponse.put("401010",
+		 * * * "15-22-52"); deleteFieldsResponse.put("501030", "15-22-44-52-105");
 		 * 
 		 * copyFieldsResponseRev.put("3", "3"); copyFieldsResponseRev.put("4", "4");
 		 * copyFieldsResponseRev.put("7", "7"); copyFieldsResponseRev.put("11", "11");
@@ -1335,11 +1334,11 @@ public class HashMapBusinessLogic {
 	public void putKeys(String keyKwa, DesKwa valueKwa) {
 		this.keys.put(keyKwa, valueKwa);
 	}
-	
+
 	public void putFiltrosV2(String key, String value) {
 		this.filtrosV2.put(key, value);
 	}
-	
+
 	public Map<String, String> getFiltrosV2() {
 		return filtrosV2;
 	}
@@ -1367,8 +1366,6 @@ public class HashMapBusinessLogic {
 	public void setCopyFieldsRevAutoSD(Map<String, String> copyFieldsRevAutoSD) {
 		this.copyFieldsRevAutoSD = copyFieldsRevAutoSD;
 	}
-	
-	
 
 	public Map<String, String> getDeleteFieldsRevRequest() {
 		return deleteFieldsRevRequest;
@@ -1440,10 +1437,10 @@ public class HashMapBusinessLogic {
 		}
 
 	}
-   
+
 	/**
-	 * Cargue HashMap deacuerdo a lo encontrado en el archivo Json ubicado en la ruta
-	 * routingLoadHashMap
+	 * Cargue HashMap deacuerdo a lo encontrado en el archivo Json ubicado en la
+	 * ruta routingLoadHashMap
 	 */
 	private void putHashMapBusinessLogic(Object key, JSONArray value) {
 		String[] parts;
@@ -1591,8 +1588,7 @@ public class HashMapBusinessLogic {
 		}
 
 	}
-	
-	
+
 	/**
 	 * Llena HashMap deacuerdo a lo encontrado en el archivo Json ubicado en la ruta
 	 * routingFilterPath
@@ -1618,55 +1614,56 @@ public class HashMapBusinessLogic {
 				String strCampo125 = (String) canal.get("Campo125");
 				String strCampo125Contenido = (String) canal.get("Campo125Contenido");
 				String strExcepcion = (String) canal.get("Excepcion");
-				
-				
+
 				sbKey.append(strInterchange).append("_");
 				sbKey.append(strCanal).append("_");
 				sbKey.append(strCodProc).append("_");
-				if(!strModoEntrada.equals("-"))
+				if (!strModoEntrada.equals("-"))
 					sbKey.append(strModoEntrada).append("_");
-				if(!strExcepcion.equals("-"))
+				if (!strExcepcion.equals("-"))
 					sbKey.append(strExcepcion).append("_");
-				
+
 				// iteracion sobre bines
 				if (!strBin.equals("-")) {
 					String[] strBines = strBin.split(",");
 					for (int i = 0; i < strBines.length; i++) {
 						if (!filtrosV2.containsKey(sbKey.toString() + strBines[i]))
-							putFiltrosV2(sbKey.toString() + strBines[i], strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
-									+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125) 
-									+ "_" + strCampo125Contenido);
+							putFiltrosV2(sbKey.toString() + strBines[i],
+									strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100) + "_"
+											+ (strCampo125.equals("-") ? "FALSE" : strCampo125) + "_"
+											+ strCampo125Contenido);
 					}
 				}
-				
+
 				// iteracion sobre terminales
 				if (!strTerminal.equals("-")) {
 					String[] strTerminales = strTerminal.split(",");
 					for (int i = 0; i < strTerminales.length; i++) {
 						if (!filtrosV2.containsKey(sbKey.toString() + strTerminales[i]))
-							putFiltrosV2(sbKey.toString() + strTerminales[i], strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
-									+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125)
-									+ "_" + strCampo125Contenido);
+							putFiltrosV2(sbKey.toString() + strTerminales[i],
+									strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100) + "_"
+											+ (strCampo125.equals("-") ? "FALSE" : strCampo125) + "_"
+											+ strCampo125Contenido);
 					}
 				}
-				
+
 				// iteracion sobre cuentas
 				if (!strCuenta.equals("-")) {
 					String[] strCuentas = strCuenta.split(",");
 					for (int i = 0; i < strCuentas.length; i++) {
 						if (!filtrosV2.containsKey(sbKey.toString() + strCuentas[i]))
-							putFiltrosV2(sbKey.toString() + strCuentas[i], strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
-									+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125)
-									+ "_" + strCampo125Contenido);
+							putFiltrosV2(sbKey.toString() + strCuentas[i],
+									strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100) + "_"
+											+ (strCampo125.equals("-") ? "FALSE" : strCampo125) + "_"
+											+ strCampo125Contenido);
 					}
 				}
-				
+
 				// todos los bines y terminales
-				if(strBin.equals("ALL") && strTerminal.equals("ALL") && strCuenta.equals("ALL")) {
+				if (strBin.equals("ALL") && strTerminal.equals("ALL") && strCuenta.equals("ALL")) {
 					if (!filtrosV2.containsKey(sbKey.toString()))
 						putFiltrosV2(sbKey.toString(), strRoute + "_" + (strCampo100.equals("-") ? "0" : strCampo100)
-								+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125)
-								+ "_" + strCampo125Contenido);
+								+ "_" + (strCampo125.equals("-") ? "FALSE" : strCampo125) + "_" + strCampo125Contenido);
 				}
 
 			}

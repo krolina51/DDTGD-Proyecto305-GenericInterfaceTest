@@ -4,8 +4,8 @@ import postilion.realtime.sdk.message.*;
 import postilion.realtime.sdk.message.stream.*;
 
 /**
- * Esta clase implementa el Header del mensaje usado en todos los mensajes de
- * la interfaz con conexión ha la red Aval.
+ * Esta clase implementa el Header del mensaje usado en todos los mensajes de la
+ * interfaz con conexiï¿½n ha la red Aval.
  */
 public final class Header extends StreamMessage {
 	/** Constructor. Crea un objeto Header. */
@@ -16,8 +16,7 @@ public final class Header extends StreamMessage {
 	/**
 	 * Constructor. Crea un objeto Header.
 	 * 
-	 * @param hdr
-	 *            Encabezado del mensaje.
+	 * @param hdr Encabezado del mensaje.
 	 */
 	public Header(Header hdr) {
 		this();
@@ -31,7 +30,7 @@ public final class Header extends StreamMessage {
 	/** Contenedor de Formatters. */
 	private static StreamFormatterContainer stream = new StreamFormatterContainer();
 
-	/** Longitud máxima. */
+	/** Longitud mï¿½xima. */
 	protected static final int MAX_SIZE = 42;
 
 	/** Campos. */
@@ -51,7 +50,7 @@ public final class Header extends StreamMessage {
 		public static final String POS = "02";
 	}
 
-	/** Código de sistema. */
+	/** Cï¿½digo de sistema. */
 	public static class SystemCode {
 		public static final String UNDETERMINED = "0";
 		public static final String ATHHOST = "1";
@@ -59,24 +58,23 @@ public final class Header extends StreamMessage {
 		public static final String INTERCHANGE_INTERFACE_PROCESS = "6";
 		public static final String INTERCHANGE = "7";
 	}
-	
 
 	/** Estado. */
 	public static class Status {
 		public static final String OK = "000";
 	}
-	
+
 	/** Iso literal. */
 	public static class Iso {
 		public static final String ISO = "ISO";
 	}
-	
+
 	/** Orriginator Code. */
 	public static class OriginatorCode {
 		public static final String UNO = "1";
 		public static final String CINCO = "5";
 	}
-	
+
 	/** Responder Code. */
 	public static class ResponderCode {
 		public static final String CERO = "0";
@@ -87,8 +85,7 @@ public final class Header extends StreamMessage {
 	/**
 	 * Copia el encabezado.
 	 * 
-	 * @param hdr
-	 *            Encabezado.
+	 * @param hdr Encabezado.
 	 * @return Copia del encabezado.
 	 */
 	public Header copyHeader(Header hdr) {
@@ -102,18 +99,18 @@ public final class Header extends StreamMessage {
 	}
 
 	static {
-		StreamFormatterFieldFixed isoLiteral = new StreamFormatterFieldFixed(
-				Field.ISO_LITERAL, Validator.getAns(), 3, ' ', true, true);
-		StreamFormatterFieldFixed productIndicator = new StreamFormatterFieldFixed(
-				Field.PRODUCT_INDICATOR, Validator.getN(), 2, ' ', false, true);
-		StreamFormatterFieldFixed releaseNumber = new StreamFormatterFieldFixed(
-				Field.RELEASE_NUMBER, Validator.getN(), 2, ' ', false, true);
-		StreamFormatterFieldFixed status = new StreamFormatterFieldFixed(
-				Field.STATUS, Validator.getN(), 3, ' ', false, true);
-		StreamFormatterFieldFixed originatorCode = new StreamFormatterFieldFixed(
-				Field.ORIGINATOR_CODE, Validator.getN(), 1, ' ', true, true);
-		StreamFormatterFieldFixed responderCode = new StreamFormatterFieldFixed(
-				Field.RESPONDER_CODE, Validator.getN(), 1, ' ', true, true);
+		StreamFormatterFieldFixed isoLiteral = new StreamFormatterFieldFixed(Field.ISO_LITERAL, Validator.getAns(), 3,
+				' ', true, true);
+		StreamFormatterFieldFixed productIndicator = new StreamFormatterFieldFixed(Field.PRODUCT_INDICATOR,
+				Validator.getN(), 2, ' ', false, true);
+		StreamFormatterFieldFixed releaseNumber = new StreamFormatterFieldFixed(Field.RELEASE_NUMBER, Validator.getN(),
+				2, ' ', false, true);
+		StreamFormatterFieldFixed status = new StreamFormatterFieldFixed(Field.STATUS, Validator.getN(), 3, ' ', false,
+				true);
+		StreamFormatterFieldFixed originatorCode = new StreamFormatterFieldFixed(Field.ORIGINATOR_CODE,
+				Validator.getN(), 1, ' ', true, true);
+		StreamFormatterFieldFixed responderCode = new StreamFormatterFieldFixed(Field.RESPONDER_CODE, Validator.getN(),
+				1, ' ', true, true);
 		stream.add(isoLiteral);
 		stream.add(productIndicator);
 		stream.add(releaseNumber);

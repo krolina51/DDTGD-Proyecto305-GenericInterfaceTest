@@ -11,14 +11,13 @@ import postilion.realtime.sdk.message.bitmap.XFieldUnableToConstruct;
 import postilion.realtime.sdk.util.XPostilion;
 
 public class ValidateAutra {
-	
+
 	public String ruta;
 	public int rute;
 	public String p125Accion;
 	public String p125Valor;
 	public String p100Valor;
-	
-	
+
 	public ValidateAutra() {
 		this.ruta = "";
 		this.rute = 0;
@@ -82,8 +81,6 @@ public class ValidateAutra {
 	public void setP125Valor(String p125Valor) {
 		this.p125Valor = p125Valor;
 	}
-	
-	
 
 	/**
 	 * @return the p100Valor
@@ -99,7 +96,6 @@ public class ValidateAutra {
 		this.p100Valor = p100Valor;
 	}
 
-	
 	/************************************************************************************
 	 *
 	 * @param Base24Ath
@@ -107,8 +103,8 @@ public class ValidateAutra {
 	 * @throws XPostilion if field 37 is not present
 	 * @throws Exception
 	 ************************************************************************************/
-	public static ValidateAutra getRoutingData(Base24Ath msg, Client udpClient, String nameInterface, String filtro, boolean applyV2Filter)
-			throws XPostilion {
+	public static ValidateAutra getRoutingData(Base24Ath msg, Client udpClient, String nameInterface, String filtro,
+			boolean applyV2Filter) throws XPostilion {
 		String pan = msg.getTrack2Data().getPan();
 		String procCode = msg.getProcessingCode().toString();
 		String bin = pan.substring(0, 6);
@@ -124,93 +120,103 @@ public class ValidateAutra {
 		String value[] = null;
 		String excepcion = null;
 		try {
-			
+
 			// **********************************************************************************
 			// Verifica transferencias masivas, enruta Capa
 			String[] terminalsID = { "8354", "8110", "9631", "9632" };
 			String terminalId = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4, 8);
-			
+
 			if (Arrays.stream(terminalsID).anyMatch(terminalId::equals)) {
 				validateAutra.setRute(Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION);
 				return validateAutra;
 			}
 			// **********************************************************************************
-			
+
 			// **********************************************************************************
 			// VERIFICA TERMINALES CEL2CEL
 			String[] terminalsIDCel2Cel = { "8590", "8591", "8593", "8594" };
 			String terminalIdCel2Cel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(4, 8);
-			
+
 			// **********************************************************************************
 			// VERIFICAR EXCEPCIONES TRANSFERENCIAS
-			if((procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
-					&& msg.isFieldSet(125)
-					&& (msg.getField(125).length()>90 && msg.getField(125).length()<=150)
-					&& (msg.getField(125).substring(138,139).equals("1") || msg.getField(125).substring(138,139).equals("2"))) {
+			if ((procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010")
+					|| procCode.equals("402020")) && msg.isFieldSet(125)
+					&& (msg.getField(125).length() > 90 && msg.getField(125).length() <= 150)
+					&& (msg.getField(125).substring(138, 139).equals("1")
+							|| msg.getField(125).substring(138, 139).equals("2"))) {
 				// ES QR
-				//excepcion = "QR";
+				// excepcion = "QR";
 				validateAutra.setRute(Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION);
 				return validateAutra;
-				
-			} else if((procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
+
+			} else if ((procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010")
+					|| procCode.equals("402020"))
 					&& (Arrays.stream(terminalsIDCel2Cel).anyMatch(terminalIdCel2Cel::equals))) {
 				// ES TRANSFERENCIA CEL2CEL
 				excepcion = "CEL2CEL";
-			} else if((procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))) {
+			} else if ((procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010")
+					|| procCode.equals("402020"))) {
 				// ES TRANSFERENCIA NORMAL
 				excepcion = "NORMAL";
 			}
 			// **********************************************************************************
-			
-			
-			/*if(nameInterface.toLowerCase().equals("genericinternet")
-					&& (procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
-					&& msg.isFieldSet(125)
-					&& (msg.getField(125).length()>90 && msg.getField(125).length()<=150)
-					&& (!msg.getField(125).substring(138,139).equals("1") && !msg.getField(125).substring(138,139).equals("2"))) {
-				validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
-				validateAutra.setP125Accion("REDUCIR");
-				return validateAutra;
-			}
-			if(nameInterface.toLowerCase().equals("genericinternet")
-					&& (procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
-					&& msg.isFieldSet(125)
-					&& msg.getField(125).length()<=90) {
-				validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
-				return validateAutra;
-			}
-			if(nameInterface.toLowerCase().equals("genericinternet")
-					&& (procCode.equals("401010") || procCode.equals("401020") || procCode.equals("402010") || procCode.equals("402020"))
-					&& !msg.isFieldSet(125)) {
-				validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
-				return validateAutra;
-			}*/
-			
-			if(applyV2Filter) {
-				GenericInterface.getLogger().logLine("APLICA FILTRO V2" );
+
+			/*
+			 * if(nameInterface.toLowerCase().equals("genericinternet") &&
+			 * (procCode.equals("401010") || procCode.equals("401020") ||
+			 * procCode.equals("402010") || procCode.equals("402020")) &&
+			 * msg.isFieldSet(125) && (msg.getField(125).length()>90 &&
+			 * msg.getField(125).length()<=150) &&
+			 * (!msg.getField(125).substring(138,139).equals("1") &&
+			 * !msg.getField(125).substring(138,139).equals("2"))) {
+			 * validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA);
+			 * validateAutra.setP125Accion("REDUCIR"); return validateAutra; }
+			 * if(nameInterface.toLowerCase().equals("genericinternet") &&
+			 * (procCode.equals("401010") || procCode.equals("401020") ||
+			 * procCode.equals("402010") || procCode.equals("402020")) &&
+			 * msg.isFieldSet(125) && msg.getField(125).length()<=90) {
+			 * validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA); return
+			 * validateAutra; } if(nameInterface.toLowerCase().equals("genericinternet") &&
+			 * (procCode.equals("401010") || procCode.equals("401020") ||
+			 * procCode.equals("402010") || procCode.equals("402020")) &&
+			 * !msg.isFieldSet(125)) {
+			 * validateAutra.setRute(Constants.TransactionRouting.INT_AUTRA); return
+			 * validateAutra; }
+			 */
+
+			if (applyV2Filter) {
+				GenericInterface.getLogger().logLine("APLICA FILTRO V2");
 				channel = BussinesRules.channelIdentifier(msg, nameInterface, udpClient);
-				keyTerminal = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_"+terminalId :  nameInterface+"_"+channel+"_"+procCode+"_"+terminalId;
-				keyBin = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_"+bin : nameInterface+"_"+channel+"_"+procCode+"_"+bin;
-				keyCuentaFv2 = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_"+cuenta : nameInterface+"_"+channel+"_"+procCode+"_"+cuenta;
-				keyAll = excepcion != null ? nameInterface+"_"+channel+"_"+procCode+"_"+excepcion+"_" : nameInterface+"_"+channel+"_"+procCode+"_";
-				
+				keyTerminal = excepcion != null
+						? nameInterface + "_" + channel + "_" + procCode + "_" + excepcion + "_" + terminalId
+						: nameInterface + "_" + channel + "_" + procCode + "_" + terminalId;
+				keyBin = excepcion != null
+						? nameInterface + "_" + channel + "_" + procCode + "_" + excepcion + "_" + bin
+						: nameInterface + "_" + channel + "_" + procCode + "_" + bin;
+				keyCuentaFv2 = excepcion != null
+						? nameInterface + "_" + channel + "_" + procCode + "_" + excepcion + "_" + cuenta
+						: nameInterface + "_" + channel + "_" + procCode + "_" + cuenta;
+				keyAll = excepcion != null ? nameInterface + "_" + channel + "_" + procCode + "_" + excepcion + "_"
+						: nameInterface + "_" + channel + "_" + procCode + "_";
+
 				GenericInterface.getLogger().logLine("keyTerminal " + keyTerminal);
 				GenericInterface.getLogger().logLine("keybin " + keyBin);
-				
-				GenericInterface.fillMaps.getFiltrosV2().forEach((k,v) -> {
+
+				GenericInterface.fillMaps.getFiltrosV2().forEach((k, v) -> {
 					GenericInterface.getLogger().logLine("key: " + k + " with value: " + v);
 				});
-				
+
 				// Verifica terminales
-				if(GenericInterface.fillMaps.getFiltrosV2().containsKey(keyTerminal)) {
+				if (GenericInterface.fillMaps.getFiltrosV2().containsKey(keyTerminal)) {
 					value = GenericInterface.fillMaps.getFiltrosV2().get(keyTerminal).split("_");
 					validateAutra.setRuta(value[0]);
-					validateAutra.setRute(value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION 
-							: Constants.TransactionRouting.INT_AUTRA);
+					validateAutra.setRute(
+							value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION
+									: Constants.TransactionRouting.INT_AUTRA);
 					validateAutra.setP100Valor(value[1]);
 					validateAutra.setP125Accion(value[2]);
 					validateAutra.setP125Valor(value[3]);
-					
+
 					GenericInterface.getLogger().logLine("validateAutra Ruta:" + validateAutra.getRuta());
 					GenericInterface.getLogger().logLine("validateAutra Rute:" + validateAutra.getRute());
 					GenericInterface.getLogger().logLine("validateAutra p100:" + validateAutra.getP100Valor());
@@ -218,17 +224,18 @@ public class ValidateAutra {
 					GenericInterface.getLogger().logLine("validateAutra p125 accion:" + validateAutra.getP125Accion());
 					return validateAutra;
 				}
-				
+
 				// Verifica bines
-				if(GenericInterface.fillMaps.getFiltrosV2().containsKey(keyBin)) {
+				if (GenericInterface.fillMaps.getFiltrosV2().containsKey(keyBin)) {
 					value = GenericInterface.fillMaps.getFiltrosV2().get(keyBin).split("_");
 					validateAutra.setRuta(value[0]);
-					validateAutra.setRute(value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION 
-							: Constants.TransactionRouting.INT_AUTRA);
+					validateAutra.setRute(
+							value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION
+									: Constants.TransactionRouting.INT_AUTRA);
 					validateAutra.setP100Valor(value[1]);
 					validateAutra.setP125Accion(value[2]);
 					validateAutra.setP125Valor(value[3]);
-					
+
 					GenericInterface.getLogger().logLine("validateAutra Ruta:" + validateAutra.getRuta());
 					GenericInterface.getLogger().logLine("validateAutra Rute:" + validateAutra.getRute());
 					GenericInterface.getLogger().logLine("validateAutra p100:" + validateAutra.getP100Valor());
@@ -236,17 +243,18 @@ public class ValidateAutra {
 					GenericInterface.getLogger().logLine("validateAutra p125 accion:" + validateAutra.getP125Accion());
 					return validateAutra;
 				}
-				
+
 				// Verifica cuentas
-				if(GenericInterface.fillMaps.getFiltrosV2().containsKey(keyCuentaFv2)) {
+				if (GenericInterface.fillMaps.getFiltrosV2().containsKey(keyCuentaFv2)) {
 					value = GenericInterface.fillMaps.getFiltrosV2().get(keyCuentaFv2).split("_");
 					validateAutra.setRuta(value[0]);
-					validateAutra.setRute(value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION 
-							: Constants.TransactionRouting.INT_AUTRA);
+					validateAutra.setRute(
+							value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION
+									: Constants.TransactionRouting.INT_AUTRA);
 					validateAutra.setP100Valor(value[1]);
 					validateAutra.setP125Accion(value[2]);
 					validateAutra.setP125Valor(value[3]);
-					
+
 					GenericInterface.getLogger().logLine("validateAutra Ruta:" + validateAutra.getRuta());
 					GenericInterface.getLogger().logLine("validateAutra Rute:" + validateAutra.getRute());
 					GenericInterface.getLogger().logLine("validateAutra p100:" + validateAutra.getP100Valor());
@@ -254,17 +262,18 @@ public class ValidateAutra {
 					GenericInterface.getLogger().logLine("validateAutra p125 accion:" + validateAutra.getP125Accion());
 					return validateAutra;
 				}
-				
+
 				// Verifica solo pcode
-				if(GenericInterface.fillMaps.getFiltrosV2().containsKey(keyAll)) {
+				if (GenericInterface.fillMaps.getFiltrosV2().containsKey(keyAll)) {
 					value = GenericInterface.fillMaps.getFiltrosV2().get(keyAll).split("_");
 					validateAutra.setRuta(value[0]);
-					validateAutra.setRute(value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION 
-							: Constants.TransactionRouting.INT_AUTRA);
+					validateAutra.setRute(
+							value[0].toLowerCase().equals("capa") ? Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION
+									: Constants.TransactionRouting.INT_AUTRA);
 					validateAutra.setP100Valor(value[1]);
 					validateAutra.setP125Accion(value[2]);
 					validateAutra.setP125Valor(value[3]);
-					
+
 					GenericInterface.getLogger().logLine("validateAutra Ruta:" + validateAutra.getRuta());
 					GenericInterface.getLogger().logLine("validateAutra Rute:" + validateAutra.getRute());
 					GenericInterface.getLogger().logLine("validateAutra p100:" + validateAutra.getP100Valor());
@@ -273,16 +282,15 @@ public class ValidateAutra {
 					return validateAutra;
 				}
 			}
-			
-			
-				
-			channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13).equals(" ")? "3":msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13);
 
-			if(nameInterface.toLowerCase().startsWith("credibanco"))
+			channel = msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13).equals(" ") ? "3"
+					: msg.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(12, 13);
+
+			if (nameInterface.toLowerCase().startsWith("credibanco"))
 				channel = "C";
-			
-			keyTarjeta=channel+procCode+pan;
-			keyBin=channel+procCode+bin;
+
+			keyTarjeta = channel + procCode + pan;
+			keyBin = channel + procCode + bin;
 			keyCuenta.append(channel);
 			keyCuenta.append(procCode);
 			keyCuenta.append(construyeCtasValidacionAutra(procCode, msg));
@@ -299,9 +307,6 @@ public class ValidateAutra {
 
 				break;
 			}
-				
-			
-
 
 		} catch (XPostilion e) {
 			EventReporter.reportGeneralEvent(nameInterface, ValidateAutra.class.getName(), e,
@@ -310,7 +315,7 @@ public class ValidateAutra {
 
 		return validateAutra;
 	}
-	
+
 	/************************************************************************************
 	 *
 	 * @param Base24Ath
@@ -321,12 +326,12 @@ public class ValidateAutra {
 			throws XFieldUnableToConstruct {
 
 		int routingTo = 0;
-		
-		if (filtro.equals("Capa")) 
+
+		if (filtro.equals("Capa"))
 			// Tarjetas de credito son administradas por FirstData
 			return msg.getProcessingCode().toString().equals("333000") ? Constants.TransactionRouting.INT_AUTRA
 					: Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
-		
+
 		// deuda tecnica
 		String retRefNumber = "N/D";
 		String channel = "N/D";
@@ -346,7 +351,6 @@ public class ValidateAutra {
 				routingTo = Constants.TransactionRouting.INT_CAPA_DE_INTEGRACION;
 			} else {
 
-				
 				if (procCode.equals("890000"))
 					procCode = msg.getField(126).substring(22, 28);
 				String keyTarjeta = channel + procCode + pan;
@@ -354,7 +358,7 @@ public class ValidateAutra {
 				keyCuenta.append(channel);
 				keyCuenta.append(procCode);
 				keyCuenta.append(construyeCtasValidacionAutra(procCode, msg));
-				
+
 				GenericInterface.getLogger().logLine("keybin " + keyBin);
 				GenericInterface.getLogger().logLine("keyTarjeta " + keyBin);
 				GenericInterface.getLogger().logLine("keyCuenta " + keyBin);
@@ -554,20 +558,21 @@ public class ValidateAutra {
 		case Constants.Channels.PCODE_TRANSFERENCIAS_CORRIENTE_A_CORRIENTE:
 
 			subKey = msg.isFieldSet(Iso8583.Bit._103_ACCOUNT_ID_2)
-			? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length() - 16).trim()
-			: Constants.General.SIXTEEN_ZEROS;
+					? msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2)
+							.substring(msg.getField(Iso8583.Bit._103_ACCOUNT_ID_2).length() - 16).trim()
+					: Constants.General.SIXTEEN_ZEROS;
 
 			break;
 		case Constants.Channels.PCODE_RETIRO_SIN_TARJETA_CNB_DE_AHORROS_A_CNBAHORROS:
 		case Constants.Channels.PCODE_RETIRO_SIN_TARJETA_CNB_DE_AHORROS_A_CNBCORRIENTE:
 		case Constants.Channels.PCODE_RETIRO_SIN_TARJETA_CNB_DE_CORRIENTE_A_CNBAHORROS:
 		case Constants.Channels.PCODE_RETIRO_SIN_TARJETA_CNB_DE_CORRIENTE_A_CNBCORRIENTE:
-		
+
 			subKey = msg.isFieldSet(Iso8583.Bit._104_TRAN_DESCRIPTION)
-					? msg.getField(Iso8583.Bit._104_TRAN_DESCRIPTION).substring(2,12).trim()
+					? msg.getField(Iso8583.Bit._104_TRAN_DESCRIPTION).substring(2, 12).trim()
 					: Constants.General.TEN_ZEROS;
-		
-			break;	
+
+			break;
 		default:
 
 			subKey = msg.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)

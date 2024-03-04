@@ -53,8 +53,7 @@ public class AthAtmAdditionalResponseData extends StreamMessage {
 	 * @return True si es valor total.
 	 */
 	public boolean istTotalValueOnly() {
-		return getField(Field.USAGE_INDICATOR).equals(
-				UsageIndicator.TOTAL_VALUE_ONLY);
+		return getField(Field.USAGE_INDICATOR).equals(UsageIndicator.TOTAL_VALUE_ONLY);
 	}
 
 	/**
@@ -63,8 +62,7 @@ public class AthAtmAdditionalResponseData extends StreamMessage {
 	 * @return True si es valor disponible.
 	 */
 	public boolean isAvailableValueOnly() {
-		return getField(Field.USAGE_INDICATOR).equals(
-				UsageIndicator.AVAILABLE_VALUE_ONLY);
+		return getField(Field.USAGE_INDICATOR).equals(UsageIndicator.AVAILABLE_VALUE_ONLY);
 	}
 
 	/**
@@ -73,24 +71,23 @@ public class AthAtmAdditionalResponseData extends StreamMessage {
 	 * @return True si es valor total y disponible.
 	 */
 	public boolean isTotalAndAvailable() {
-		return (getField(Field.USAGE_INDICATOR)
-				.equals(UsageIndicator.BOTH_TOTAL_AVAILABLE));
+		return (getField(Field.USAGE_INDICATOR).equals(UsageIndicator.BOTH_TOTAL_AVAILABLE));
 	}
 
-	/** Longitud máxima. */
+	/** Longitud mï¿½xima. */
 	private static final int MAX_SIZE = 25;
 
 	static {
-		StreamFormatterFieldFixed usageIndicator = new StreamFormatterFieldFixed(
-				Field.USAGE_INDICATOR, Validator.getAns(), 1, ' ', true, true);
-		StreamFormatterFieldFixed totalSign = new StreamFormatterFieldFixed(
-				Field.TOTAL_SIGN, Validator.getAns(), 1, ' ', true, true);
-		StreamFormatterFieldFixed totalValue = new StreamFormatterFieldFixed(
-				Field.TOTAL_VALUE, Validator.getAns(), 11, ' ', false, true);
-		StreamFormatterFieldFixed availableSign = new StreamFormatterFieldFixed(
-				Field.AVAILABLE_SIGN, Validator.getAns(), 1, ' ', true, true);
-		StreamFormatterFieldFixed availableValue = new StreamFormatterFieldFixed(
-				Field.AVAILABLE_VALUE, Validator.getAns(), 11, ' ', false, true);
+		StreamFormatterFieldFixed usageIndicator = new StreamFormatterFieldFixed(Field.USAGE_INDICATOR,
+				Validator.getAns(), 1, ' ', true, true);
+		StreamFormatterFieldFixed totalSign = new StreamFormatterFieldFixed(Field.TOTAL_SIGN, Validator.getAns(), 1,
+				' ', true, true);
+		StreamFormatterFieldFixed totalValue = new StreamFormatterFieldFixed(Field.TOTAL_VALUE, Validator.getAns(), 11,
+				' ', false, true);
+		StreamFormatterFieldFixed availableSign = new StreamFormatterFieldFixed(Field.AVAILABLE_SIGN,
+				Validator.getAns(), 1, ' ', true, true);
+		StreamFormatterFieldFixed availableValue = new StreamFormatterFieldFixed(Field.AVAILABLE_VALUE,
+				Validator.getAns(), 11, ' ', false, true);
 		stream.add(usageIndicator);
 		stream.add(totalSign);
 		stream.add(totalValue);

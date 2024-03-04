@@ -18,11 +18,9 @@ public class ValidatedResult {
 	String errorCodeP = General.VOIDSTRING;
 	HashMap<String, String> dataSFind = new HashMap<String, String>();
 //	Object dataSFind = new Object();
-		
-	
 
 	public ValidatedResult() {
-	
+
 	}
 
 	public HashMap<String, String> getDataSFind() {
@@ -39,12 +37,14 @@ public class ValidatedResult {
 		this.errorCode = errorCode;
 		this.errorCodeP = errorCodeP;
 	}
-	public ValidatedResult(Boolean ammountStatus, String descriptionAmmountError, String errorCode, String errorCodeP, HashMap<String, String> dataSFind) {
+
+	public ValidatedResult(Boolean ammountStatus, String descriptionAmmountError, String errorCode, String errorCodeP,
+			HashMap<String, String> dataSFind) {
 		this.ammountStatus = ammountStatus;
 		this.descriptionAmmountError = descriptionAmmountError;
 		this.errorCode = errorCode;
 		this.errorCodeP = errorCodeP;
-		this.dataSFind =dataSFind;
+		this.dataSFind = dataSFind;
 	}
 
 	/**
@@ -102,8 +102,5 @@ public class ValidatedResult {
 	public void setErrorCodeP(String errorCodeP) {
 		this.errorCodeP = errorCodeP;
 	}
-	
-	
-	
-	
+
 }

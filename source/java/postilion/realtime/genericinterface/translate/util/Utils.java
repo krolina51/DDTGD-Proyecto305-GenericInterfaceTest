@@ -148,8 +148,9 @@ public class Utils {
 	}
 
 	/*
-	 * obtinene el codigo de respuesta segun el tipo de cuenta en el processing code.
-	 * Ene el caso de que la tarjeta no tenga una cuenta relacionada en postcard
+	 * obtinene el codigo de respuesta segun el tipo de cuenta en el processing
+	 * code. Ene el caso de que la tarjeta no tenga una cuenta relacionada en
+	 * postcard
 	 *
 	 * @param accountType tipo de cuenta obtenido del campo from account del
 	 * processing code
@@ -182,10 +183,10 @@ public class Utils {
 	}
 
 	/**
-	 * Cuenta el número de registro en un resultSet
+	 * Cuenta el nï¿½mero de registro en un resultSet
 	 * 
 	 * @param rs ResulSet a contar
-	 * @return número de registros
+	 * @return nï¿½mero de registros
 	 */
 	public int countRows(ResultSet rs) {
 		int rows = 0;

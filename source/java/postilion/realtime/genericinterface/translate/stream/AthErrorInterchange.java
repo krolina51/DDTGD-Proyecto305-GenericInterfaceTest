@@ -7,7 +7,7 @@ import postilion.realtime.sdk.message.stream.*;
  * Clase que define el formato del AthErrorInterchange.
  */
 public class AthErrorInterchange extends StreamMessage {
-	/**Constructor. Formato del AthErrorInterchange. */
+	/** Constructor. Formato del AthErrorInterchange. */
 	public AthErrorInterchange() {
 		super(MAX_SIZE, stream);
 	}
@@ -21,14 +21,14 @@ public class AthErrorInterchange extends StreamMessage {
 		public static final String DESCRIPTION = "description";
 	}
 
-	/** Longitud máxima. */
+	/** Longitud mï¿½xima. */
 	private static final int MAX_SIZE = 44;
 
 	static {
-		StreamFormatterFieldFixed codeError = new StreamFormatterFieldFixed(
-				Field.CODE_ERROR, Validator.getAns(), 4, ' ', true, true);
-		StreamFormatterFieldFixed description = new StreamFormatterFieldFixed(
-				Field.DESCRIPTION, Validator.getAns(), 40, ' ', true, true);
+		StreamFormatterFieldFixed codeError = new StreamFormatterFieldFixed(Field.CODE_ERROR, Validator.getAns(), 4,
+				' ', true, true);
+		StreamFormatterFieldFixed description = new StreamFormatterFieldFixed(Field.DESCRIPTION, Validator.getAns(), 40,
+				' ', true, true);
 		stream.add(codeError);
 		stream.add(description);
 	}
