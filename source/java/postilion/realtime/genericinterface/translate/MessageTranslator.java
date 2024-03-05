@@ -922,7 +922,8 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque", "1");
 					objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque_REV", "0");
 					objectValidations.putInforCollectedForStructData("TIPO_TX", "EFECTIVO");
-					objectValidations.putInforCollectedForStructData("TAG_924A", msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0,4));
+					objectValidations.putInforCollectedForStructData("TAG_924A",
+							msgFromRemote.getField(Iso8583.Bit._041_CARD_ACCEPTOR_TERM_ID).substring(0, 4));
 					if (channel.equals(Constants.Channels.PCODE_PAGO_OBLIGACIONES_ROTATIVO_CHEQUE)) {
 						objectValidations.putInforCollectedForStructData("indicador_efectivo_cheque", "2");
 						objectValidations.putInforCollectedForStructData("Mod_Credito", "8");
@@ -1095,25 +1096,24 @@ public class MessageTranslator {
 
 					objectValidations.putInforCollectedForStructData("DEBIT_ACCOUNT_NR",
 							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
-					objectValidations.putInforCollectedForStructData("DEBIT_CARD_NR",
-							msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(4, 19));
+					objectValidations.putInforCollectedForStructData("DEBIT_CARD_NR", "0000000000000");
 
 					// TAGS ISC
 					if (msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 4).equals("0088")
 							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25, 26).equals("1")) {
 						objectValidations.putInforCollectedForStructData("TAG_D140", "5000");
 						objectValidations.putInforCollectedForStructData("TAG_D139", "B");
-						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "BS");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "C2");
 
 					} else if (msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 4).equals("0088")
 							&& msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(25, 26).equals("2")) {
 						objectValidations.putInforCollectedForStructData("TAG_D140", "6000");
 						objectValidations.putInforCollectedForStructData("TAG_D139", "W");
-						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "WP");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "C6");
 					} else if (msgFromRemote.getField(Iso8583.Bit._035_TRACK_2_DATA).substring(0, 4).equals("0099")) {
 						objectValidations.putInforCollectedForStructData("TAG_D140", "9000");
 						objectValidations.putInforCollectedForStructData("TAG_D139", "V");
-						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "IV");
+						objectValidations.putInforCollectedForStructData("Identificacion_Canal", "C5");
 					} else {
 						objectValidations.putInforCollectedForStructData("TAG_D140", "8000");
 						objectValidations.putInforCollectedForStructData("TAG_D139", "T");
@@ -1138,7 +1138,6 @@ public class MessageTranslator {
 							objectValidations.getInforCollectedForStructData().get("TRANSACTION_TYPE_PSP")
 									+ "_CREDITO");
 					objectValidations.putInforCollectedForStructData("TRANSACTION_TYPE_CBN_PSP_S", "CREDITO");
-					objectValidations.putInforCollectedForStructData("Codigo_Transaccion_Producto", "05");
 					objectValidations.putInforCollectedForStructData("DEBIT_CARD_CLASS", "15CLASE12001");
 					objectValidations.putInforCollectedForStructData("pos_entry_mode", "000");
 					objectValidations.putInforCollectedForStructData("DEBIT_CARD_NR_PSP", "0066010000000000");
@@ -1151,8 +1150,10 @@ public class MessageTranslator {
 							msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1).substring(4));
 					objectValidations.putInforCollectedForStructData("Tarjeta_Amparada",
 							msgFromRemote.getTrack2Data().getPan());
-					sd.put("Codigo_Transaccion_Producto", "P_CODE".substring(2, 4).equals("10") ? "05" : "04");
-					sd.put("Tipo_de_Cuenta_Debitada", "P_CODE".substring(2, 4).equals("10") ? "AHO" : "CTE");
+					sd.put("Codigo_Transaccion_Producto",
+							msgFromRemote.getProcessingCode().toString().substring(2, 4).equals("10") ? "05" : "04");
+					sd.put("Tipo_de_Cuenta_Debitada",
+							msgFromRemote.getProcessingCode().toString().substring(2, 4).equals("10") ? "AHO" : "CTE");
 
 					objectValidations.putInforCollectedForStructData("Codigo_Establecimiento", "0000      ");
 					objectValidations.putInforCollectedForStructData("Identificacion_Canal_REV", "AT");
@@ -1164,7 +1165,7 @@ public class MessageTranslator {
 					objectValidations.putInforCollectedForStructData("Canal", "01");
 					objectValidations.putInforCollectedForStructData("Dispositivo", "0");
 					objectValidations.putInforCollectedForStructData("Codigo_FI_Origen", "1005");
-					objectValidations.putInforCollectedForStructData("Numero_de_Terminal", "0000");
+					objectValidations.putInforCollectedForStructData("Numero_Terminal", "0000");
 					objectValidations.putInforCollectedForStructData("CLIENT_CARD_NR_1", "0000000000000");
 					objectValidations.putInforCollectedForStructData("PAN_TARJETA", "0088020000000000001");
 					objectValidations.putInforCollectedForStructData("Identificador_Terminal", "0");
