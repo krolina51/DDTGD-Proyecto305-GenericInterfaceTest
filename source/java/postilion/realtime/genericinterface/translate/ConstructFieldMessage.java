@@ -860,6 +860,22 @@ public class ConstructFieldMessage extends MessageTranslator {
 	}
 
 	/**************************************************************************************
+	 * Build and return field 43 Default.
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value 43 default (fourty '0')
+	 *************************************************************************************/
+	public static String constructField43Fiserv(Object object, Integer num) {
+
+		try {
+			return Constants.General.FOURTY_ZEROS;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**************************************************************************************
 	 * Build and return field 22 Default.
 	 * 
 	 * @param - Receive the object null

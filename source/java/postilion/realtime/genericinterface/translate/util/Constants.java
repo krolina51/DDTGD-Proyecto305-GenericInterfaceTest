@@ -200,6 +200,7 @@ public class Constants {
 		public static final String EIGHT_ZEROS = "00000000";
 		public static final String TWENTYONE_ZEROS = "000000000000000000000";
 		public static final String TWENTYFOUR_ZEROS = "000000000000000000000000";
+		public static final String FOURTY_ZEROS = "0000000000000000000000000000000000000000";
 		public static final String P = "P";
 		public static final String AVAL = "Red Aval";
 		public static final String TM = "Transaction Manager";
