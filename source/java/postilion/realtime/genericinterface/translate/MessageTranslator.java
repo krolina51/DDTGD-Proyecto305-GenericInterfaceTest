@@ -189,8 +189,6 @@ public class MessageTranslator {
 				
 				if (sd != null && sd.get("B24_Field_REV_" + String.valueOf(i)) != null)
 					msgToRmto.putField(i, sd.get("B24_Field_REV_" + String.valueOf(i)));
-				else if (msg.isFieldSet(i))
-					msgToRmto.putField(i, msg.getField(i));
 
 				String key1 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE) + "_" + pCode126;
 				String key2 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
