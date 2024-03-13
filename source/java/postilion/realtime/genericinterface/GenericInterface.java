@@ -938,7 +938,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			Thread.sleep(6000);
 		}
 		// DELAY GENERAL
-		Thread.sleep(6000);
+		//Thread.sleep(6000);
 		Action action = new Action();
 		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
 				&& msg.getStructuredData().get("B24_Message") != null) {
