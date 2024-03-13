@@ -3673,5 +3673,21 @@ public class ConstructFieldMessage extends MessageTranslator {
 		return field;
 
 	}
+	
+	/**************************************************************************************
+	 * Build and return field 95 Default for ATH.
+	 * 
+	 * @param - Receive the object null
+	 * @return - The value 95 default (fourty-two '0') for ATH.
+	 *************************************************************************************/
+	public static String constructField95ATH(Object object, Integer num) {
+ 
+		try {
+			return Constants.General.DEFAULT_P95;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 }

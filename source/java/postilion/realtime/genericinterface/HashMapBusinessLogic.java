@@ -53,6 +53,7 @@ public class HashMapBusinessLogic {
 	private Map<String, String> deleteFieldsRevAuto = new HashMap<>();
 	private Map<String, String> createFieldsRevAuto = new HashMap<>();
 	private Map<String, String> copyFieldsRevAutoSD = new HashMap<>();
+	private Map<String, String> copyFieldsFromOriginalResponse = new HashMap<>();
 
 	private HashMap<String, DesKwa> keys = new HashMap<>();
 
@@ -1365,6 +1366,14 @@ public class HashMapBusinessLogic {
 
 	public void setCopyFieldsRevAutoSD(Map<String, String> copyFieldsRevAutoSD) {
 		this.copyFieldsRevAutoSD = copyFieldsRevAutoSD;
+	}	
+
+	public Map<String, String> getCopyFieldsFromOriginalResponse() {
+		return copyFieldsFromOriginalResponse;
+	}
+
+	public void setCopyFieldsFromOriginalResponse(Map<String, String> copyFieldsFromOriginalResponse) {
+		this.copyFieldsFromOriginalResponse = copyFieldsFromOriginalResponse;
 	}
 
 	public Map<String, String> getDeleteFieldsRevRequest() {
@@ -1524,6 +1533,9 @@ public class HashMapBusinessLogic {
 				break;
 			case "createFieldsRevRequest":
 				createFieldsRevRequest.put(parts[0], parts[1]);
+				break;
+			case "copyFieldsFromOriginalResponse":
+				copyFieldsFromOriginalResponse.put(parts[0], parts[1]);
 				break;
 			default:
 				break;

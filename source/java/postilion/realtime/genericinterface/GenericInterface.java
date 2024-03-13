@@ -938,7 +938,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			Thread.sleep(6000);
 		}
 		// DELAY GENERAL
-		//Thread.sleep(6000);
+		Thread.sleep(6000);
 		Action action = new Action();
 		if (msg.isPrivFieldSet(Iso8583Post.PrivBit._022_STRUCT_DATA)
 				&& msg.getStructuredData().get("B24_Message") != null) {
@@ -1304,25 +1304,7 @@ public class GenericInterface extends AInterchangeDriver8583 {
 				sd.put("B24_Field_4", msgFromRemote.getField(Iso8583.Bit._004_AMOUNT_TRANSACTION));
 
 			if (msgFromRemote.isFieldSet(Base24Ath.Bit.ENTITY_ERROR))
-				sd.put("B24_Field_63", msgFromRemote.getField(Base24Ath.Bit.ENTITY_ERROR));
-			
-			if(this.nameInterface.toLowerCase().startsWith("firstdata")) {
-				if (msgFromRemote.isFieldSet(Base24Ath.Bit.ENTITY_ERROR))
-					sd.put("B24_Field_REV_63", msgFromRemote.getField(Base24Ath.Bit.ENTITY_ERROR));
-				
-				if (msgFromRemote.isFieldSet(61))
-					sd.put("B24_Field_REV_61", msgFromRemote.getField(61));
-				
-				if (msgFromRemote.isFieldSet(100))
-					sd.put("B24_Field_REV_100", msgFromRemote.getField(100));
-				
-				if (msgFromRemote.isFieldSet(121))
-					sd.put("B24_Field_REV_121", msgFromRemote.getField(121));
-				
-				if (msgFromRemote.isFieldSet(124))
-					sd.put("B24_Field_REV_124", msgFromRemote.getField(124));
-			}
-				
+				sd.put("B24_Field_63", msgFromRemote.getField(Base24Ath.Bit.ENTITY_ERROR));				
 
 			if (msgFromRemote.isFieldSet(Iso8583.Bit._102_ACCOUNT_ID_1)) {
 				sd.put("B24_Field_102", msgFromRemote.getField(Iso8583.Bit._102_ACCOUNT_ID_1));
@@ -1365,6 +1347,10 @@ public class GenericInterface extends AInterchangeDriver8583 {
 			}
 
 			originalMsg.putStructuredData(sd);
+			
+			String keymsg = originalMsg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR)+ originalMsg.getField(Iso8583.Bit._038_AUTH_ID_RSP);
+			putRecordIntoSourceToTmHashtableB24(keymsg, msg);
+			
 			action.putMsgToTranmgr(originalMsg);
 
 		}

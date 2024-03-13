@@ -145,6 +145,12 @@ public class MessageTranslator {
 			retRefNumber = msg.getField(Iso8583.Bit._037_RETRIEVAL_REF_NR);
 			InvokeMethodByConfig invoke = new InvokeMethodByConfig(params);
 			String strTypeMsg = msg.getMessageType();
+			
+			Base24Ath originalMsgResponse = (Base24Ath) sourceTranToTmHashtableB24
+					.get(msg.getField(Iso8583.Bit._011_SYSTEMS_TRACE_AUDIT_NR)
+							+ msg.getField(Iso8583.Bit._038_AUTH_ID_RSP));
+			
+			GenericInterface.getLogger().logLine("MSGORGINALB24RESPONsE:: "+originalMsgResponse);
 
 			msgToRmto.putHeader(constructAtmHeaderSinkNode(msg));
 			msgToRmto.putMsgType(msg.getMsgType());
@@ -155,6 +161,7 @@ public class MessageTranslator {
 
 			Map<String, String> deleteFieldsRequest = null;
 			Map<String, String> createFieldsRequest = null;
+			Map<String, String> copyFieldsFromOriginalResponse = null;
 
 			switch (strTypeMsg) {
 			case "0200":
@@ -168,6 +175,7 @@ public class MessageTranslator {
 				case "30":
 					deleteFieldsRequest = GenericInterface.fillMaps.getDeleteFieldsRevAuto();
 					createFieldsRequest = GenericInterface.fillMaps.getCreateFieldsRevAuto();
+					copyFieldsFromOriginalResponse = GenericInterface.fillMaps.getCopyFieldsFromOriginalResponse();
 					break;
 				default:
 					deleteFieldsRequest = GenericInterface.fillMaps.getDeleteFieldsRevRequest();
@@ -186,9 +194,6 @@ public class MessageTranslator {
 					msgToRmto.putField(i, sd.get("B24_Field_" + String.valueOf(i)));
 				else if (msg.isFieldSet(i))
 					msgToRmto.putField(i, msg.getField(i));
-				
-				if (sd != null && sd.get("B24_Field_REV_" + String.valueOf(i)) != null)
-					msgToRmto.putField(i, sd.get("B24_Field_REV_" + String.valueOf(i)));
 
 				String key1 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE) + "_" + pCode126;
 				String key2 = String.valueOf(i) + "-" + msg.getField(Iso8583.Bit._003_PROCESSING_CODE);
@@ -228,6 +233,8 @@ public class MessageTranslator {
 			Set<String> set = deleteFieldsRequest.keySet().stream().filter(s -> s.length() <= 3)
 					.collect(Collectors.toSet());
 
+			
+			// ITERACION DE BORRADO DE CAMPOS
 			if (set.size() > 0) {
 				for (String item : set) {
 					if (msgToRmto.isFieldSet(Integer.parseInt(item))) {
@@ -244,6 +251,22 @@ public class MessageTranslator {
 					}
 				}
 			}
+			// FIN BORRADO DE CAMPOS
+			
+			
+			// INICIO COPIADO DE CAMPOS MENSAJE ORIGINAL RESPUESTA
+			if (copyFieldsFromOriginalResponse.containsKey(PCode)) {
+				String[] parts = copyFieldsFromOriginalResponse.get(PCode).split("-");
+				for (String item : parts) {
+					if (originalMsgResponse.isFieldSet(Integer.parseInt(item))) {
+						msgToRmto.putField(Integer.parseInt(item), originalMsgResponse.getField(Integer.parseInt(item)));
+					}
+				}
+			}
+			
+			// FIN COPIADO DE CAMPOS DE MENSAJE RESPUESTA ORIGINAL
+			
+			
 			if (sd.get("NEXTDAY") != null && sd.get("NEXTDAY").equals("TRUE")) {
 				objectBusinessCalendar = new BusinessCalendar("DefaultBusinessCalendar");
 				Date businessCalendarDate = this.objectBusinessCalendar.getNextBusinessDate();
