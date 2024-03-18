@@ -161,7 +161,7 @@ public class MessageTranslator {
 
 			Map<String, String> deleteFieldsRequest = null;
 			Map<String, String> createFieldsRequest = null;
-			Map<String, String> copyFieldsFromOriginalResponse = null;
+			Map<String, String> copyFieldsFromOriginalResponse = new HashMap<String, String>();
 
 			switch (strTypeMsg) {
 			case "0200":
@@ -255,7 +255,7 @@ public class MessageTranslator {
 			
 			
 			// INICIO COPIADO DE CAMPOS MENSAJE ORIGINAL RESPUESTA
-			if (copyFieldsFromOriginalResponse.containsKey(PCode)) {
+			if (copyFieldsFromOriginalResponse != null  && copyFieldsFromOriginalResponse.containsKey(PCode)) {
 				String[] parts = copyFieldsFromOriginalResponse.get(PCode).split("-");
 				for (String item : parts) {
 					if (originalMsgResponse.isFieldSet(Integer.parseInt(item))) {
